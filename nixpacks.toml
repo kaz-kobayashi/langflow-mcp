@@ -1,8 +1,12 @@
 [phases.setup]
-nixPkgs = ["python310Full"]
+nixPkgs = ["python310", "python310Packages.pip", "python310Packages.virtualenv"]
 
 [phases.install]
-cmds = ["python -m ensurepip --upgrade", "pip install --upgrade pip", "pip install -r requirements.txt"]
+cmds = [
+  "python -m venv /opt/venv",
+  ". /opt/venv/bin/activate && pip install --upgrade pip",
+  ". /opt/venv/bin/activate && pip install -r requirements.txt"
+]
 
 [start]
-cmd = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+cmd = ". /opt/venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port $PORT"
