@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Agent</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        .message-container {
+            scroll-behavior: smooth;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6B7280;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="chatApp()" x-init="init()">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="gradient-bg text-white shadow-lg">
+            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">🤖 AI Chat Agent</h1>
+                    <p class="text-sm text-gray-200 mt-1">Powered by LLM</p>
+                </div>
+                <button
+                    @click="logout()"
+                    class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+                >
+                    ログアウト
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Chat Container -->
+        <main class="flex-1 container mx-auto px-4 py-6 max-w-4xl">
+            <!-- Messages Container -->
+            <div
+                class="message-container bg-white rounded-lg shadow-md p-6 mb-4 h-[calc(100vh-300px)] overflow-y-auto"
+                x-ref="messageContainer"
+            >
+                <template x-if="messages.length === 0">
+                    <div class="text-center text-gray-400 mt-20">
+                        <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                        </svg>
+                        <p class="text-lg">会話を始めましょう！</p>
+                    </div>
+                </template>
+
+                <template x-for="(message, index) in messages" :key="index">
+                    <div
+                        class="mb-4 flex"
+                        :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
+                    >
+                        <div
+                            class="max-w-[75%] rounded-lg px-4 py-3"
+                            :class="message.role === 'user'
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-800'"
+                        >
+                            <div class="flex items-start gap-2">
+                                <span class="text-lg" x-text="message.role === 'user' ? '👤' : '🤖'"></span>
+                                <div class="flex-1">
+                                    <p class="text-sm whitespace-pre-wrap" x-text="message.content"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Typing Indicator -->
+                <template x-if="isLoading">
+                    <div class="mb-4 flex justify-start">
+                        <div class="max-w-[75%] rounded-lg px-4 py-3 bg-gray-100">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">🤖</span>
+                                <div class="flex gap-1">
+                                    <span class="typing-indicator"></span>
+                                    <span class="typing-indicator"></span>
+                                    <span class="typing-indicator"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Input Area -->
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <form @submit.prevent="sendMessage()" class="flex gap-3">
+                    <input
+                        type="text"
+                        x-model="userInput"
+                        :disabled="isLoading"
+                        placeholder="メッセージを入力..."
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        autocomplete="off"
+                    />
+                    <button
+                        type="submit"
+                        :disabled="isLoading || !userInput.trim()"
+                        class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                        <span x-show="!isLoading">送信</span>
+                        <span x-show="isLoading">送信中...</span>
+                    </button>
+                </form>
+
+                <!-- Clear Chat Button -->
+                <button
+                    @click="clearChat()"
+                    class="mt-3 text-sm text-gray-500 hover:text-gray-700 underline"
+                    x-show="messages.length > 0"
+                >
+                    チャット履歴をクリア
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t py-4">
+            <div class="container mx-auto px-4 text-center text-sm text-gray-600">
+                <p>AI Chat Agent - FastAPI + Alpine.js + Tailwind CSS</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function chatApp() {
+            return {
+                messages: [],
+                userInput: '',
+                isLoading: false,
+
+                init() {
+                    // Check if user is logged in
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        window.location.href = '/';
+                        return;
+                    }
+
+                    // Load messages from localStorage
+                    const saved = localStorage.getItem('chatMessages');
+                    if (saved) {
+                        this.messages = JSON.parse(saved);
+                    }
+                },
+
+                async sendMessage() {
+                    if (!this.userInput.trim() || this.isLoading) return;
+
+                    const userMessage = this.userInput.trim();
+                    this.userInput = '';
+
+                    // Add user message
+                    this.messages.push({
+                        role: 'user',
+                        content: userMessage
+                    });
+
+                    this.isLoading = true;
+                    this.scrollToBottom();
+
+                    try {
+                        const token = localStorage.getItem('token');
+
+                        const response = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                messages: this.messages,
+                                model: 'gpt-oss'
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('API request failed');
+                        }
+
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let assistantMessage = '';
+
+                        // Add assistant message placeholder
+                        this.messages.push({
+                            role: 'assistant',
+                            content: ''
+                        });
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+
+                            const chunk = decoder.decode(value);
+                            const lines = chunk.split('\n');
+
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const data = line.slice(6);
+                                    if (data === '[DONE]') break;
+
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        if (parsed.content) {
+                                            assistantMessage += parsed.content;
+                                            this.messages[this.messages.length - 1].content = assistantMessage;
+                                            this.scrollToBottom();
+                                        } else if (parsed.error) {
+                                            this.messages[this.messages.length - 1].content = `エラー: ${parsed.error}`;
+                                        }
+                                    } catch (e) {
+                                        // Ignore parse errors
+                                    }
+                                }
+                            }
+                        }
+
+                        // Save to localStorage
+                        localStorage.setItem('chatMessages', JSON.stringify(this.messages));
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                        this.messages.push({
+                            role: 'assistant',
+                            content: 'エラーが発生しました。もう一度お試しください。'
+                        });
+                    } finally {
+                        this.isLoading = false;
+                        this.scrollToBottom();
+                    }
+                },
+
+                clearChat() {
+                    if (confirm('チャット履歴をクリアしますか？')) {
+                        this.messages = [];
+                        localStorage.removeItem('chatMessages');
+                    }
+                },
+
+                logout() {
+                    if (confirm('ログアウトしますか？')) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('chatMessages');
+                        window.location.href = '/';
+                    }
+                },
+
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        const container = this.$refs.messageContainer;
+                        container.scrollTop = container.scrollHeight;
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
