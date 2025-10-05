@@ -24,6 +24,18 @@ from datetime import datetime
 _optimization_cache = {}
 
 
+def get_visualization_html(user_id: int) -> str:
+    """ユーザーの可視化HTMLを取得"""
+    if user_id not in _optimization_cache:
+        raise KeyError(f"No cache found for user_id: {user_id}")
+
+    cache = _optimization_cache[user_id]
+    if "visualization_html" not in cache:
+        raise KeyError(f"No visualization_html found for user_id: {user_id}")
+
+    return cache["visualization_html"]
+
+
 # OpenAI Function Calling用のツール定義
 MCP_TOOLS_DEFINITION = [
     {
