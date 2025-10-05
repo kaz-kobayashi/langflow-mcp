@@ -135,7 +135,7 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "visualize_inventory_network",
-            "description": "在庫ネットワークと最適化結果を可視化し、インタラクティブなHTMLファイルを生成してURLを返します。",
+            "description": "在庫ネットワークと最適化結果をグラフ・図として可視化します。安全在庫レベル、リードタイム、コストなどを視覚的に表示するインタラクティブなHTMLファイルを生成し、閲覧用のURLを返します。グラフや図、チャート、ネットワーク図が必要な時は必ずこのツールを使用してください。",
             "parameters": {
                 "type": "object",
                 "properties": {
