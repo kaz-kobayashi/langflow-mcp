@@ -15,8 +15,10 @@ from scmopt2.optinv import (
     draw_graph_for_SSA,
     simulate_inventory,
     optimize_qr,
-    optimize_ss
+    optimize_ss,
+    ww
 )
+import numpy as np
 import plotly.io as pio
 import os
 import uuid
@@ -373,6 +375,54 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["mu", "sigma", "lead_time", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_wagner_whitin",
+            "description": "Wagner-Whitinアルゴリズムを使用して、動的ロットサイジング問題を解きます。将来の需要が既知の場合に、総コストを最小化する発注スケジュールを計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "各期の需要量の配列（例: [10, 20, 30, 15]）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/期）"
+                    },
+                    "variable_cost": {
+                        "type": "number",
+                        "description": "変動発注費用（円/unit）（デフォルト: 0）"
+                    }
+                },
+                "required": ["demand", "fixed_cost", "holding_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "analyze_demand_pattern",
+            "description": "需要データの統計的分析を行い、平均、標準偏差、変動係数などを計算します。需要パターンの理解と在庫方策の選択に役立ちます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "需要データの配列（例: [10, 12, 8, 15, 11]）"
+                    }
+                },
+                "required": ["demand"]
             }
         }
     }
@@ -1131,6 +1181,102 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"最適化エラー: {str(e)}"
+            }
+
+    elif function_name == "calculate_wagner_whitin":
+        # Wagner-Whitinアルゴリズムによる動的ロットサイジング
+        try:
+            demand = arguments["demand"]
+            fc = arguments["fixed_cost"]
+            h = arguments["holding_cost"]
+            vc = arguments.get("variable_cost", 0.0)
+
+            # ww関数は (total_cost, order_schedule) のタプルを返す
+            total_cost, order_schedule = ww(
+                demand=demand,
+                fc=fc,
+                vc=vc,
+                h=h
+            )
+
+            # 発注期を特定
+            order_periods = [i for i, qty in enumerate(order_schedule) if qty > 0]
+
+            return {
+                "status": "success",
+                "algorithm": "Wagner-Whitin動的ロットサイジング",
+                "results": {
+                    "total_cost": float(total_cost),
+                    "order_schedule": [float(x) for x in order_schedule],
+                    "order_periods": order_periods,
+                    "number_of_orders": len(order_periods)
+                },
+                "input_parameters": {
+                    "demand": demand,
+                    "fixed_cost": float(fc),
+                    "holding_cost": float(h),
+                    "variable_cost": float(vc)
+                },
+                "summary": f"総コスト: {float(total_cost):.2f}円、発注回数: {len(order_periods)}回"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Wagner-Whitin計算エラー: {str(e)}"
+            }
+
+    elif function_name == "analyze_demand_pattern":
+        # 需要パターンの統計分析
+        try:
+            demand = np.array(arguments["demand"])
+
+            # 基本統計量
+            mean_demand = float(np.mean(demand))
+            std_demand = float(np.std(demand, ddof=1))
+            cv = std_demand / mean_demand if mean_demand > 0 else 0
+            min_demand = float(np.min(demand))
+            max_demand = float(np.max(demand))
+            median_demand = float(np.median(demand))
+
+            # 需要パターンの判定
+            if cv < 0.2:
+                pattern_type = "非常に安定"
+                recommendation = "定量発注方式(EOQ, (Q,R)方策)が適しています"
+            elif cv < 0.5:
+                pattern_type = "安定"
+                recommendation = "(Q,R)方策または(s,S)方策が適しています"
+            elif cv < 1.0:
+                pattern_type = "中程度の変動"
+                recommendation = "(s,S)方策または定期発注方式が適しています"
+            else:
+                pattern_type = "高変動"
+                recommendation = "安全在庫を多めに設定するか、定期発注方式を検討してください"
+
+            return {
+                "status": "success",
+                "analysis_type": "需要パターン分析",
+                "statistics": {
+                    "mean": mean_demand,
+                    "standard_deviation": std_demand,
+                    "coefficient_of_variation": cv,
+                    "min": min_demand,
+                    "max": max_demand,
+                    "median": median_demand,
+                    "sample_size": len(demand)
+                },
+                "pattern_assessment": {
+                    "pattern_type": pattern_type,
+                    "variability_level": cv,
+                    "recommendation": recommendation
+                },
+                "input_data": {
+                    "demand": [float(x) for x in demand]
+                }
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"需要分析エラー: {str(e)}"
             }
 
     else:
