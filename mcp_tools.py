@@ -373,34 +373,8 @@ def execute_mcp_function(function_name: str, arguments: dict) -> dict:
             G = prepare_opt_for_messa(wb)
             best_sol = solve_SSA(G)
 
-            # ネットワークポジション計算（簡易的に階層配置）
-            pos = {}
-            levels = {}
-            for node in G.nodes():
-                if G.in_degree(node) == 0:  # ルートノード
-                    levels[node] = 0
-
-            # 階層レベルを計算
-            changed = True
-            while changed:
-                changed = False
-                for node in G.nodes():
-                    if node not in levels:
-                        for pred in G.predecessors(node):
-                            if pred in levels:
-                                levels[node] = levels[pred] + 1
-                                changed = True
-                                break
-
-            # ポジション設定
-            level_counts = {}
-            for node, level in levels.items():
-                if level not in level_counts:
-                    level_counts[level] = 0
-                x = level * 2
-                y = level_counts[level] * 2
-                pos[node] = (x, y)
-                level_counts[level] += 1
+            # ネットワークポジション計算（G.layout()を使用）
+            pos = G.layout()
 
             # 可視化
             fig = draw_graph_for_SSA(G, pos, best_sol["best_NRT"], best_sol["best_MaxLI"], best_sol["best_MinLT"])
