@@ -20,6 +20,8 @@ from scmopt2.optinv import (
 )
 import numpy as np
 import plotly.io as pio
+import plotly.graph_objects as go
+from scipy import stats
 import os
 import uuid
 from datetime import datetime
@@ -425,6 +427,146 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["demand"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "compare_inventory_policies",
+            "description": "EOQ、(Q,R)方策、(s,S)方策の3つの在庫方策を同じ条件で比較し、最もコスト効率の良い方策を推奨します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_safety_stock",
+            "description": "目標サービスレベルに基づいて必要な安全在庫を計算します。正規分布を仮定し、リードタイム需要の変動を考慮します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "service_level": {
+                        "type": "number",
+                        "description": "目標サービスレベル（0-1の範囲、例: 0.95 = 95%）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）（オプション）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "service_level"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_inventory_simulation",
+            "description": "在庫方策のシミュレーション結果を可視化します。在庫レベルの推移、発注タイミング、品切れ状況をグラフで表示します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "policy_type": {
+                        "type": "string",
+                        "enum": ["QR", "sS"],
+                        "description": "在庫方策のタイプ: 'QR' = (Q,R)方策、'sS' = (s,S)方策"
+                    },
+                    "Q": {
+                        "type": "number",
+                        "description": "(Q,R)方策の場合の発注量（policy_type='QR'の場合必須）"
+                    },
+                    "R": {
+                        "type": "number",
+                        "description": "(Q,R)方策の場合の発注点（policy_type='QR'の場合必須）"
+                    },
+                    "s": {
+                        "type": "number",
+                        "description": "(s,S)方策の場合の発注点（policy_type='sS'の場合必須）"
+                    },
+                    "S": {
+                        "type": "number",
+                        "description": "(s,S)方策の場合の基在庫レベル（policy_type='sS'の場合必須）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "policy_type", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
     }
 ]
 
@@ -461,30 +603,6 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "average_demand": arguments["d"],
                 "holding_cost": arguments["h"],
                 "stockout_cost": arguments["b"]
-            }
-        }
-
-    elif function_name == "calculate_safety_stock":
-        result = approximate_ss(
-            mu=arguments["mu"],
-            sigma=arguments["sigma"],
-            LT=arguments["LT"],
-            b=arguments["b"],
-            h=arguments["h"],
-            fc=arguments.get("fc", 10000.0)
-        )
-        # approximate_ss関数はタプル (S, cost) を返す
-        S, cost = result
-        return {
-            "safety_stock_level": float(S),
-            "expected_cost": float(cost),
-            "parameters": {
-                "average_demand": arguments["mu"],
-                "demand_std_dev": arguments["sigma"],
-                "lead_time": arguments["LT"],
-                "stockout_cost": arguments["b"],
-                "holding_cost": arguments["h"],
-                "fixed_order_cost": arguments.get("fc", 10000.0)
             }
         }
 
@@ -1277,6 +1395,287 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"需要分析エラー: {str(e)}"
+            }
+
+    elif function_name == "compare_inventory_policies":
+        # 複数の在庫方策を比較
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+
+            results = {}
+
+            # 1. EOQ方策
+            Q_eoq, TC_eoq = eoq(K=fc, d=mu, h=h, b=b, r=0, c=0, theta=0)
+            results["EOQ"] = {
+                "optimal_Q": float(Q_eoq),
+                "annual_cost": float(TC_eoq),
+                "policy_description": "定量発注方式（固定発注量）"
+            }
+
+            # 2. (Q,R)方策
+            Q_qr, R_qr = optimize_qr(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT, b=b, h=h, fc=fc
+            )
+            cost_qr, _ = simulate_inventory(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT,
+                Q=Q_qr, R=R_qr, b=b, h=h, fc=fc
+            )
+            results["QR_policy"] = {
+                "optimal_Q": float(Q_qr),
+                "optimal_R": float(R_qr),
+                "average_cost": float(cost_qr.mean()),
+                "policy_description": "(Q,R)方策（定量発注点方式）"
+            }
+
+            # 3. (s,S)方策
+            s_ss, S_ss = optimize_ss(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT, b=b, h=h, fc=fc
+            )
+            cost_ss, _ = simulate_inventory(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT,
+                Q=None, R=s_ss, b=b, h=h, fc=fc, S=S_ss
+            )
+            results["sS_policy"] = {
+                "optimal_s": float(s_ss),
+                "optimal_S": float(S_ss),
+                "average_cost": float(cost_ss.mean()),
+                "policy_description": "(s,S)方策（発注点・基在庫方式）"
+            }
+
+            # 最適方策を決定
+            costs = {
+                "EOQ": results["EOQ"]["annual_cost"] / 365,  # 日あたりに変換
+                "QR_policy": results["QR_policy"]["average_cost"],
+                "sS_policy": results["sS_policy"]["average_cost"]
+            }
+            best_policy = min(costs, key=costs.get)
+
+            return {
+                "status": "success",
+                "comparison_type": "在庫方策の比較分析",
+                "policies": results,
+                "recommendation": {
+                    "best_policy": best_policy,
+                    "best_cost": float(costs[best_policy]),
+                    "cost_comparison": {k: float(v) for k, v in costs.items()},
+                    "reasoning": f"{best_policy}が最も低コスト（1日あたり{costs[best_policy]:.2f}円）"
+                },
+                "input_parameters": {
+                    "average_demand": float(mu),
+                    "demand_std_dev": float(sigma),
+                    "lead_time": int(LT),
+                    "holding_cost": float(h),
+                    "stockout_cost": float(b),
+                    "fixed_cost": float(fc)
+                }
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"方策比較エラー: {str(e)}"
+            }
+
+    elif function_name == "calculate_safety_stock":
+        # 安全在庫の計算
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            service_level = arguments["service_level"]
+            h = arguments.get("holding_cost", None)
+
+            # リードタイム需要の平均と標準偏差
+            mu_LT = mu * LT
+            sigma_LT = sigma * np.sqrt(LT)
+
+            # サービスレベルに対応するz値
+            z = stats.norm.ppf(service_level)
+
+            # 安全在庫
+            safety_stock = z * sigma_LT
+
+            # 再発注点（ROP）
+            reorder_point = mu_LT + safety_stock
+
+            # 年間在庫保持コスト（オプション）
+            annual_holding_cost = None
+            if h is not None:
+                annual_holding_cost = float(safety_stock * h * 365)
+
+            result = {
+                "status": "success",
+                "calculation_type": "安全在庫計算",
+                "results": {
+                    "safety_stock": float(safety_stock),
+                    "reorder_point": float(reorder_point),
+                    "lead_time_demand_mean": float(mu_LT),
+                    "lead_time_demand_std": float(sigma_LT),
+                    "z_value": float(z)
+                },
+                "service_level": {
+                    "target": float(service_level),
+                    "percentage": f"{service_level*100:.1f}%",
+                    "meaning": f"需要の{service_level*100:.1f}%をカバー"
+                },
+                "input_parameters": {
+                    "daily_demand_mean": float(mu),
+                    "daily_demand_std": float(sigma),
+                    "lead_time_days": int(LT)
+                }
+            }
+
+            if annual_holding_cost is not None:
+                result["cost_analysis"] = {
+                    "annual_holding_cost": annual_holding_cost,
+                    "daily_holding_cost": float(safety_stock * h)
+                }
+
+            return result
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"安全在庫計算エラー: {str(e)}"
+            }
+
+    elif function_name == "visualize_inventory_simulation":
+        # シミュレーション結果の可視化
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            policy_type = arguments["policy_type"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_periods = arguments.get("n_periods", 100)
+
+            # パラメータ取得
+            if policy_type == "QR":
+                Q = arguments.get("Q")
+                R = arguments.get("R")
+                if Q is None or R is None:
+                    return {
+                        "status": "error",
+                        "message": "(Q,R)方策にはQとRのパラメータが必要です"
+                    }
+                S = None
+                s = R
+            else:  # sS
+                s = arguments.get("s")
+                S = arguments.get("S")
+                if s is None or S is None:
+                    return {
+                        "status": "error",
+                        "message": "(s,S)方策にはsとSのパラメータが必要です"
+                    }
+                Q = None
+                R = s
+
+            # シミュレーション実行（1サンプルのみ）
+            cost_array, inventory_array = simulate_inventory(
+                n_samples=1,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                Q=Q,
+                R=R,
+                b=b,
+                h=h,
+                fc=fc,
+                S=S
+            )
+
+            # グラフ作成
+            inventory_levels = inventory_array[0, :]  # 最初のサンプル
+            periods = list(range(len(inventory_levels)))
+
+            fig = go.Figure()
+
+            # 在庫レベルの推移
+            fig.add_trace(go.Scatter(
+                x=periods,
+                y=inventory_levels,
+                mode='lines+markers',
+                name='在庫レベル',
+                line=dict(color='blue', width=2),
+                marker=dict(size=4)
+            ))
+
+            # 発注点の表示
+            if policy_type == "QR":
+                fig.add_hline(y=R, line_dash="dash", line_color="red",
+                             annotation_text=f"発注点 R={R:.1f}",
+                             annotation_position="right")
+            else:
+                fig.add_hline(y=s, line_dash="dash", line_color="red",
+                             annotation_text=f"発注点 s={s:.1f}",
+                             annotation_position="right")
+                fig.add_hline(y=S, line_dash="dash", line_color="green",
+                             annotation_text=f"基在庫レベル S={S:.1f}",
+                             annotation_position="right")
+
+            # 品切れ領域の表示
+            fig.add_hrect(y0=-1, y1=0, fillcolor="red", opacity=0.2,
+                         annotation_text="品切れ領域", annotation_position="top left")
+
+            fig.update_layout(
+                title=f"{policy_type}方策の在庫シミュレーション",
+                xaxis_title="期間（日）",
+                yaxis_title="在庫レベル（units）",
+                hovermode='x unified',
+                template="plotly_white"
+            )
+
+            # HTMLとして保存
+            viz_id = str(uuid.uuid4())
+            html_content = fig.to_html(include_plotlyjs='cdn')
+
+            # キャッシュに保存
+            if user_id:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            return {
+                "status": "success",
+                "visualization_type": "在庫シミュレーション可視化",
+                "visualization_id": viz_id,
+                "policy_info": {
+                    "policy_type": policy_type,
+                    "parameters": {
+                        "Q": float(Q) if Q else None,
+                        "R": float(R) if R else None,
+                        "s": float(s) if s else None,
+                        "S": float(S) if S else None
+                    }
+                },
+                "simulation_stats": {
+                    "average_inventory": float(inventory_levels.mean()),
+                    "max_inventory": float(inventory_levels.max()),
+                    "min_inventory": float(inventory_levels.min()),
+                    "stockouts": int((inventory_levels < 0).sum()),
+                    "average_cost_per_period": float(cost_array.mean())
+                },
+                "message": f"可視化を生成しました。visualization_idを使用して表示できます: {viz_id}"
+            }
+
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"可視化エラー: {str(e)}"
             }
 
     else:
