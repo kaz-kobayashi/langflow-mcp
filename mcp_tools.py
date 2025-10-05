@@ -2,7 +2,6 @@
 MCP Tools integration for OpenAI Function Calling
 """
 
-import asyncio
 import json
 import sys
 sys.path.append('.')
@@ -152,10 +151,11 @@ def execute_mcp_function(function_name: str, arguments: dict) -> dict:
             c=arguments.get("c", 0.0),
             theta=arguments.get("theta", 0.0)
         )
+        # eoq関数はタプル (Q*, TC*) を返す
+        Q_star, TC_star = result
         return {
-            "optimal_order_quantity": float(result.get("Q*", 0)),
-            "optimal_reorder_point": float(result.get("r*", 0)),
-            "total_cost": float(result.get("TC*", 0)),
+            "optimal_order_quantity": float(Q_star),
+            "total_cost": float(TC_star),
             "parameters": {
                 "fixed_order_cost": arguments["K"],
                 "average_demand": arguments["d"],
