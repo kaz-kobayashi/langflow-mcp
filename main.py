@@ -17,7 +17,7 @@ from auth import (
     create_access_token,
     get_current_user
 )
-from mcp_tools import MCP_TOOLS_DEFINITION, execute_mcp_function
+from mcp_tools import MCP_TOOLS_DEFINITION, execute_mcp_function, _optimization_cache
 
 load_dotenv()
 
@@ -244,6 +244,18 @@ async def chat(
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+@app.get("/api/visualization/{user_id}", response_class=HTMLResponse)
+async def get_visualization(user_id: int):
+    """可視化HTMLを取得"""
+    if user_id not in _optimization_cache:
+        raise HTTPException(status_code=404, detail="Visualization not found")
+
+    cache = _optimization_cache[user_id]
+    if "visualization_html" not in cache:
+        raise HTTPException(status_code=404, detail="Visualization not generated yet")
+
+    return cache["visualization_html"]
 
 @app.get("/health")
 async def health():

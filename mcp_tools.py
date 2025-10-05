@@ -9,7 +9,6 @@ sys.path.append('.')
 from scmopt2.optinv import (
     eoq,
     approximate_ss,
-    solve_SSA,
     tabu_search_for_SSA,
     make_excel_messa,
     prepare_opt_for_messa,
@@ -411,25 +410,18 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # 可視化
             fig = draw_graph_for_SSA(G, pos, best_sol["best_NRT"], best_sol["best_MaxLI"], best_sol["best_MinLT"])
 
-            # HTMLファイルとして保存
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            file_id = str(uuid.uuid4())[:8]
-            filename = f"network_{timestamp}_{file_id}.html"
-            filepath = os.path.join("static", "visualizations", filename)
+            # HTMLをメモリ上で生成して、キャッシュに保存
+            html_content = pio.to_html(fig, include_plotlyjs='cdn')
 
-            # ディレクトリが存在しない場合は作成
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            # キャッシュにHTML保存（後でエンドポイントから取得）
+            _optimization_cache[user_id]["visualization_html"] = html_content
 
-            # HTML保存
-            pio.write_html(fig, filepath)
-
-            # URLを生成
-            viz_url = f"/static/visualizations/{filename}"
+            # 可視化用URLを生成
+            viz_url = f"/api/visualization/{user_id}"
 
             return {
                 "status": "success",
                 "visualization_url": viz_url,
-                "filename": filename,
                 "message": "可視化が完成しました。リンクをクリックして確認してください。",
                 "total_cost": float(best_sol.get("best_cost", 0))
             }
