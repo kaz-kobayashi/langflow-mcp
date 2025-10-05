@@ -173,10 +173,11 @@ def execute_mcp_function(function_name: str, arguments: dict) -> dict:
             h=arguments["h"],
             fc=arguments.get("fc", 10000.0)
         )
+        # approximate_ss関数はタプル (S, cost) を返す
+        S, cost = result
         return {
-            "safety_stock_level": float(result["S"]),
-            "service_level": float(result["P"]),
-            "expected_cost": float(result["C"]),
+            "safety_stock_level": float(S),
+            "expected_cost": float(cost),
             "parameters": {
                 "average_demand": arguments["mu"],
                 "demand_std_dev": arguments["sigma"],
