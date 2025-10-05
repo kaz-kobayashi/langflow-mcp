@@ -148,11 +148,10 @@ async def chat(
 4. Pythonコードやmatplotlibのコードを絶対に生成しないでください
 5. ツールで実行できる処理を独自に実装しないでください
 6. 複数品目のデータがある場合や、BOM（部品表）が関係する場合は必ず optimize_safety_stock_allocation を使用してください
-7. **最重要ルール**: visualize_last_optimizationツールが返すvisualization_urlフィールドについて：
-   - visualization_urlの値をそのまま使って [可視化結果を確認](visualization_url) という形式のMarkdownリンクを作成すること
-   - 例: ツールが {"visualization_url": "/api/visualization/123"} を返したら → [可視化結果を確認](/api/visualization/123)
-   - URLを変更、省略、要約せず、ツールから返された値をそのまま使用してください
-   - 「可視化が完了しました」というメッセージだけでは不十分です"""
+7. **最重要ルール**: visualize_last_optimizationツールの応答について：
+   - このツールが成功すると、自動的に可視化リンクが表示されます
+   - あなたは「可視化が完了しました。上に表示されたリンクをクリックして確認してください。」とだけ伝えてください
+   - URLを自分で提示する必要はありません（システムが自動的に表示します）"""
             }
 
             # メッセージリストを構築（システムメッセージを先頭に追加）
