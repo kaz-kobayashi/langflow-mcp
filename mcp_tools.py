@@ -285,13 +285,15 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             G, ProcTime, LTUB, z, mu, sigma, h = prepare_opt_for_messa(wb)
 
             # タブーサーチで最適化
-            best_cost, best_NRT, best_MaxLI, best_MinLT = tabu_search_for_SSA(
+            # tabu_search_for_SSAは (best_cost, best_sol, best_NRT, best_MaxLI, best_MinLT) を返す
+            best_cost, best_sol_dict, best_NRT, best_MaxLI, best_MinLT = tabu_search_for_SSA(
                 G, ProcTime, LTUB, z, mu, sigma, h, max_iter=100
             )
 
             # 結果を辞書形式にまとめる
             best_sol = {
                 "best_cost": best_cost,
+                "best_sol": best_sol_dict,
                 "best_NRT": best_NRT,
                 "best_MaxLI": best_MaxLI,
                 "best_MinLT": best_MinLT
