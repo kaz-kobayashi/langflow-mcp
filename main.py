@@ -130,10 +130,29 @@ async def chat(
             db.add(user_message)
             db.commit()
 
+            # システムプロンプトを追加してツール使用を強制
+            system_message = {
+                "role": "system",
+                "content": """あなたは在庫最適化の専門アシスタントです。以下のルールに従ってください：
+
+1. 利用可能なツール（function calling）がある場合は、必ずそれを使用してください
+2. 特に以下の場合は対応するツールを必ず使用すること：
+   - 経済発注量（EOQ）計算 → calculate_eoq
+   - 安全在庫計算 → calculate_safety_stock
+   - サプライチェーンネットワークの安全在庫最適化 → optimize_safety_stock_allocation
+   - グラフや図の可視化 → visualize_last_optimization（直前の最適化結果がある場合）
+3. Pythonコードやmatplotlibのコードを生成しないでください
+4. グラフや図が必要な場合は、必ずvisualize_last_optimizationツールを使用してください
+5. ツールで実行できる処理を独自に実装しないでください"""
+            }
+
+            # メッセージリストを構築（システムメッセージを先頭に追加）
+            messages_with_system = [system_message] + [{"role": m.role, "content": m.content} for m in chat_request.messages]
+
             # OpenAI API呼び出し（Function Calling有効化）
             response = client.chat.completions.create(
                 model=chat_request.model,
-                messages=[{"role": m.role, "content": m.content} for m in chat_request.messages],
+                messages=messages_with_system,
                 tools=MCP_TOOLS_DEFINITION,
                 tool_choice="auto",
                 stream=False,  # Function Callingの場合はストリーミング無効
@@ -164,9 +183,10 @@ async def chat(
                     yield f"data: {json.dumps({'function_call': {'name': function_name, 'result': function_result}})}\n\n"
 
                 # Function call結果を含めて再度LLMを呼び出し
-                messages_with_function = [
+                messages_with_function = [system_message]  # システムメッセージを含める
+                messages_with_function.extend([
                     {"role": m.role, "content": m.content} for m in chat_request.messages
-                ]
+                ])
                 messages_with_function.append({
                     "role": "assistant",
                     "content": message.content,
