@@ -1668,8 +1668,7 @@ def draw_graph_for_SSA(G, pos, best_NRT, best_MaxLI, best_MinLT):
                 colorbar=dict(
                         thickness=15,
                         title='Minium Lead Time=Guaranteed Lead Time',
-                        xanchor='left',
-                        titleside='right'
+                        xanchor='left'
                         ),
                 ),
          name = "nodes",
@@ -1790,8 +1789,7 @@ def draw_graph_for_SSA_from_df(stage_df, bom_df):
                 colorbar=dict(
                         thickness=15,
                         title='Average Demand',
-                        xanchor='left',
-                        titleside='right'
+                        xanchor='left'
                         ),
                 ),
          name = "nodes",
