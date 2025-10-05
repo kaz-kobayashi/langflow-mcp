@@ -12,7 +12,10 @@ from scmopt2.optinv import (
     tabu_search_for_SSA,
     make_excel_messa,
     prepare_opt_for_messa,
-    draw_graph_for_SSA
+    draw_graph_for_SSA,
+    simulate_inventory,
+    optimize_qr,
+    optimize_ss
 )
 import plotly.io as pio
 import os
@@ -174,6 +177,202 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["complexity"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "simulate_qr_policy",
+            "description": "(Q,R)方策の在庫シミュレーションを実行します。発注量Qと発注点Rを指定して、在庫コスト、サービスレベル、在庫推移などをシミュレーションします。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "Q": {
+                        "type": "number",
+                        "description": "発注量（units）"
+                    },
+                    "R": {
+                        "type": "number",
+                        "description": "発注点（units）- 在庫がこのレベルを下回ったら発注"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "Q", "R", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_qr_policy",
+            "description": "(Q,R)方策の最適パラメータを計算します。シミュレーションベースの最適化により、最適な発注量Qと発注点Rを求めます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "simulate_ss_policy",
+            "description": "(s,S)方策の在庫シミュレーションを実行します。発注点sと基在庫レベルSを指定して、在庫コスト、サービスレベル、在庫推移などをシミュレーションします。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "s": {
+                        "type": "number",
+                        "description": "発注点（units）- 在庫がこのレベルを下回ったら発注"
+                    },
+                    "S": {
+                        "type": "number",
+                        "description": "基在庫レベル（units）- 発注時にこのレベルまで補充"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "s", "S", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_ss_policy",
+            "description": "(s,S)方策の最適パラメータを計算します。シミュレーションベースの最適化により、最適な発注点sと基在庫レベルSを求めます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "holding_cost", "stockout_cost", "fixed_cost"]
             }
         }
     }
@@ -684,6 +883,255 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             },
             "usage": f"このデータをoptimize_safety_stock_allocationツールに渡して最適化を実行できます。その後、visualize_last_optimizationで結果を可視化できます。"
         }
+
+    elif function_name == "simulate_qr_policy":
+        # (Q,R)方策のシミュレーション
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            Q = arguments["Q"]
+            R = arguments["R"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+
+            # シミュレーション実行
+            # simulate_inventory関数は(cost_array, inventory_array)のタプルを返す
+            cost_array, inventory_array = simulate_inventory(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                Q=Q,
+                R=R,
+                b=b,
+                h=h,
+                fc=fc
+            )
+
+            # コストの平均を計算
+            avg_cost = float(cost_array.mean())
+
+            return {
+                "status": "success",
+                "policy_type": "(Q,R)方策",
+                "parameters": {
+                    "order_quantity_Q": float(Q),
+                    "reorder_point_R": float(R),
+                    "average_demand": float(mu),
+                    "demand_std_dev": float(sigma),
+                    "lead_time": int(LT),
+                    "holding_cost": float(h),
+                    "stockout_cost": float(b),
+                    "fixed_cost": float(fc)
+                },
+                "simulation_results": {
+                    "average_cost_per_period": avg_cost,
+                    "n_samples": n_samples,
+                    "n_periods": n_periods
+                }
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"シミュレーションエラー: {str(e)}"
+            }
+
+    elif function_name == "optimize_qr_policy":
+        # (Q,R)方策の最適化
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+
+            # 最適化実行
+            # optimize_qr関数は (最適Q, 最適R) の2要素タプルを返す
+            optimal_Q, optimal_R = optimize_qr(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                b=b,
+                h=h,
+                fc=fc
+            )
+
+            # 最適パラメータでシミュレーションしてコストを計算
+            cost_array, _ = simulate_inventory(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                Q=optimal_Q,
+                R=optimal_R,
+                b=b,
+                h=h,
+                fc=fc
+            )
+            min_cost = float(cost_array.mean())
+
+            return {
+                "status": "success",
+                "policy_type": "(Q,R)方策の最適化",
+                "optimal_parameters": {
+                    "optimal_order_quantity_Q": float(optimal_Q),
+                    "optimal_reorder_point_R": float(optimal_R)
+                },
+                "optimization_results": {
+                    "minimum_average_cost": min_cost,
+                    "n_samples": n_samples,
+                    "n_periods": n_periods
+                },
+                "input_parameters": {
+                    "average_demand": float(mu),
+                    "demand_std_dev": float(sigma),
+                    "lead_time": int(LT),
+                    "holding_cost": float(h),
+                    "stockout_cost": float(b),
+                    "fixed_cost": float(fc)
+                }
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"最適化エラー: {str(e)}"
+            }
+
+    elif function_name == "simulate_ss_policy":
+        # (s,S)方策のシミュレーション
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            s = arguments["s"]
+            S = arguments["S"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+
+            # シミュレーション実行（Sパラメータを指定）
+            cost_array, inventory_array = simulate_inventory(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                Q=None,  # (s,S)方策ではQは使用しない
+                R=s,     # 発注点sをRとして渡す
+                b=b,
+                h=h,
+                fc=fc,
+                S=S      # 基在庫レベル
+            )
+
+            # コストの平均を計算
+            avg_cost = float(cost_array.mean())
+
+            return {
+                "status": "success",
+                "policy_type": "(s,S)方策",
+                "parameters": {
+                    "reorder_point_s": float(s),
+                    "base_stock_level_S": float(S),
+                    "average_demand": float(mu),
+                    "demand_std_dev": float(sigma),
+                    "lead_time": int(LT),
+                    "holding_cost": float(h),
+                    "stockout_cost": float(b),
+                    "fixed_cost": float(fc)
+                },
+                "simulation_results": {
+                    "average_cost_per_period": avg_cost,
+                    "n_samples": n_samples,
+                    "n_periods": n_periods
+                }
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"シミュレーションエラー: {str(e)}"
+            }
+
+    elif function_name == "optimize_ss_policy":
+        # (s,S)方策の最適化
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+
+            # 最適化実行
+            # optimize_ss関数は (最適s, 最適S) の2要素タプルを返す
+            optimal_s, optimal_S = optimize_ss(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                b=b,
+                h=h,
+                fc=fc
+            )
+
+            # 最適パラメータでシミュレーションしてコストを計算
+            cost_array, _ = simulate_inventory(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                Q=None,  # (s,S)方策ではQは使用しない
+                R=optimal_s,  # 発注点sをRとして渡す
+                b=b,
+                h=h,
+                fc=fc,
+                S=optimal_S  # 基在庫レベル
+            )
+            min_cost = float(cost_array.mean())
+
+            return {
+                "status": "success",
+                "policy_type": "(s,S)方策の最適化",
+                "optimal_parameters": {
+                    "optimal_reorder_point_s": float(optimal_s),
+                    "optimal_base_stock_level_S": float(optimal_S)
+                },
+                "optimization_results": {
+                    "minimum_average_cost": min_cost,
+                    "n_samples": n_samples,
+                    "n_periods": n_periods
+                },
+                "input_parameters": {
+                    "average_demand": float(mu),
+                    "demand_std_dev": float(sigma),
+                    "lead_time": int(LT),
+                    "holding_cost": float(h),
+                    "stockout_cost": float(b),
+                    "fixed_cost": float(fc)
+                }
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"最適化エラー: {str(e)}"
+            }
 
     else:
         return {
