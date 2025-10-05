@@ -47,7 +47,7 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[Message]
-    model: str = "gpt-3.5-turbo"
+    model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
 class UserRegister(BaseModel):
     email: EmailStr
