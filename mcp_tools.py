@@ -440,7 +440,19 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         if user_id is None or user_id not in _optimization_cache:
             return {
                 "status": "error",
-                "message": "最適化結果が見つかりません。先にoptimize_safety_stock_allocationを実行してください。"
+                "message": """可視化できる最適化結果が見つかりません。
+
+可視化できるのは、optimize_safety_stock_allocation（サプライチェーンネットワークの安全在庫最適化）の結果のみです。
+
+以下のツールの結果は可視化できません：
+- calculate_eoq（経済発注量計算）
+- calculate_safety_stock（単一品目の安全在庫計算）
+
+可視化を行うには：
+1. まず optimize_safety_stock_allocation で複数品目のネットワーク最適化を実行してください
+2. その後、このツールで結果を可視化できます
+
+複数の品目データとBOM（部品表）を用意して、optimize_safety_stock_allocation を実行してください。"""
             }
 
         try:
