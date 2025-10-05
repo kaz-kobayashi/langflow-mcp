@@ -150,8 +150,8 @@ async def chat(
                     function_name = tool_call.function.name
                     function_args = json.loads(tool_call.function.arguments)
 
-                    # MCP関数を実行
-                    function_result = execute_mcp_function(function_name, function_args)
+                    # MCP関数を実行（user_idを渡す）
+                    function_result = execute_mcp_function(function_name, function_args, user_id=current_user.id)
 
                     function_responses.append({
                         "tool_call_id": tool_call.id,

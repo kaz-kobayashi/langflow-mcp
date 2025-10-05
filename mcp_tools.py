@@ -19,6 +19,10 @@ import os
 import uuid
 from datetime import datetime
 
+# ユーザーごとの計算結果キャッシュ
+# {user_id: {"G": graph, "pos": positions, "best_sol": solution, "items": items_data, "bom": bom_data}}
+_optimization_cache = {}
+
 
 # OpenAI Function Calling用のツール定義
 MCP_TOOLS_DEFINITION = [
@@ -151,11 +155,23 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["items_data", "bom_data"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_last_optimization",
+            "description": "直前に実行した安全在庫最適化(optimize_safety_stock_allocation)の結果を可視化します。ユーザーが「結果を可視化して」「グラフを見せて」「図を表示して」などと依頼した場合に使用します。データを再度指定する必要はありません。",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]
 
 
-def execute_mcp_function(function_name: str, arguments: dict) -> dict:
+def execute_mcp_function(function_name: str, arguments: dict, user_id: int = None) -> dict:
     """
     MCPツール関数を実行
 
@@ -248,6 +264,19 @@ def execute_mcp_function(function_name: str, arguments: dict) -> dict:
         try:
             G = prepare_opt_for_messa(wb)
             best_sol = solve_SSA(G)
+
+            # ネットワークポジション計算
+            pos = G.layout()
+
+            # ユーザーごとにキャッシュに保存
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "G": G,
+                    "pos": pos,
+                    "best_sol": best_sol,
+                    "items": items,
+                    "bom": bom
+                }
 
             # 結果を整形
             result_data = []
@@ -404,6 +433,52 @@ def execute_mcp_function(function_name: str, arguments: dict) -> dict:
             return {
                 "status": "error",
                 "message": str(e)
+            }
+
+    elif function_name == "visualize_last_optimization":
+        # ユーザーのキャッシュを確認
+        if user_id is None or user_id not in _optimization_cache:
+            return {
+                "status": "error",
+                "message": "最適化結果が見つかりません。先にoptimize_safety_stock_allocationを実行してください。"
+            }
+
+        try:
+            # キャッシュから取得
+            cache = _optimization_cache[user_id]
+            G = cache["G"]
+            pos = cache["pos"]
+            best_sol = cache["best_sol"]
+
+            # 可視化
+            fig = draw_graph_for_SSA(G, pos, best_sol["best_NRT"], best_sol["best_MaxLI"], best_sol["best_MinLT"])
+
+            # HTMLファイルとして保存
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            file_id = str(uuid.uuid4())[:8]
+            filename = f"network_{timestamp}_{file_id}.html"
+            filepath = os.path.join("static", "visualizations", filename)
+
+            # ディレクトリが存在しない場合は作成
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
+            # HTML保存
+            pio.write_html(fig, filepath)
+
+            # URLを生成
+            viz_url = f"/static/visualizations/{filename}"
+
+            return {
+                "status": "success",
+                "visualization_url": viz_url,
+                "filename": filename,
+                "message": "可視化が完成しました。リンクをクリックして確認してください。",
+                "total_cost": float(best_sol.get("best_cost", 0))
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"可視化エラー: {str(e)}"
             }
 
     else:
