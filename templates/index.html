@@ -247,6 +247,14 @@
                                             assistantMessage += parsed.content;
                                             this.messages[this.messages.length - 1].content = assistantMessage;
                                             this.scrollToBottom();
+                                        } else if (parsed.function_call) {
+                                            // Function call結果を表示
+                                            const funcName = parsed.function_call.name;
+                                            const funcResult = parsed.function_call.result;
+                                            const funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n\`\`\`json\n${JSON.stringify(funcResult, null, 2)}\n\`\`\`\n\n`;
+                                            assistantMessage += funcDisplay;
+                                            this.messages[this.messages.length - 1].content = assistantMessage;
+                                            this.scrollToBottom();
                                         } else if (parsed.error) {
                                             this.messages[this.messages.length - 1].content = `エラー: ${parsed.error}`;
                                         }

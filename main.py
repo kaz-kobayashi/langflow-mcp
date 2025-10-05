@@ -17,6 +17,7 @@ from auth import (
     create_access_token,
     get_current_user
 )
+from mcp_tools import MCP_TOOLS_DEFINITION, execute_mcp_function
 
 load_dotenv()
 
@@ -113,7 +114,7 @@ async def chat(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """チャットエンドポイント - ストリーミング対応（認証必須）"""
+    """チャットエンドポイント - ストリーミング対応・Function Calling対応（認証必須）"""
 
     async def generate():
         try:
@@ -126,18 +127,75 @@ async def chat(
             db.add(user_message)
             db.commit()
 
-            stream = client.chat.completions.create(
+            # OpenAI API呼び出し（Function Calling有効化）
+            response = client.chat.completions.create(
                 model=chat_request.model,
                 messages=[{"role": m.role, "content": m.content} for m in chat_request.messages],
-                stream=True,
+                tools=MCP_TOOLS_DEFINITION,
+                tool_choice="auto",
+                stream=False,  # Function Callingの場合はストリーミング無効
             )
 
-            assistant_content = ""
-            for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
-                    content = chunk.choices[0].delta.content
-                    assistant_content += content
-                    yield f"data: {json.dumps({'content': content})}\n\n"
+            message = response.choices[0].message
+
+            # Function callがある場合
+            if message.tool_calls:
+                # Function call結果を収集
+                function_responses = []
+
+                for tool_call in message.tool_calls:
+                    function_name = tool_call.function.name
+                    function_args = json.loads(tool_call.function.arguments)
+
+                    # MCP関数を実行
+                    function_result = execute_mcp_function(function_name, function_args)
+
+                    function_responses.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": json.dumps(function_result, ensure_ascii=False)
+                    })
+
+                    # Function call結果を送信
+                    yield f"data: {json.dumps({'function_call': {'name': function_name, 'result': function_result}})}\n\n"
+
+                # Function call結果を含めて再度LLMを呼び出し
+                messages_with_function = [
+                    {"role": m.role, "content": m.content} for m in chat_request.messages
+                ]
+                messages_with_function.append({
+                    "role": "assistant",
+                    "content": message.content,
+                    "tool_calls": [
+                        {
+                            "id": tc.id,
+                            "type": "function",
+                            "function": {"name": tc.function.name, "arguments": tc.function.arguments}
+                        }
+                        for tc in message.tool_calls
+                    ]
+                })
+                messages_with_function.extend(function_responses)
+
+                # 最終応答を取得（ストリーミング）
+                final_stream = client.chat.completions.create(
+                    model=chat_request.model,
+                    messages=messages_with_function,
+                    stream=True,
+                )
+
+                assistant_content = ""
+                for chunk in final_stream:
+                    if chunk.choices[0].delta.content is not None:
+                        content = chunk.choices[0].delta.content
+                        assistant_content += content
+                        yield f"data: {json.dumps({'content': content})}\n\n"
+
+            else:
+                # 通常の応答（Function callなし）
+                assistant_content = message.content or ""
+                yield f"data: {json.dumps({'content': assistant_content})}\n\n"
 
             # Save assistant message to database
             assistant_message = ChatHistory(

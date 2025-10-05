@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "inventory-optimizer": {
+      "command": "python",
+      "args": [
+        "/Users/kazuhiro/Documents/2510/langflow-mcp/mcp_inventory_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/Users/kazuhiro/Documents/2510/langflow-mcp"
+      }
+    }
+  }
+}
