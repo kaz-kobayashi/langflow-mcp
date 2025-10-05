@@ -10,6 +10,7 @@ from scmopt2.optinv import (
     eoq,
     approximate_ss,
     solve_SSA,
+    tabu_search_for_SSA,
     make_excel_messa,
     prepare_opt_for_messa,
     draw_graph_for_SSA
@@ -280,8 +281,21 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
         # 最適化実行
         try:
-            G = prepare_opt_for_messa(wb)
-            best_sol = solve_SSA(G)
+            # prepare_opt_for_messaは (G, ProcTime, LTUB, z, mu, sigma, h) を返す
+            G, ProcTime, LTUB, z, mu, sigma, h = prepare_opt_for_messa(wb)
+
+            # タブーサーチで最適化
+            best_cost, best_NRT, best_MaxLI, best_MinLT = tabu_search_for_SSA(
+                G, ProcTime, LTUB, z, mu, sigma, h, max_iter=100
+            )
+
+            # 結果を辞書形式にまとめる
+            best_sol = {
+                "best_cost": best_cost,
+                "best_NRT": best_NRT,
+                "best_MaxLI": best_MaxLI,
+                "best_MinLT": best_MinLT
+            }
 
             # ネットワークポジション計算
             pos = G.layout()
