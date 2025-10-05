@@ -139,29 +139,8 @@ MCP_TOOLS_DEFINITION = [
     {
         "type": "function",
         "function": {
-            "name": "visualize_inventory_network",
-            "description": "在庫ネットワークと最適化結果をグラフ・図として可視化します。安全在庫レベル、リードタイム、コストなどを視覚的に表示するインタラクティブなHTMLファイルを生成し、閲覧用のURLを返します。グラフや図、チャート、ネットワーク図が必要な時は必ずこのツールを使用してください。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "items_data": {
-                        "type": "string",
-                        "description": "品目データのJSON配列文字列"
-                    },
-                    "bom_data": {
-                        "type": "string",
-                        "description": "BOMデータのJSON配列文字列"
-                    }
-                },
-                "required": ["items_data", "bom_data"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "visualize_last_optimization",
-            "description": "直前に実行した安全在庫最適化(optimize_safety_stock_allocation)の結果を可視化します。ユーザーが「結果を可視化して」「グラフを見せて」「図を表示して」などと依頼した場合に使用します。データを再度指定する必要はありません。",
+            "description": "直前に実行した安全在庫最適化(optimize_safety_stock_allocation)の結果を可視化します。ユーザーが「結果を可視化して」「グラフを見せて」「図を表示して」などと依頼した場合に使用します。データを再度指定する必要はありません。グラフや図、チャート、ネットワーク図が必要な時は、まずoptimize_safety_stock_allocationを実行してから、このツールを使用してください。",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -395,73 +374,6 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 },
                 "nodes": nodes_info,
                 "edges": edges_info
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }
-
-    elif function_name == "visualize_inventory_network":
-        items = json.loads(arguments["items_data"])
-        bom = json.loads(arguments["bom_data"])
-
-        # Excelワークブック作成
-        wb = make_excel_messa()
-
-        # データ追加
-        ws_items = wb["品目"]
-        for item in items:
-            ws_items.append([
-                item.get("name"),
-                item.get("process_time", 1),
-                item.get("max_service_time", 0),
-                item.get("avg_demand"),
-                item.get("demand_std"),
-                item.get("holding_cost", 1),
-                item.get("stockout_cost", 100),
-                item.get("fixed_cost", 1000)
-            ])
-
-        ws_bom = wb["部品展開表"]
-        for b in bom:
-            ws_bom.append([
-                b.get("child"),
-                b.get("parent"),
-                b.get("quantity", 1)
-            ])
-
-        try:
-            # 最適化実行
-            G = prepare_opt_for_messa(wb)
-            best_sol = solve_SSA(G)
-
-            # ネットワークポジション計算（G.layout()を使用）
-            pos = G.layout()
-
-            # 可視化
-            fig = draw_graph_for_SSA(G, pos, best_sol["best_NRT"], best_sol["best_MaxLI"], best_sol["best_MinLT"])
-
-            # HTMLファイルとして保存
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            file_id = str(uuid.uuid4())[:8]
-            filename = f"network_{timestamp}_{file_id}.html"
-            filepath = os.path.join("static", "visualizations", filename)
-
-            # ディレクトリが存在しない場合は作成
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
-
-            # HTML保存
-            pio.write_html(fig, filepath)
-
-            # URLを生成
-            viz_url = f"/static/visualizations/{filename}"
-
-            return {
-                "status": "success",
-                "visualization_url": viz_url,
-                "filename": filename,
-                "message": "可視化が完成しました。リンクをクリックして確認してください。"
             }
         except Exception as e:
             return {
