@@ -167,6 +167,24 @@ MCP_TOOLS_DEFINITION = [
                 "required": []
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_sample_data",
+            "description": "サプライチェーンネットワーク最適化のためのサンプルデータを生成します。ユーザーがデータ形式がわからない場合や、例を見たい場合に使用します。シンプル（3品目）、標準（5品目）、複雑（8品目）の3パターンから選べます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "complexity": {
+                        "type": "string",
+                        "enum": ["simple", "standard", "complex"],
+                        "description": "サンプルデータの複雑さ。simple=3品目の直列ネットワーク、standard=5品目の分岐あり、complex=8品目の複雑なネットワーク"
+                    }
+                },
+                "required": ["complexity"]
+            }
+        }
     }
 ]
 
@@ -492,6 +510,248 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "status": "error",
                 "message": f"可視化エラー: {str(e)}"
             }
+
+    elif function_name == "generate_sample_data":
+        complexity = arguments.get("complexity", "simple")
+
+        # サンプルデータパターン定義
+        sample_patterns = {
+            "simple": {
+                "description": "シンプルな3品目の直列サプライチェーン（製品→部品→原材料）",
+                "items": [
+                    {
+                        "name": "製品A",
+                        "process_time": 2,
+                        "max_service_time": 5,
+                        "avg_demand": 100,
+                        "demand_std": 20,
+                        "holding_cost": 5,
+                        "stockout_cost": 100,
+                        "fixed_cost": 10000
+                    },
+                    {
+                        "name": "部品B",
+                        "process_time": 1,
+                        "max_service_time": 3,
+                        "avg_demand": 200,
+                        "demand_std": 30,
+                        "holding_cost": 3,
+                        "stockout_cost": 80,
+                        "fixed_cost": 8000
+                    },
+                    {
+                        "name": "原材料C",
+                        "process_time": 1,
+                        "max_service_time": 2,
+                        "avg_demand": 300,
+                        "demand_std": 40,
+                        "holding_cost": 2,
+                        "stockout_cost": 50,
+                        "fixed_cost": 5000
+                    }
+                ],
+                "bom": [
+                    {"child": "部品B", "parent": "製品A", "quantity": 2},
+                    {"child": "原材料C", "parent": "部品B", "quantity": 1}
+                ]
+            },
+            "standard": {
+                "description": "標準的な5品目のサプライチェーンネットワーク（製品が複数の部品を使用）",
+                "items": [
+                    {
+                        "name": "完成品X",
+                        "process_time": 3,
+                        "max_service_time": 7,
+                        "avg_demand": 50,
+                        "demand_std": 15,
+                        "holding_cost": 10,
+                        "stockout_cost": 150,
+                        "fixed_cost": 15000
+                    },
+                    {
+                        "name": "サブアセンブリY",
+                        "process_time": 2,
+                        "max_service_time": 4,
+                        "avg_demand": 100,
+                        "demand_std": 25,
+                        "holding_cost": 6,
+                        "stockout_cost": 100,
+                        "fixed_cost": 10000
+                    },
+                    {
+                        "name": "部品Z1",
+                        "process_time": 1,
+                        "max_service_time": 3,
+                        "avg_demand": 150,
+                        "demand_std": 30,
+                        "holding_cost": 4,
+                        "stockout_cost": 80,
+                        "fixed_cost": 7000
+                    },
+                    {
+                        "name": "部品Z2",
+                        "process_time": 1,
+                        "max_service_time": 3,
+                        "avg_demand": 150,
+                        "demand_std": 30,
+                        "holding_cost": 4,
+                        "stockout_cost": 80,
+                        "fixed_cost": 7000
+                    },
+                    {
+                        "name": "原材料M",
+                        "process_time": 1,
+                        "max_service_time": 2,
+                        "avg_demand": 400,
+                        "demand_std": 50,
+                        "holding_cost": 2,
+                        "stockout_cost": 40,
+                        "fixed_cost": 4000
+                    }
+                ],
+                "bom": [
+                    {"child": "サブアセンブリY", "parent": "完成品X", "quantity": 2},
+                    {"child": "部品Z1", "parent": "完成品X", "quantity": 1},
+                    {"child": "部品Z2", "parent": "サブアセンブリY", "quantity": 1},
+                    {"child": "原材料M", "parent": "部品Z1", "quantity": 2},
+                    {"child": "原材料M", "parent": "部品Z2", "quantity": 1}
+                ]
+            },
+            "complex": {
+                "description": "複雑な8品目のマルチエシュロンサプライチェーンネットワーク",
+                "items": [
+                    {
+                        "name": "最終製品P1",
+                        "process_time": 3,
+                        "max_service_time": 8,
+                        "avg_demand": 40,
+                        "demand_std": 12,
+                        "holding_cost": 12,
+                        "stockout_cost": 200,
+                        "fixed_cost": 20000
+                    },
+                    {
+                        "name": "最終製品P2",
+                        "process_time": 3,
+                        "max_service_time": 8,
+                        "avg_demand": 35,
+                        "demand_std": 10,
+                        "holding_cost": 12,
+                        "stockout_cost": 200,
+                        "fixed_cost": 20000
+                    },
+                    {
+                        "name": "アセンブリA1",
+                        "process_time": 2,
+                        "max_service_time": 5,
+                        "avg_demand": 80,
+                        "demand_std": 20,
+                        "holding_cost": 7,
+                        "stockout_cost": 120,
+                        "fixed_cost": 12000
+                    },
+                    {
+                        "name": "アセンブリA2",
+                        "process_time": 2,
+                        "max_service_time": 5,
+                        "avg_demand": 70,
+                        "demand_std": 18,
+                        "holding_cost": 7,
+                        "stockout_cost": 120,
+                        "fixed_cost": 12000
+                    },
+                    {
+                        "name": "部品C1",
+                        "process_time": 1,
+                        "max_service_time": 3,
+                        "avg_demand": 180,
+                        "demand_std": 35,
+                        "holding_cost": 4,
+                        "stockout_cost": 80,
+                        "fixed_cost": 7000
+                    },
+                    {
+                        "name": "部品C2",
+                        "process_time": 1,
+                        "max_service_time": 3,
+                        "avg_demand": 160,
+                        "demand_std": 30,
+                        "holding_cost": 4,
+                        "stockout_cost": 80,
+                        "fixed_cost": 7000
+                    },
+                    {
+                        "name": "原材料R1",
+                        "process_time": 1,
+                        "max_service_time": 2,
+                        "avg_demand": 500,
+                        "demand_std": 60,
+                        "holding_cost": 2,
+                        "stockout_cost": 40,
+                        "fixed_cost": 4000
+                    },
+                    {
+                        "name": "原材料R2",
+                        "process_time": 1,
+                        "max_service_time": 2,
+                        "avg_demand": 450,
+                        "demand_std": 55,
+                        "holding_cost": 2,
+                        "stockout_cost": 40,
+                        "fixed_cost": 4000
+                    }
+                ],
+                "bom": [
+                    {"child": "アセンブリA1", "parent": "最終製品P1", "quantity": 2},
+                    {"child": "アセンブリA2", "parent": "最終製品P2", "quantity": 2},
+                    {"child": "部品C1", "parent": "アセンブリA1", "quantity": 1},
+                    {"child": "部品C2", "parent": "アセンブリA1", "quantity": 1},
+                    {"child": "部品C1", "parent": "アセンブリA2", "quantity": 1},
+                    {"child": "部品C2", "parent": "アセンブリA2", "quantity": 1},
+                    {"child": "原材料R1", "parent": "部品C1", "quantity": 3},
+                    {"child": "原材料R2", "parent": "部品C2", "quantity": 2},
+                    {"child": "原材料R1", "parent": "部品C2", "quantity": 1}
+                ]
+            }
+        }
+
+        if complexity not in sample_patterns:
+            return {
+                "status": "error",
+                "message": f"無効な複雑さレベル: {complexity}. simple, standard, complex のいずれかを指定してください。"
+            }
+
+        pattern = sample_patterns[complexity]
+
+        return {
+            "status": "success",
+            "complexity": complexity,
+            "description": pattern["description"],
+            "items_count": len(pattern["items"]),
+            "bom_count": len(pattern["bom"]),
+            "items_data": pattern["items"],
+            "bom_data": pattern["bom"],
+            "data_explanation": {
+                "items_data": "品目データ：各品目の特性（処理時間、需要、コストなど）を定義します",
+                "fields": {
+                    "name": "品目名",
+                    "process_time": "処理時間（日）",
+                    "max_service_time": "最大サービス時間（日）",
+                    "avg_demand": "平均需要量（units/日）",
+                    "demand_std": "需要の標準偏差",
+                    "holding_cost": "在庫保管費用（円/unit/日）",
+                    "stockout_cost": "品切れ費用（円/unit/日）",
+                    "fixed_cost": "固定発注費用（円/回）"
+                },
+                "bom_data": "BOM（部品表）：品目間の親子関係と必要数量を定義します",
+                "bom_fields": {
+                    "child": "子品目（使用される部品）",
+                    "parent": "親品目（製品）",
+                    "quantity": "親1個を作るのに必要な子の数量"
+                }
+            },
+            "usage": f"このデータをoptimize_safety_stock_allocationツールに渡して最適化を実行できます。その後、visualize_last_optimizationで結果を可視化できます。"
+        }
 
     else:
         return {
