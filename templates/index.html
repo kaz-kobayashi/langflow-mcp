@@ -169,13 +169,25 @@
                 messages: [],
                 userInput: '',
                 isLoading: false,
+                modelName: 'gpt-4o-mini', // デフォルト値
 
-                init() {
+                async init() {
                     // Check if user is logged in
                     const token = localStorage.getItem('token');
                     if (!token) {
                         window.location.href = '/';
                         return;
+                    }
+
+                    // サーバーから設定を取得
+                    try {
+                        const response = await fetch('/api/config');
+                        if (response.ok) {
+                            const config = await response.json();
+                            this.modelName = config.model;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load config:', error);
                     }
 
                     // Load messages from localStorage
@@ -211,7 +223,7 @@
                             },
                             body: JSON.stringify({
                                 messages: this.messages,
-                                model: 'gpt-oss:latest'
+                                model: this.modelName
                             })
                         });
 

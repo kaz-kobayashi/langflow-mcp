@@ -72,6 +72,13 @@ async def chat_page(request: Request):
     """チャットページ（認証済みユーザーのみ）"""
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/api/config")
+async def get_config():
+    """フロントエンド用の設定情報を返す"""
+    return {
+        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    }
+
 @app.post("/api/register", response_model=Token)
 async def register(user: UserRegister, db: Session = Depends(get_db)):
     """ユーザー登録"""
