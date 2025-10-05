@@ -29,6 +29,9 @@ init_db()
 # Templates
 templates = Jinja2Templates(directory="templates")
 
+# Static files for visualizations
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # OpenAI Client - ローカルまたはクラウド
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "not-needed")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "http://localhost:1234/v1")

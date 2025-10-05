@@ -99,7 +99,7 @@
                             <div class="flex items-start gap-2">
                                 <span class="text-lg" x-text="message.role === 'user' ? '👤' : '🤖'"></span>
                                 <div class="flex-1">
-                                    <p class="text-sm whitespace-pre-wrap" x-text="message.content"></p>
+                                    <p class="text-sm whitespace-pre-wrap" x-html="formatMessage(message.content)"></p>
                                 </div>
                             </div>
                         </div>
@@ -251,7 +251,17 @@
                                             // Function call結果を表示
                                             const funcName = parsed.function_call.name;
                                             const funcResult = parsed.function_call.result;
-                                            const funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n\`\`\`json\n${JSON.stringify(funcResult, null, 2)}\n\`\`\`\n\n`;
+
+                                            let funcDisplay;
+                                            // Check if result contains visualization URL
+                                            if (funcResult.visualization_url) {
+                                                const vizUrl = funcResult.visualization_url;
+                                                const message = funcResult.message || '可視化結果を表示';
+                                                funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
+                                            } else {
+                                                funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n\`\`\`json\n${JSON.stringify(funcResult, null, 2)}\n\`\`\`\n\n`;
+                                            }
+
                                             assistantMessage += funcDisplay;
                                             this.messages[this.messages.length - 1].content = assistantMessage;
                                             this.scrollToBottom();
@@ -300,6 +310,24 @@
                         const container = this.$refs.messageContainer;
                         container.scrollTop = container.scrollHeight;
                     });
+                },
+
+                formatMessage(content) {
+                    // Escape HTML to prevent XSS
+                    let formatted = content
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+
+                    // Convert Markdown links [text](url) to HTML
+                    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline hover:text-blue-800">$1</a>');
+
+                    // Convert **bold** to HTML
+                    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+                    return formatted;
                 }
             }
         }
