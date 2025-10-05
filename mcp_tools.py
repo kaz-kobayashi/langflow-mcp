@@ -538,7 +538,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "製品A",
                         "process_time": 2,
-                        "max_service_time": 5,
+                        "max_service_time": 0,
                         "avg_demand": 100,
                         "demand_std": 20,
                         "holding_cost": 5,
@@ -548,7 +548,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "部品B",
                         "process_time": 1,
-                        "max_service_time": 3,
+                        "max_service_time": 0,
                         "avg_demand": 200,
                         "demand_std": 30,
                         "holding_cost": 3,
@@ -558,7 +558,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "原材料C",
                         "process_time": 1,
-                        "max_service_time": 2,
+                        "max_service_time": 0,
                         "avg_demand": 300,
                         "demand_std": 40,
                         "holding_cost": 2,
@@ -577,7 +577,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "完成品X",
                         "process_time": 3,
-                        "max_service_time": 7,
+                        "max_service_time": 0,
                         "avg_demand": 50,
                         "demand_std": 15,
                         "holding_cost": 10,
@@ -587,7 +587,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "サブアセンブリY",
                         "process_time": 2,
-                        "max_service_time": 4,
+                        "max_service_time": 0,
                         "avg_demand": 100,
                         "demand_std": 25,
                         "holding_cost": 6,
@@ -597,7 +597,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "部品Z1",
                         "process_time": 1,
-                        "max_service_time": 3,
+                        "max_service_time": 0,
                         "avg_demand": 150,
                         "demand_std": 30,
                         "holding_cost": 4,
@@ -607,7 +607,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "部品Z2",
                         "process_time": 1,
-                        "max_service_time": 3,
+                        "max_service_time": 0,
                         "avg_demand": 150,
                         "demand_std": 30,
                         "holding_cost": 4,
@@ -617,7 +617,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "原材料M",
                         "process_time": 1,
-                        "max_service_time": 2,
+                        "max_service_time": 0,
                         "avg_demand": 400,
                         "demand_std": 50,
                         "holding_cost": 2,
@@ -639,7 +639,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "最終製品P1",
                         "process_time": 3,
-                        "max_service_time": 8,
+                        "max_service_time": 0,
                         "avg_demand": 40,
                         "demand_std": 12,
                         "holding_cost": 12,
@@ -649,7 +649,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "最終製品P2",
                         "process_time": 3,
-                        "max_service_time": 8,
+                        "max_service_time": 0,
                         "avg_demand": 35,
                         "demand_std": 10,
                         "holding_cost": 12,
@@ -659,7 +659,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "アセンブリA1",
                         "process_time": 2,
-                        "max_service_time": 5,
+                        "max_service_time": 0,
                         "avg_demand": 80,
                         "demand_std": 20,
                         "holding_cost": 7,
@@ -669,7 +669,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "アセンブリA2",
                         "process_time": 2,
-                        "max_service_time": 5,
+                        "max_service_time": 0,
                         "avg_demand": 70,
                         "demand_std": 18,
                         "holding_cost": 7,
@@ -679,7 +679,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "部品C1",
                         "process_time": 1,
-                        "max_service_time": 3,
+                        "max_service_time": 0,
                         "avg_demand": 180,
                         "demand_std": 35,
                         "holding_cost": 4,
@@ -689,7 +689,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "部品C2",
                         "process_time": 1,
-                        "max_service_time": 3,
+                        "max_service_time": 0,
                         "avg_demand": 160,
                         "demand_std": 30,
                         "holding_cost": 4,
@@ -699,7 +699,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "原材料R1",
                         "process_time": 1,
-                        "max_service_time": 2,
+                        "max_service_time": 0,
                         "avg_demand": 500,
                         "demand_std": 60,
                         "holding_cost": 2,
@@ -709,7 +709,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     {
                         "name": "原材料R2",
                         "process_time": 1,
-                        "max_service_time": 2,
+                        "max_service_time": 0,
                         "avg_demand": 450,
                         "demand_std": 55,
                         "holding_cost": 2,
