@@ -1491,7 +1491,8 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         try:
             mu = arguments.get("mu")
             sigma = arguments.get("sigma")
-            LT = arguments.get("lead_time")
+            # lead_timeとLTの両方に対応
+            LT = arguments.get("lead_time") or arguments.get("LT")
             service_level = arguments.get("service_level")
             h = arguments.get("holding_cost", None)
 
@@ -1500,7 +1501,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 missing = []
                 if mu is None: missing.append("mu (平均需要)")
                 if sigma is None: missing.append("sigma (標準偏差)")
-                if LT is None: missing.append("lead_time (リードタイム)")
+                if LT is None: missing.append("lead_time/LT (リードタイム)")
                 if service_level is None: missing.append("service_level (サービスレベル)")
                 return {
                     "status": "error",
