@@ -1489,11 +1489,24 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "calculate_safety_stock":
         # 安全在庫の計算
         try:
-            mu = arguments["mu"]
-            sigma = arguments["sigma"]
-            LT = arguments["lead_time"]
-            service_level = arguments["service_level"]
+            mu = arguments.get("mu")
+            sigma = arguments.get("sigma")
+            LT = arguments.get("lead_time")
+            service_level = arguments.get("service_level")
             h = arguments.get("holding_cost", None)
+
+            # 必須パラメータのチェック
+            if mu is None or sigma is None or LT is None or service_level is None:
+                missing = []
+                if mu is None: missing.append("mu (平均需要)")
+                if sigma is None: missing.append("sigma (標準偏差)")
+                if LT is None: missing.append("lead_time (リードタイム)")
+                if service_level is None: missing.append("service_level (サービスレベル)")
+                return {
+                    "status": "error",
+                    "message": f"必須パラメータが不足しています: {', '.join(missing)}",
+                    "received_arguments": arguments
+                }
 
             # リードタイム需要の平均と標準偏差
             mu_LT = mu * LT
