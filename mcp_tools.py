@@ -20,6 +20,12 @@ from scmopt2.optinv import (
     best_distribution,
     best_histogram
 )
+from fixed_multistage import (
+    multi_stage_simulate_inventory_fixed,
+    base_stock_simulation_fixed,
+    multi_stage_base_stock_simulation_fixed,
+    initial_base_stock_level_fixed
+)
 import numpy as np
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -660,6 +666,131 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["mu", "sigma", "lead_time", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "simulate_multistage_inventory",
+            "description": "多段階サプライチェーンネットワークにおける(s,S)方策の在庫シミュレーションを実行します。複数の段階（原材料→工場→小売など）を持つシステムの在庫コストとパフォーマンスを評価します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_times": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "各段階のリードタイム配列（日）。例: [2, 3, 1]は3段階で各段階のリードタイムを表す"
+                    },
+                    "holding_costs": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "各段階の在庫保管費用配列（円/unit/日）。例: [1.0, 2.0, 5.0]"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_times", "holding_costs", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "simulate_base_stock_policy",
+            "description": "ベースストック方策（定期発注方策）のシミュレーションを実行します。毎期、在庫ポジションをベースストックレベルSまで補充する方策の性能を評価します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "需要データの配列。例: [10.5, 12.3, 8.7, ...]"
+                    },
+                    "base_stock_level": {
+                        "type": "number",
+                        "description": "ベースストックレベルS（目標在庫水準）"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "capacity": {
+                        "type": "number",
+                        "description": "生産能力上限（units/日）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：5）"
+                    }
+                },
+                "required": ["demand", "base_stock_level", "lead_time", "capacity", "holding_cost", "stockout_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_base_stock_levels",
+            "description": "サプライチェーンネットワークの各ノードにおける初期ベースストックレベルを計算します。リードタイム、需要特性、サービス水準から最適な在庫水準を決定します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {"type": "string"},
+                                "lead_time": {"type": "integer"}
+                            }
+                        },
+                        "description": "ノード情報の配列。各ノードは名前とリードタイムを持つ。例: [{\"name\": \"retailer\", \"lead_time\": 1}, {\"name\": \"warehouse\", \"lead_time\": 3}]"
+                    },
+                    "mu": {
+                        "type": "number",
+                        "description": "平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "service_level": {
+                        "type": "number",
+                        "description": "サービス水準（0-1の値、例: 0.95で95%）"
+                    }
+                },
+                "required": ["nodes", "mu", "sigma", "service_level"]
             }
         }
     }
@@ -1976,6 +2107,184 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"コスト比較可視化エラー: {str(e)}"
+            }
+
+    elif function_name == "simulate_multistage_inventory":
+        # 多段階在庫シミュレーション
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = np.array(arguments["lead_times"])
+            h = np.array(arguments["holding_costs"])
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+
+            # 修正版関数を実行
+            cost_array, I, T = multi_stage_simulate_inventory_fixed(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                s=None,  # 自動計算
+                S=None,  # 自動計算
+                b=b,
+                h=h,
+                fc=fc
+            )
+
+            # 各段階の在庫情報を整理
+            n_stages = len(LT)
+            stage_info = []
+            for i in range(n_stages):
+                stage_info.append({
+                    "stage": i + 1,
+                    "lead_time": int(LT[i]),
+                    "holding_cost": float(h[i]),
+                    "avg_inventory": float(I[:, i, :].mean()),
+                    "final_inventory": float(I[0, i, -1])
+                })
+
+            return {
+                "status": "success",
+                "simulation_type": "多段階(s,S)方策シミュレーション",
+                "parameters": {
+                    "n_stages": n_stages,
+                    "average_demand": float(mu),
+                    "demand_std_dev": float(sigma),
+                    "lead_times": LT.tolist(),
+                    "holding_costs": h.tolist(),
+                    "stockout_cost": float(b),
+                    "fixed_cost": float(fc)
+                },
+                "simulation_results": {
+                    "average_cost_per_period": float(cost_array.mean()),
+                    "cost_std_dev": float(cost_array.std()),
+                    "n_samples": n_samples,
+                    "n_periods": n_periods
+                },
+                "stage_details": stage_info,
+                "message": f"{n_stages}段階システムのシミュレーションが完了しました。平均コスト: {cost_array.mean():.2f}円/期"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"多段階シミュレーションエラー: {str(e)}"
+            }
+
+    elif function_name == "simulate_base_stock_policy":
+        # ベースストック方策シミュレーション
+        try:
+            demand = np.array(arguments["demand"])
+            S = arguments["base_stock_level"]
+            LT = arguments["lead_time"]
+            capacity = arguments["capacity"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            n_samples = arguments.get("n_samples", 5)
+            n_periods = len(demand) if len(demand) < 1000 else 100
+
+            # 修正版関数を実行
+            dC, total_cost, I = base_stock_simulation_fixed(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                demand=demand,
+                capacity=capacity,
+                LT=LT,
+                b=b,
+                h=h,
+                S=S
+            )
+
+            # 在庫統計
+            avg_inventory = float(I[I > 0].mean()) if (I > 0).any() else 0.0
+            stockout_periods = int((I < 0).sum())
+            stockout_rate = float(stockout_periods / (n_samples * n_periods))
+
+            return {
+                "status": "success",
+                "policy_type": "ベースストック方策",
+                "parameters": {
+                    "base_stock_level_S": float(S),
+                    "lead_time": int(LT),
+                    "capacity": float(capacity),
+                    "holding_cost": float(h),
+                    "stockout_cost": float(b)
+                },
+                "simulation_results": {
+                    "total_cost_per_period": total_cost,
+                    "derivative_dC_dS": float(dC),
+                    "n_samples": n_samples,
+                    "n_periods": n_periods
+                },
+                "inventory_statistics": {
+                    "average_inventory": avg_inventory,
+                    "stockout_periods": stockout_periods,
+                    "stockout_rate": stockout_rate,
+                    "final_inventory": float(I[0, -1])
+                },
+                "message": f"ベースストック方策のシミュレーション完了。総コスト: {total_cost:.2f}円/期"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"ベースストックシミュレーションエラー: {str(e)}"
+            }
+
+    elif function_name == "calculate_base_stock_levels":
+        # ベースストックレベル計算
+        try:
+            nodes = arguments["nodes"]
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            service_level = arguments["service_level"]
+
+            # サービス水準からz値を計算
+            from scipy.stats import norm
+            z = norm.ppf(service_level)
+
+            # ノード辞書を作成
+            LT_dict = {node["name"]: node["lead_time"] for node in nodes}
+
+            # 修正版関数を実行
+            S_dict, ELT_dict = initial_base_stock_level_fixed(
+                LT_dict=LT_dict,
+                mu=mu,
+                z=z,
+                sigma=sigma
+            )
+
+            # 結果を整形
+            node_results = []
+            for node in nodes:
+                name = node["name"]
+                node_results.append({
+                    "node_name": name,
+                    "lead_time": LT_dict[name],
+                    "echelon_lead_time": ELT_dict[name],
+                    "base_stock_level": float(S_dict[name]),
+                    "safety_stock": float(S_dict[name] - mu * ELT_dict[name])
+                })
+
+            return {
+                "status": "success",
+                "calculation_type": "初期ベースストックレベル計算",
+                "parameters": {
+                    "average_demand": float(mu),
+                    "demand_std_dev": float(sigma),
+                    "service_level": float(service_level),
+                    "z_value": float(z)
+                },
+                "node_results": node_results,
+                "total_nodes": len(nodes),
+                "message": f"{len(nodes)}ノードのベースストックレベルを計算しました（サービス水準: {service_level*100:.0f}%）"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"ベースストックレベル計算エラー: {str(e)}"
             }
 
     else:
