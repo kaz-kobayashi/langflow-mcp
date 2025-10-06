@@ -2178,11 +2178,36 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         # ベースストック方策シミュレーション
         try:
             demand = np.array(arguments["demand"])
-            S = arguments["base_stock_level"]
-            LT = arguments["lead_time"]
-            capacity = arguments["capacity"]
-            h = arguments["holding_cost"]
-            b = arguments["stockout_cost"]
+            S = arguments.get("base_stock_level")
+            if S is None:
+                return {
+                    "status": "error",
+                    "message": "base_stock_level（ベースストックレベル）パラメータが必要です。例: base_stock_level=50"
+                }
+            LT = arguments.get("lead_time")
+            if LT is None:
+                return {
+                    "status": "error",
+                    "message": "lead_time（リードタイム）パラメータが必要です。例: lead_time=3"
+                }
+            capacity = arguments.get("capacity")
+            if capacity is None:
+                return {
+                    "status": "error",
+                    "message": "capacity（生産能力）パラメータが必要です。例: capacity=1000"
+                }
+            h = arguments.get("holding_cost")
+            if h is None:
+                return {
+                    "status": "error",
+                    "message": "holding_cost（在庫保管費用）パラメータが必要です。例: holding_cost=1.0"
+                }
+            b = arguments.get("stockout_cost")
+            if b is None:
+                return {
+                    "status": "error",
+                    "message": "stockout_cost（品切れ費用）パラメータが必要です。例: stockout_cost=100.0"
+                }
             n_samples = arguments.get("n_samples", 5)
             n_periods = len(demand) if len(demand) < 1000 else 100
 
