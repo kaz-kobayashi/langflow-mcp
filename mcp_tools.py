@@ -16,7 +16,9 @@ from scmopt2.optinv import (
     simulate_inventory,
     optimize_qr,
     optimize_ss,
-    ww
+    ww,
+    best_distribution,
+    best_histogram
 )
 import numpy as np
 import plotly.io as pio
@@ -573,6 +575,91 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["mu", "sigma", "lead_time", "policy_type", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_best_distribution",
+            "description": "需要データに最適な確率分布を自動的に見つけてフィッティングします。正規分布、ガンマ分布、対数正規分布など複数の分布を試し、最も適合度の高いものを選択します。フィッティング結果を可視化します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "需要データの配列（例: [10, 12, 8, 15, 11, 9, 13, 10, 14, 11]）"
+                    }
+                },
+                "required": ["demand"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_demand_histogram",
+            "description": "需要データのヒストグラムを作成し、基本統計量とともに可視化します。需要の分布パターンを視覚的に理解するのに役立ちます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "需要データの配列（例: [10, 12, 8, 15, 11]）"
+                    },
+                    "nbins": {
+                        "type": "integer",
+                        "description": "ヒストグラムのビン数（デフォルト: 30）"
+                    }
+                },
+                "required": ["demand"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "compare_inventory_costs_visual",
+            "description": "複数の在庫方策のコストを棒グラフで比較可視化します。EOQ、(Q,R)、(s,S)の3つの方策のコストを並べて表示し、最適方策の選択を支援します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "mu": {
+                        "type": "number",
+                        "description": "1日あたりの平均需要量（units/日）"
+                    },
+                    "sigma": {
+                        "type": "number",
+                        "description": "需要の標準偏差"
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（日）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "stockout_cost": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit）"
+                    },
+                    "fixed_cost": {
+                        "type": "number",
+                        "description": "固定発注費用（円/回）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（日）（デフォルト：100）"
+                    }
+                },
+                "required": ["mu", "sigma", "lead_time", "holding_cost", "stockout_cost", "fixed_cost"]
             }
         }
     }
@@ -1702,6 +1789,193 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"可視化エラー: {str(e)}"
+            }
+
+    elif function_name == "find_best_distribution":
+        # 最適需要分布の自動選択
+        try:
+            demand_data = np.array(arguments["demand"])
+
+            # best_distribution関数を実行
+            # 戻り値: (fig, distribution, dist_name, params)
+            fig, dist_obj, dist_name, params = best_distribution(demand_data)
+
+            # UUIDベースのviz_idを生成
+            viz_id = str(uuid.uuid4())
+
+            # HTMLとして保存
+            html_content = fig.to_html(include_plotlyjs='cdn')
+
+            # キャッシュに保存
+            if user_id:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            return {
+                "status": "success",
+                "distribution_analysis": "最適需要分布フィッティング",
+                "best_distribution": dist_name,
+                "parameters": {
+                    "param1": float(params[0]) if len(params) > 0 else None,
+                    "param2": float(params[1]) if len(params) > 1 else None,
+                    "param3": float(params[2]) if len(params) > 2 else None
+                },
+                "visualization_id": viz_id,
+                "message": f"最適分布は {dist_name} です。フィッティング結果を可視化しました。",
+                "input_data": {
+                    "sample_size": len(demand_data),
+                    "mean": float(demand_data.mean()),
+                    "std": float(demand_data.std())
+                }
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"分布フィッティングエラー: {str(e)}"
+            }
+
+    elif function_name == "visualize_demand_histogram":
+        # 需要ヒストグラム可視化
+        try:
+            demand_data = np.array(arguments["demand"])
+            nbins = arguments.get("nbins", 30)
+
+            # best_histogram関数を実行
+            # 戻り値: (fig, stats_dict)
+            fig, stats = best_histogram(demand_data, nbins=nbins)
+
+            # UUIDベースのviz_idを生成
+            viz_id = str(uuid.uuid4())
+
+            # HTMLとして保存
+            html_content = fig.to_html(include_plotlyjs='cdn')
+
+            # キャッシュに保存
+            if user_id:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            # 基本統計量を計算
+            mean_val = float(demand_data.mean())
+            median_val = float(np.median(demand_data))
+            std_val = float(demand_data.std())
+            min_val = float(demand_data.min())
+            max_val = float(demand_data.max())
+
+            return {
+                "status": "success",
+                "visualization_type": "需要ヒストグラム",
+                "statistics": {
+                    "mean": mean_val,
+                    "median": median_val,
+                    "standard_deviation": std_val,
+                    "min": min_val,
+                    "max": max_val,
+                    "sample_size": len(demand_data),
+                    "nbins": nbins
+                },
+                "visualization_id": viz_id,
+                "message": "需要データのヒストグラムを作成しました。"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"ヒストグラム作成エラー: {str(e)}"
+            }
+
+    elif function_name == "compare_inventory_costs_visual":
+        # 在庫方策のコスト比較可視化
+        try:
+            mu = arguments["mu"]
+            sigma = arguments["sigma"]
+            LT = arguments["lead_time"]
+            h = arguments["holding_cost"]
+            b = arguments["stockout_cost"]
+            fc = arguments["fixed_cost"]
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+
+            # 3つの方策を計算
+            results = {}
+
+            # 1. EOQ
+            Q_eoq, TC_eoq = eoq(K=fc, d=mu, h=h, b=b, r=0, c=0, theta=0)
+            results["EOQ"] = float(TC_eoq / 365)  # 日あたりに変換
+
+            # 2. (Q,R)方策
+            Q_qr, R_qr = optimize_qr(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT, b=b, h=h, fc=fc
+            )
+            cost_qr, _ = simulate_inventory(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT,
+                Q=Q_qr, R=R_qr, b=b, h=h, fc=fc
+            )
+            results["(Q,R)方策"] = float(cost_qr.mean())
+
+            # 3. (s,S)方策
+            s_ss, S_ss = optimize_ss(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT, b=b, h=h, fc=fc
+            )
+            cost_ss, _ = simulate_inventory(
+                n_samples=n_samples, n_periods=n_periods,
+                mu=mu, sigma=sigma, LT=LT,
+                Q=None, R=s_ss, b=b, h=h, fc=fc, S=S_ss
+            )
+            results["(s,S)方策"] = float(cost_ss.mean())
+
+            # Plotlyで棒グラフ作成
+            fig = go.Figure(data=[
+                go.Bar(
+                    x=list(results.keys()),
+                    y=list(results.values()),
+                    text=[f"{v:.2f}円" for v in results.values()],
+                    textposition='auto',
+                )
+            ])
+
+            fig.update_layout(
+                title="在庫方策のコスト比較",
+                xaxis_title="在庫方策",
+                yaxis_title="平均コスト（円/日）",
+                template="plotly_white"
+            )
+
+            # UUIDベースのviz_idを生成
+            viz_id = str(uuid.uuid4())
+
+            # HTMLとして保存
+            html_content = fig.to_html(include_plotlyjs='cdn')
+
+            # キャッシュに保存
+            if user_id:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            # 最適方策を決定
+            best_policy = min(results, key=results.get)
+
+            return {
+                "status": "success",
+                "visualization_type": "コスト比較グラフ",
+                "costs": results,
+                "recommendation": {
+                    "best_policy": best_policy,
+                    "best_cost": results[best_policy],
+                    "savings_vs_worst": max(results.values()) - results[best_policy]
+                },
+                "visualization_id": viz_id,
+                "message": f"{best_policy}が最もコスト効率が良いです（{results[best_policy]:.2f}円/日）"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"コスト比較可視化エラー: {str(e)}"
             }
 
     else:
