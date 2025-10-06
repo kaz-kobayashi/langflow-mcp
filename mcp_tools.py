@@ -672,53 +672,6 @@ MCP_TOOLS_DEFINITION = [
     {
         "type": "function",
         "function": {
-            "name": "simulate_multistage_inventory",
-            "description": "多段階サプライチェーンネットワークにおける(s,S)方策の在庫シミュレーションを実行します。複数の段階（原材料→工場→小売など）を持つシステムの在庫コストとパフォーマンスを評価します。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "mu": {
-                        "type": "number",
-                        "description": "1日あたりの平均需要量（units/日）"
-                    },
-                    "sigma": {
-                        "type": "number",
-                        "description": "需要の標準偏差"
-                    },
-                    "lead_times": {
-                        "type": "array",
-                        "items": {"type": "integer"},
-                        "description": "各段階のリードタイム配列（日）。例: [2, 3, 1]は3段階で各段階のリードタイムを表す"
-                    },
-                    "holding_costs": {
-                        "type": "array",
-                        "items": {"type": "number"},
-                        "description": "各段階の在庫保管費用配列（円/unit/日）。例: [1.0, 2.0, 5.0]"
-                    },
-                    "stockout_cost": {
-                        "type": "number",
-                        "description": "品切れ費用（円/unit）"
-                    },
-                    "fixed_cost": {
-                        "type": "number",
-                        "description": "固定発注費用（円/回）"
-                    },
-                    "n_samples": {
-                        "type": "integer",
-                        "description": "シミュレーションサンプル数（デフォルト：10）"
-                    },
-                    "n_periods": {
-                        "type": "integer",
-                        "description": "シミュレーション期間（日）（デフォルト：100）"
-                    }
-                },
-                "required": ["mu", "sigma", "lead_times", "holding_costs", "stockout_cost", "fixed_cost"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "simulate_base_stock_policy",
             "description": "ベースストック方策（定期発注方策）のシミュレーションを実行します。毎期、在庫ポジションをベースストックレベルSまで補充する方策の性能を評価します。",
             "parameters": {
@@ -2107,71 +2060,6 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"コスト比較可視化エラー: {str(e)}"
-            }
-
-    elif function_name == "simulate_multistage_inventory":
-        # 多段階在庫シミュレーション
-        try:
-            mu = arguments["mu"]
-            sigma = arguments["sigma"]
-            LT = np.array(arguments["lead_times"])
-            h = np.array(arguments["holding_costs"])
-            b = arguments["stockout_cost"]
-            fc = arguments["fixed_cost"]
-            n_samples = arguments.get("n_samples", 10)
-            n_periods = arguments.get("n_periods", 100)
-
-            # 修正版関数を実行
-            cost_array, I, T = multi_stage_simulate_inventory_fixed(
-                n_samples=n_samples,
-                n_periods=n_periods,
-                mu=mu,
-                sigma=sigma,
-                LT=LT,
-                s=None,  # 自動計算
-                S=None,  # 自動計算
-                b=b,
-                h=h,
-                fc=fc
-            )
-
-            # 各段階の在庫情報を整理
-            n_stages = len(LT)
-            stage_info = []
-            for i in range(n_stages):
-                stage_info.append({
-                    "stage": i + 1,
-                    "lead_time": int(LT[i]),
-                    "holding_cost": float(h[i]),
-                    "avg_inventory": float(I[:, i, :].mean()),
-                    "final_inventory": float(I[0, i, -1])
-                })
-
-            return {
-                "status": "success",
-                "simulation_type": "多段階(s,S)方策シミュレーション",
-                "parameters": {
-                    "n_stages": n_stages,
-                    "average_demand": float(mu),
-                    "demand_std_dev": float(sigma),
-                    "lead_times": LT.tolist(),
-                    "holding_costs": h.tolist(),
-                    "stockout_cost": float(b),
-                    "fixed_cost": float(fc)
-                },
-                "simulation_results": {
-                    "average_cost_per_period": float(cost_array.mean()),
-                    "cost_std_dev": float(cost_array.std()),
-                    "n_samples": n_samples,
-                    "n_periods": n_periods
-                },
-                "stage_details": stage_info,
-                "message": f"{n_stages}段階システムのシミュレーションが完了しました。平均コスト: {cost_array.mean():.2f}円/期"
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": f"多段階シミュレーションエラー: {str(e)}"
             }
 
     elif function_name == "simulate_base_stock_policy":
