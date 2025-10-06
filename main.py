@@ -251,14 +251,14 @@ async def chat(
 
     return StreamingResponse(generate(), media_type="text/event-stream")
 
-@app.get("/api/visualization/{user_id}", response_class=HTMLResponse)
-async def get_visualization(user_id: int):
+@app.get("/api/visualization/{viz_id}", response_class=HTMLResponse)
+async def get_visualization(viz_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """可視化HTMLを取得"""
     try:
-        html_content = get_visualization_html(user_id)
+        html_content = get_visualization_html(current_user.id, viz_id)
         return html_content
     except KeyError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=f"Visualization not found: {str(e)}")
 
 @app.get("/health")
 async def health():

@@ -31,12 +31,20 @@ from datetime import datetime
 _optimization_cache = {}
 
 
-def get_visualization_html(user_id: int) -> str:
+def get_visualization_html(user_id: int, viz_id: str = None) -> str:
     """ユーザーの可視化HTMLを取得"""
     if user_id not in _optimization_cache:
         raise KeyError(f"No cache found for user_id: {user_id}")
 
     cache = _optimization_cache[user_id]
+
+    # viz_idが指定されている場合は、そのIDの可視化を返す
+    if viz_id:
+        if viz_id not in cache:
+            raise KeyError(f"No visualization found for viz_id: {viz_id}")
+        return cache[viz_id]
+
+    # 後方互換性: viz_idが指定されていない場合は古い動作
     if "visualization_html" not in cache:
         raise KeyError(f"No visualization_html found for user_id: {user_id}")
 
