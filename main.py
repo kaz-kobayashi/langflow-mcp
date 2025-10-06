@@ -252,11 +252,16 @@ async def chat(
     return StreamingResponse(generate(), media_type="text/event-stream")
 
 @app.get("/api/visualization/{viz_id}", response_class=HTMLResponse)
-async def get_visualization(viz_id: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """可視化HTMLを取得"""
+async def get_visualization(viz_id: str):
+    """可視化HTMLを取得（認証不要 - viz_idはUUIDで推測困難）"""
     try:
-        html_content = get_visualization_html(current_user.id, viz_id)
-        return html_content
+        # すべてのユーザーのキャッシュから検索
+        from mcp_tools import _optimization_cache
+        for user_id, cache in _optimization_cache.items():
+            if viz_id in cache:
+                return cache[viz_id]
+
+        raise KeyError(f"Visualization not found: {viz_id}")
     except KeyError as e:
         raise HTTPException(status_code=404, detail=f"Visualization not found: {str(e)}")
 

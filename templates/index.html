@@ -265,9 +265,14 @@
                                             const funcResult = parsed.function_call.result;
 
                                             let funcDisplay;
-                                            // Check if result contains visualization URL
+                                            // Check if result contains visualization URL or ID
                                             if (funcResult.visualization_url) {
                                                 const vizUrl = funcResult.visualization_url;
+                                                const message = funcResult.message || '可視化結果を表示';
+                                                funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
+                                            } else if (funcResult.visualization_id) {
+                                                const vizId = funcResult.visualization_id;
+                                                const vizUrl = `/api/visualization/${vizId}`;
                                                 const message = funcResult.message || '可視化結果を表示';
                                                 funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
                                             } else {

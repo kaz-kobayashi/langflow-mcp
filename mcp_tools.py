@@ -800,14 +800,18 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # HTMLをメモリ上で生成して、キャッシュに保存
             html_content = pio.to_html(fig, include_plotlyjs='cdn')
 
+            # UUIDベースのviz_idを生成
+            viz_id = str(uuid.uuid4())
+
             # キャッシュにHTML保存（後でエンドポイントから取得）
-            _optimization_cache[user_id]["visualization_html"] = html_content
+            _optimization_cache[user_id][viz_id] = html_content
 
             # 可視化用URLを生成
-            viz_url = f"/api/visualization/{user_id}"
+            viz_url = f"/api/visualization/{viz_id}"
 
             return {
                 "status": "success",
+                "visualization_id": viz_id,
                 "visualization_url": viz_url,
                 "message": "可視化が完成しました。リンクをクリックして確認してください。",
                 "total_cost": float(best_sol.get("best_cost", 0))
