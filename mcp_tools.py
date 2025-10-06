@@ -26,6 +26,7 @@ from fixed_multistage import (
     multi_stage_base_stock_simulation_fixed,
     initial_base_stock_level_fixed
 )
+from forecast_utils import forecast_demand as forecast_demand_util
 import numpy as np
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -744,6 +745,76 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["nodes", "mu", "sigma", "service_level"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "forecast_demand",
+            "description": "過去の需要データから未来の需要を予測します。移動平均法、指数平滑法、線形トレンド法の3つの手法をサポートし、予測区間も計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand_history": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "過去の需要データ配列。例: [10, 12, 8, 15, 11, 9, 13]"
+                    },
+                    "forecast_periods": {
+                        "type": "integer",
+                        "description": "予測する期間数（デフォルト：7）"
+                    },
+                    "method": {
+                        "type": "string",
+                        "enum": ["moving_average", "exponential_smoothing", "linear_trend"],
+                        "description": "予測手法。moving_average（移動平均法）、exponential_smoothing（指数平滑法）、linear_trend（線形トレンド法）から選択"
+                    },
+                    "confidence_level": {
+                        "type": "number",
+                        "description": "信頼水準（0-1の値、例: 0.95で95%信頼区間）。デフォルト：0.95"
+                    },
+                    "window": {
+                        "type": "integer",
+                        "description": "移動平均法の窓サイズ（moving_averageの場合のみ使用）"
+                    },
+                    "alpha": {
+                        "type": "number",
+                        "description": "指数平滑法の平滑化パラメータ（0-1、exponential_smoothingの場合のみ使用）。デフォルト：0.3"
+                    }
+                },
+                "required": ["demand_history"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_forecast",
+            "description": "需要予測結果を時系列グラフとして可視化します。過去データ、予測値、信頼区間を1つのグラフで表示します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand_history": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "過去の需要データ配列"
+                    },
+                    "forecast_periods": {
+                        "type": "integer",
+                        "description": "予測する期間数（デフォルト：7）"
+                    },
+                    "method": {
+                        "type": "string",
+                        "enum": ["moving_average", "exponential_smoothing", "linear_trend"],
+                        "description": "予測手法"
+                    },
+                    "confidence_level": {
+                        "type": "number",
+                        "description": "信頼水準（デフォルト：0.95）"
+                    }
+                },
+                "required": ["demand_history"]
             }
         }
     }
@@ -2198,6 +2269,166 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"ベースストックレベル計算エラー: {str(e)}"
+            }
+
+    elif function_name == "forecast_demand":
+        # 需要予測
+        try:
+            demand_history = arguments["demand_history"]
+            forecast_periods = arguments.get("forecast_periods", 7)
+            method = arguments.get("method", "exponential_smoothing")
+            confidence_level = arguments.get("confidence_level", 0.95)
+
+            # オプションパラメータ
+            kwargs = {}
+            if "window" in arguments:
+                kwargs["window"] = arguments["window"]
+            if "alpha" in arguments:
+                kwargs["alpha"] = arguments["alpha"]
+
+            # 予測実行
+            result = forecast_demand_util(
+                demand_history=demand_history,
+                forecast_periods=forecast_periods,
+                method=method,
+                confidence_level=confidence_level,
+                **kwargs
+            )
+
+            return {
+                "status": "success",
+                "forecast_type": "需要予測",
+                "forecast": result["forecast"],
+                "lower_bound": result["lower_bound"],
+                "upper_bound": result["upper_bound"],
+                "confidence_level": result["confidence_level"],
+                "method_info": result["method_info"],
+                "historical_stats": result["historical_stats"],
+                "forecast_periods": forecast_periods,
+                "message": f"{result['method_info']['method']}により{forecast_periods}期間の需要予測を行いました"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"需要予測エラー: {str(e)}"
+            }
+
+    elif function_name == "visualize_forecast":
+        # 需要予測の可視化
+        try:
+            demand_history = arguments["demand_history"]
+            forecast_periods = arguments.get("forecast_periods", 7)
+            method = arguments.get("method", "exponential_smoothing")
+            confidence_level = arguments.get("confidence_level", 0.95)
+
+            # オプションパラメータ
+            kwargs = {}
+            if "window" in arguments:
+                kwargs["window"] = arguments["window"]
+            if "alpha" in arguments:
+                kwargs["alpha"] = arguments["alpha"]
+
+            # 予測実行
+            result = forecast_demand_util(
+                demand_history=demand_history,
+                forecast_periods=forecast_periods,
+                method=method,
+                confidence_level=confidence_level,
+                **kwargs
+            )
+
+            # 時系列データの準備
+            n_history = len(demand_history)
+            history_x = list(range(1, n_history + 1))
+            forecast_x = list(range(n_history + 1, n_history + forecast_periods + 1))
+
+            # Plotlyグラフ作成
+            fig = go.Figure()
+
+            # 過去データ
+            fig.add_trace(go.Scatter(
+                x=history_x,
+                y=demand_history,
+                mode='lines+markers',
+                name='過去の需要',
+                line=dict(color='blue', width=2),
+                marker=dict(size=6)
+            ))
+
+            # 予測値
+            fig.add_trace(go.Scatter(
+                x=forecast_x,
+                y=result["forecast"],
+                mode='lines+markers',
+                name='予測値',
+                line=dict(color='red', width=2, dash='dash'),
+                marker=dict(size=6, symbol='diamond')
+            ))
+
+            # 信頼区間（帯グラフ）
+            fig.add_trace(go.Scatter(
+                x=forecast_x + forecast_x[::-1],
+                y=result["upper_bound"] + result["lower_bound"][::-1],
+                fill='toself',
+                fillcolor='rgba(255,0,0,0.2)',
+                line=dict(color='rgba(255,255,255,0)'),
+                name=f'{int(confidence_level*100)}%信頼区間',
+                showlegend=True
+            ))
+
+            # レイアウト設定
+            method_name = result["method_info"]["method"]
+            fig.update_layout(
+                title=f"需要予測結果（{method_name}）",
+                xaxis_title="期間",
+                yaxis_title="需要量",
+                template="plotly_white",
+                hovermode='x unified',
+                legend=dict(
+                    yanchor="top",
+                    y=0.99,
+                    xanchor="left",
+                    x=0.01
+                )
+            )
+
+            # 境界線を追加（過去と未来の境界）
+            fig.add_vline(
+                x=n_history + 0.5,
+                line_dash="dot",
+                line_color="gray",
+                annotation_text="予測開始",
+                annotation_position="top"
+            )
+
+            # UUIDベースのviz_idを生成
+            viz_id = str(uuid.uuid4())
+
+            # HTMLとして保存
+            html_content = fig.to_html(include_plotlyjs='cdn')
+
+            # キャッシュに保存
+            if user_id:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            return {
+                "status": "success",
+                "visualization_type": "需要予測グラフ",
+                "visualization_id": viz_id,
+                "method": method_name,
+                "forecast_summary": {
+                    "forecast_periods": forecast_periods,
+                    "average_forecast": float(np.mean(result["forecast"])),
+                    "historical_average": result["historical_stats"]["mean"]
+                },
+                "message": f"{method_name}による需要予測を可視化しました"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"需要予測可視化エラー: {str(e)}"
             }
 
     else:
