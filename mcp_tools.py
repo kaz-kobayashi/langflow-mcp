@@ -27,6 +27,7 @@ from fixed_multistage import (
     initial_base_stock_level_fixed
 )
 from forecast_utils import forecast_demand as forecast_demand_util
+from periodic_optimizer import optimize_periodic_inventory as optimize_periodic_util, prepare_stage_bom_data
 import numpy as np
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -815,6 +816,90 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["demand_history"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_periodic_inventory",
+            "description": "定期発注方策の最適化（Adam最適化アルゴリズムによる基在庫レベル最適化）。サプライチェーンネットワークの各ステージの基在庫レベルを最適化し、総コストを最小化します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "network_data": {
+                        "type": "object",
+                        "description": "ネットワーク定義（stagesとconnectionsを含む）",
+                        "properties": {
+                            "stages": {
+                                "type": "array",
+                                "description": "ステージ情報のリスト",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {"type": "string", "description": "ステージ名"},
+                                        "average_demand": {"type": "number", "description": "平均需要"},
+                                        "sigma": {"type": "number", "description": "需要の標準偏差"},
+                                        "h": {"type": "number", "description": "在庫保管コスト"},
+                                        "b": {"type": "number", "description": "欠品コスト"},
+                                        "z": {"type": "number", "description": "安全係数"},
+                                        "capacity": {"type": "number", "description": "生産能力"},
+                                        "net_replenishment_time": {"type": "number", "description": "正味補充時間"},
+                                        "x": {"type": "number", "description": "X座標（可視化用）"},
+                                        "y": {"type": "number", "description": "Y座標（可視化用）"}
+                                    }
+                                }
+                            },
+                            "connections": {
+                                "type": "array",
+                                "description": "接続情報のリスト",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "child": {"type": "string", "description": "子ノード名"},
+                                        "parent": {"type": "string", "description": "親ノード名"},
+                                        "units": {"type": "number", "description": "使用単位数"},
+                                        "allocation": {"type": "number", "description": "配分比率"}
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "max_iter": {
+                        "type": "integer",
+                        "description": "最大反復回数（デフォルト：100）"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（デフォルト：100）"
+                    },
+                    "learning_rate": {
+                        "type": "number",
+                        "description": "学習率（デフォルト：1.0）"
+                    }
+                },
+                "required": ["network_data"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_periodic_optimization",
+            "description": "定期発注最適化の結果を可視化します。最適化の学習曲線、コストの推移、基在庫レベルの変化をインタラクティブなグラフで表示します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "optimization_result": {
+                        "type": "object",
+                        "description": "optimize_periodic_inventoryの実行結果"
+                    }
+                },
+                "required": ["optimization_result"]
             }
         }
     }
@@ -2429,6 +2514,134 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"需要予測可視化エラー: {str(e)}"
+            }
+
+    elif function_name == "optimize_periodic_inventory":
+        try:
+            network_data = arguments["network_data"]
+            max_iter = arguments.get("max_iter", 100)
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+            learning_rate = arguments.get("learning_rate", 1.0)
+
+            # stage_dfとbom_dfを準備
+            stage_df, bom_df = prepare_stage_bom_data(network_data)
+
+            # 最適化実行
+            result = optimize_periodic_util(
+                stage_df=stage_df,
+                bom_df=bom_df,
+                max_iter=max_iter,
+                n_samples=n_samples,
+                n_periods=n_periods,
+                learning_rate=learning_rate
+            )
+
+            # DataFrameをJSONシリアライズ可能な形式に変換
+            stage_result = result["stage_df"].to_dict(orient="records")
+
+            return {
+                "status": "success",
+                "optimization_type": "定期発注最適化",
+                "best_cost": result["best_cost"],
+                "converged": result["converged"],
+                "iterations": result["final_iteration"],
+                "stages": stage_result,
+                "echelon_lead_time": result["echelon_lead_time"],
+                "optimization_history": result["optimization_history"],
+                "message": f"最適化完了: {result['final_iteration']}回の反復で総コスト{result['best_cost']:.2f}を達成"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"定期発注最適化エラー: {str(e)}"
+            }
+
+    elif function_name == "visualize_periodic_optimization":
+        try:
+            opt_result = arguments["optimization_result"]
+
+            if opt_result.get("status") != "success":
+                return {
+                    "status": "error",
+                    "message": "最適化結果が成功状態ではありません"
+                }
+
+            history = opt_result["optimization_history"]
+
+            # コスト推移のグラフ
+            fig = go.Figure()
+
+            fig.add_trace(go.Scatter(
+                x=history["iteration"],
+                y=history["cost"],
+                mode='lines+markers',
+                name='総コスト',
+                line=dict(color='#1f77b4', width=2),
+                marker=dict(size=6)
+            ))
+
+            fig.update_layout(
+                title='定期発注最適化: コスト推移',
+                xaxis_title='反復回数',
+                yaxis_title='総コスト',
+                template='plotly_white',
+                hovermode='x unified',
+                height=400
+            )
+
+            # グラフを保存
+            viz_id = str(uuid.uuid4())
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+            pio.write_html(fig, file_path)
+
+            # 勾配ノルム推移のグラフ
+            fig2 = go.Figure()
+
+            fig2.add_trace(go.Scatter(
+                x=history["iteration"],
+                y=history["gradient_norm"],
+                mode='lines+markers',
+                name='勾配ノルム',
+                line=dict(color='#ff7f0e', width=2),
+                marker=dict(size=6)
+            ))
+
+            fig2.update_layout(
+                title='定期発注最適化: 勾配ノルム推移',
+                xaxis_title='反復回数',
+                yaxis_title='勾配ノルム',
+                yaxis_type='log',
+                template='plotly_white',
+                hovermode='x unified',
+                height=400
+            )
+
+            viz_id2 = str(uuid.uuid4())
+            file_path2 = os.path.join(output_dir, f"{viz_id2}.html")
+            pio.write_html(fig2, file_path2)
+
+            return {
+                "status": "success",
+                "visualization_type": "定期発注最適化グラフ",
+                "cost_chart_id": viz_id,
+                "gradient_chart_id": viz_id2,
+                "summary": {
+                    "initial_cost": float(history["cost"][0]),
+                    "final_cost": float(history["cost"][-1]),
+                    "cost_reduction": float(history["cost"][0] - history["cost"][-1]),
+                    "iterations": len(history["iteration"]),
+                    "converged": opt_result["converged"]
+                },
+                "message": "定期発注最適化の結果を可視化しました"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"定期発注最適化可視化エラー: {str(e)}"
             }
 
     else:
