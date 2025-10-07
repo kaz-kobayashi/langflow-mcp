@@ -198,11 +198,8 @@ def prepare_stage_bom_data(network_data):
     stage_df = pd.DataFrame(stages)
     bom_df = pd.DataFrame(connections)
 
-    # 必須カラムの確認
-    required_stage_cols = [
-        "name", "average_demand", "sigma", "h", "b", "z",
-        "capacity", "net_replenishment_time", "x", "y"
-    ]
+    # 必須カラムの確認（最小限）
+    required_stage_cols = ["name", "average_demand", "sigma", "h", "b", "capacity", "net_replenishment_time"]
     required_bom_cols = ["child", "parent", "units", "allocation"]
 
     for col in required_stage_cols:
@@ -212,5 +209,17 @@ def prepare_stage_bom_data(network_data):
     for col in required_bom_cols:
         if col not in bom_df.columns:
             raise ValueError(f"bom_dfに必須カラム '{col}' がありません")
+
+    # オプションカラムのデフォルト値設定
+    if 'z' not in stage_df.columns:
+        # 安全係数のデフォルト: b/(b+h)に基づく正規分布の分位点
+        from scipy.stats import norm
+        stage_df['z'] = stage_df.apply(lambda row: norm.ppf(row['b'] / (row['b'] + row['h'])), axis=1)
+
+    if 'x' not in stage_df.columns:
+        stage_df['x'] = range(len(stage_df))
+
+    if 'y' not in stage_df.columns:
+        stage_df['y'] = 0
 
     return stage_df, bom_df

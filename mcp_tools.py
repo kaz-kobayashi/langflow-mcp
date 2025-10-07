@@ -842,12 +842,13 @@ MCP_TOOLS_DEFINITION = [
                                         "sigma": {"type": "number", "description": "需要の標準偏差"},
                                         "h": {"type": "number", "description": "在庫保管コスト"},
                                         "b": {"type": "number", "description": "欠品コスト"},
-                                        "z": {"type": "number", "description": "安全係数"},
+                                        "z": {"type": "number", "description": "安全係数（オプション：未指定時は自動計算）"},
                                         "capacity": {"type": "number", "description": "生産能力"},
                                         "net_replenishment_time": {"type": "number", "description": "正味補充時間"},
-                                        "x": {"type": "number", "description": "X座標（可視化用）"},
-                                        "y": {"type": "number", "description": "Y座標（可視化用）"}
-                                    }
+                                        "x": {"type": "number", "description": "X座標（オプション：可視化用）"},
+                                        "y": {"type": "number", "description": "Y座標（オプション：可視化用）"}
+                                    },
+                                    "required": ["name", "average_demand", "sigma", "h", "b", "capacity", "net_replenishment_time"]
                                 }
                             },
                             "connections": {
