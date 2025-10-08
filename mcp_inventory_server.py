@@ -19,6 +19,13 @@ from scmopt2.optinv import (
     eoq,
     fit_demand
 )
+from eoq_calculator import (
+    calculate_eoq as calc_eoq_basic,
+    calculate_eoq_with_incremental_discount,
+    calculate_eoq_with_all_units_discount,
+    visualize_eoq_analysis,
+    visualize_eoq_with_discount
+)
 import pandas as pd
 import json
 from openpyxl import load_workbook, Workbook
@@ -33,39 +40,83 @@ def calculate_eoq(
     K: float,
     d: float,
     h: float,
-    b: float = 100.0,
-    r: float = 0.0,
-    c: float = 0.0,
-    theta: float = 0.0
+    b: float = None
 ) -> dict:
     """
-    経済発注量（EOQ）を計算
+    基本的な経済発注量（EOQ）を計算
+
+    Args:
+        K: 発注固定費用（円/回）
+        d: 平均需要量（units/日）
+        h: 在庫保管費用（円/unit/日）
+        b: 品切れ費用（円/unit/日）- Noneの場合はバックオーダーなし
+
+    Returns:
+        dict: EOQ計算結果（最適発注量など）
+    """
+    return calc_eoq_basic(K=K, d=d, h=h, b=b)
+
+
+@mcp.tool()
+def calculate_eoq_incremental_discount(
+    K: float,
+    d: float,
+    h: float,
+    b: float,
+    r: float,
+    unit_costs: list,
+    quantity_breaks: list
+) -> dict:
+    """
+    増分数量割引対応のEOQを計算
 
     Args:
         K: 発注固定費用（円/回）
         d: 平均需要量（units/日）
         h: 在庫保管費用（円/unit/日）
         b: 品切れ費用（円/unit/日）
-        r: 割引率（デフォルト0）
-        c: 変動費用（デフォルト0）
-        theta: その他のパラメータ（デフォルト0）
+        r: 割引率
+        unit_costs: 各価格帯の単価リスト [c0, c1, c2, ...]
+        quantity_breaks: 各価格帯の最小発注量 [θ0, θ1, θ2, ...]
 
     Returns:
-        dict: EOQ計算結果（最適発注量、コストなど）
+        dict: EOQ計算結果（最適発注量、総コスト、選択された価格帯など）
     """
-    result = eoq(K=K, d=d, h=h, b=b, r=r, c=c, theta=theta)
+    return calculate_eoq_with_incremental_discount(
+        K=K, d=d, h=h, b=b, r=r,
+        unit_costs=unit_costs, quantity_breaks=quantity_breaks
+    )
 
-    return {
-        "optimal_order_quantity": float(result["Q*"]) if "Q*" in result else None,
-        "optimal_reorder_point": float(result["r*"]) if "r*" in result else None,
-        "total_cost": float(result["TC*"]) if "TC*" in result else None,
-        "parameters": {
-            "fixed_order_cost": K,
-            "average_demand": d,
-            "holding_cost": h,
-            "stockout_cost": b
-        }
-    }
+
+@mcp.tool()
+def calculate_eoq_all_units_discount(
+    K: float,
+    d: float,
+    h: float,
+    b: float,
+    r: float,
+    unit_costs: list,
+    quantity_breaks: list
+) -> dict:
+    """
+    全単位数量割引対応のEOQを計算
+
+    Args:
+        K: 発注固定費用（円/回）
+        d: 平均需要量（units/日）
+        h: 在庫保管費用（円/unit/日）
+        b: 品切れ費用（円/unit/日）
+        r: 割引率
+        unit_costs: 各価格帯の単価リスト [c0, c1, c2, ...]
+        quantity_breaks: 各価格帯の最小発注量 [θ0, θ1, θ2, ...]
+
+    Returns:
+        dict: EOQ計算結果（最適発注量、総コスト、選択された価格帯など）
+    """
+    return calculate_eoq_with_all_units_discount(
+        K=K, d=d, h=h, b=b, r=r,
+        unit_costs=unit_costs, quantity_breaks=quantity_breaks
+    )
 
 
 @mcp.tool()

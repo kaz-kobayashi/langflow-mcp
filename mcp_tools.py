@@ -29,6 +29,13 @@ from fixed_multistage import (
 from forecast_utils import forecast_demand as forecast_demand_util
 from periodic_optimizer import optimize_periodic_inventory as optimize_periodic_util, prepare_stage_bom_data
 from network_visualizer import visualize_safety_stock_network, prepare_network_visualization_data
+from eoq_calculator import (
+    calculate_eoq as calc_eoq_basic,
+    calculate_eoq_with_incremental_discount,
+    calculate_eoq_with_all_units_discount,
+    visualize_eoq_analysis,
+    visualize_eoq_with_discount
+)
 import numpy as np
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -919,6 +926,121 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["optimization_result"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_eoq_incremental_discount",
+            "description": "増分数量割引対応のEOQを計算します。発注量に応じて単価が段階的に安くなる場合の最適発注量を算出します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "K": {
+                        "type": "number",
+                        "description": "発注固定費用（円/回）"
+                    },
+                    "d": {
+                        "type": "number",
+                        "description": "平均需要量（units/日）"
+                    },
+                    "h": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "b": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit/日）"
+                    },
+                    "r": {
+                        "type": "number",
+                        "description": "割引率"
+                    },
+                    "unit_costs": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "各価格帯の単価リスト [c0, c1, c2, ...]"
+                    },
+                    "quantity_breaks": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "各価格帯の最小発注量 [θ0, θ1, θ2, ...]"
+                    }
+                },
+                "required": ["K", "d", "h", "b", "r", "unit_costs", "quantity_breaks"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_eoq_all_units_discount",
+            "description": "全単位数量割引対応のEOQを計算します。発注量に応じて全数量の単価が安くなる場合の最適発注量を算出します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "K": {
+                        "type": "number",
+                        "description": "発注固定費用（円/回）"
+                    },
+                    "d": {
+                        "type": "number",
+                        "description": "平均需要量（units/日）"
+                    },
+                    "h": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "b": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit/日）"
+                    },
+                    "r": {
+                        "type": "number",
+                        "description": "割引率"
+                    },
+                    "unit_costs": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "各価格帯の単価リスト [c0, c1, c2, ...]"
+                    },
+                    "quantity_breaks": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "description": "各価格帯の最小発注量 [θ0, θ1, θ2, ...]"
+                    }
+                },
+                "required": ["K", "d", "h", "b", "r", "unit_costs", "quantity_breaks"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_eoq",
+            "description": "EOQ分析の総コスト曲線を可視化します。発注量とコストの関係をグラフで表示します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "K": {
+                        "type": "number",
+                        "description": "発注固定費用（円/回）"
+                    },
+                    "d": {
+                        "type": "number",
+                        "description": "平均需要量（units/日）"
+                    },
+                    "h": {
+                        "type": "number",
+                        "description": "在庫保管費用（円/unit/日）"
+                    },
+                    "b": {
+                        "type": "number",
+                        "description": "品切れ費用（円/unit/日）"
+                    }
+                },
+                "required": ["K", "d", "h", "b"]
             }
         }
     }
@@ -2720,6 +2842,92 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"ネットワーク可視化エラー: {str(e)}"
+            }
+
+    elif function_name == "calculate_eoq_incremental_discount":
+        try:
+            result = calculate_eoq_with_incremental_discount(
+                K=arguments["K"],
+                d=arguments["d"],
+                h=arguments["h"],
+                b=arguments["b"],
+                r=arguments["r"],
+                unit_costs=arguments["unit_costs"],
+                quantity_breaks=arguments["quantity_breaks"]
+            )
+            return {
+                "status": "success",
+                **result
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"増分数量割引EOQ計算エラー: {str(e)}"
+            }
+
+    elif function_name == "calculate_eoq_all_units_discount":
+        try:
+            result = calculate_eoq_with_all_units_discount(
+                K=arguments["K"],
+                d=arguments["d"],
+                h=arguments["h"],
+                b=arguments["b"],
+                r=arguments["r"],
+                unit_costs=arguments["unit_costs"],
+                quantity_breaks=arguments["quantity_breaks"]
+            )
+            return {
+                "status": "success",
+                **result
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"全単位数量割引EOQ計算エラー: {str(e)}"
+            }
+
+    elif function_name == "visualize_eoq":
+        try:
+            fig = visualize_eoq_analysis(
+                K=arguments["K"],
+                d=arguments["d"],
+                h=arguments["h"],
+                b=arguments.get("b")
+            )
+
+            # グラフを保存
+            viz_id = str(uuid.uuid4())
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+            pio.write_html(fig, file_path)
+
+            # ユーザーキャッシュに保存
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
+
+            # 基本EOQ結果も計算
+            eoq_result = calc_eoq_basic(
+                K=arguments["K"],
+                d=arguments["d"],
+                h=arguments["h"],
+                b=arguments.get("b")
+            )
+
+            return {
+                "status": "success",
+                "visualization_type": "EOQ分析グラフ",
+                "visualization_id": viz_id,
+                "optimal_order_quantity": eoq_result["optimal_order_quantity"],
+                "message": "EOQ分析を可視化しました"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"EOQ可視化エラー: {str(e)}"
             }
 
     else:
