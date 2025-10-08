@@ -3004,8 +3004,28 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             items_data = json.loads(arguments["items_data"])
             bom_data = json.loads(arguments["bom_data"])
 
+            # カラム名を標準形式に変換
+            for item in items_data:
+                if 'avg_demand' in item and 'average_demand' not in item:
+                    item['average_demand'] = item.pop('avg_demand')
+                if 'demand_std' in item and 'sigma' not in item:
+                    item['sigma'] = item.pop('demand_std')
+                if 'holding_cost' in item and 'h' not in item:
+                    item['h'] = item.pop('holding_cost')
+                if 'stockout_cost' in item and 'b' not in item:
+                    item['b'] = item.pop('stockout_cost')
+                # デフォルト値の設定
+                if 'capacity' not in item:
+                    item['capacity'] = 10000
+                if 'net_replenishment_time' not in item:
+                    item['net_replenishment_time'] = item.get('process_time', 1)
+
             # DataFrameに変換
-            stage_df, bom_df = prepare_stage_bom_data(items_data, bom_data)
+            network_data = {
+                "stages": items_data,
+                "connections": bom_data
+            }
+            stage_df, bom_df = prepare_stage_bom_data(network_data)
 
             # 学習率探索
             lr_result = find_optimal_learning_rate(
@@ -3051,8 +3071,28 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             items_data = json.loads(arguments["items_data"])
             bom_data = json.loads(arguments["bom_data"])
 
+            # カラム名を標準形式に変換
+            for item in items_data:
+                if 'avg_demand' in item and 'average_demand' not in item:
+                    item['average_demand'] = item.pop('avg_demand')
+                if 'demand_std' in item and 'sigma' not in item:
+                    item['sigma'] = item.pop('demand_std')
+                if 'holding_cost' in item and 'h' not in item:
+                    item['h'] = item.pop('holding_cost')
+                if 'stockout_cost' in item and 'b' not in item:
+                    item['b'] = item.pop('stockout_cost')
+                # デフォルト値の設定
+                if 'capacity' not in item:
+                    item['capacity'] = 10000
+                if 'net_replenishment_time' not in item:
+                    item['net_replenishment_time'] = item.get('process_time', 1)
+
             # DataFrameに変換
-            stage_df, bom_df = prepare_stage_bom_data(items_data, bom_data)
+            network_data = {
+                "stages": items_data,
+                "connections": bom_data
+            }
+            stage_df, bom_df = prepare_stage_bom_data(network_data)
 
             # Fit One Cycle最適化
             result = optimize_with_one_cycle(
