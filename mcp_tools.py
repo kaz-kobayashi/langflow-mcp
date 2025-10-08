@@ -2743,6 +2743,30 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             n_periods = arguments.get("n_periods", 100)
             learning_rate = arguments.get("learning_rate", 1.0)
 
+            # BOMデータのカラム名を標準形式に変換とデフォルト値設定
+            connections = network_data.get("connections", [])
+            for bom in connections:
+                # 'quantity' を 'units' に変換
+                if 'quantity' in bom and 'units' not in bom:
+                    bom['units'] = bom.pop('quantity')
+                # デフォルト値の設定
+                if 'units' not in bom:
+                    bom['units'] = 1
+                if 'allocation' not in bom:
+                    bom['allocation'] = 1.0
+
+            # stagesデータのカラム名変換
+            stages = network_data.get("stages", [])
+            for item in stages:
+                if 'avg_demand' in item and 'average_demand' not in item:
+                    item['average_demand'] = item.pop('avg_demand')
+                if 'demand_std' in item and 'sigma' not in item:
+                    item['sigma'] = item.pop('demand_std')
+                if 'holding_cost' in item and 'h' not in item:
+                    item['h'] = item.pop('holding_cost')
+                if 'stockout_cost' in item and 'b' not in item:
+                    item['b'] = item.pop('stockout_cost')
+
             # stage_dfとbom_dfを準備
             stage_df, bom_df = prepare_stage_bom_data(network_data)
 
