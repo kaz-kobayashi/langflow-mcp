@@ -1275,7 +1275,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
         # ネットワーク構築
         try:
-            G = prepare_opt_for_messa(wb)
+            G, ProcTime, LTUB, z, mu, sigma, h = prepare_opt_for_messa(wb)
 
             # ネットワーク情報抽出
             nodes_info = []

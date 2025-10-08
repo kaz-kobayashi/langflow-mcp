@@ -158,9 +158,9 @@ def prepare_opt_for_messa(wb):
             mu[v] = total
             sigma[v] = np.sqrt(total_square)
             
-    for i in range(len(G)):
-        if mu[i]<=0.000001: 
-            raise ValueError(f"{i}番目のデータエラー：需要は正の数でなければなりません．")
+    # 少なくとも1つのノードは正の需要を持つ必要がある（最終製品）
+    if all(mu[i] <= 0.000001 for i in range(len(G))):
+        raise ValueError("エラー：少なくとも1つの品目に正の需要が必要です．")
             
     return G, ProcTime,  LTUB, z, mu, sigma, h
 
