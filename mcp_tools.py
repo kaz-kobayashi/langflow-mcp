@@ -28,6 +28,7 @@ from fixed_multistage import (
 )
 from forecast_utils import forecast_demand as forecast_demand_util
 from periodic_optimizer import optimize_periodic_inventory as optimize_periodic_util, prepare_stage_bom_data
+from network_visualizer import visualize_safety_stock_network, prepare_network_visualization_data
 import numpy as np
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -903,6 +904,23 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["optimization_result"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_safety_stock_network",
+            "description": "安全在庫配置ネットワークを可視化します。optimize_safety_stock_allocationの結果をインタラクティブなネットワーク図で表示します。ノードサイズは正味補充時間（NRT）、色は保証リードタイムを表します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "optimization_result": {
+                        "type": "object",
+                        "description": "optimize_safety_stock_allocationの実行結果"
+                    }
+                },
+                "required": ["optimization_result"]
+            }
+        }
     }
 ]
 
@@ -1015,10 +1033,20 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     "lead_time": float(best_sol["best_MinLT"][idx])
                 })
 
+            # posをシリアライズ可能な形式に変換
+            pos_data = {int(k): list(v) for k, v in pos.items()}
+
             return {
                 "status": "success",
                 "optimization_results": result_data,
-                "total_cost": float(best_sol.get("best_cost", 0))
+                "total_cost": float(best_sol.get("best_cost", 0)),
+                "items": items,
+                "bom": bom,
+                "pos_data": pos_data,
+                "graph_info": {
+                    "num_nodes": len(G.nodes()),
+                    "num_edges": len(G.edges())
+                }
             }
         except Exception as e:
             return {
@@ -2643,6 +2671,55 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"定期発注最適化可視化エラー: {str(e)}"
+            }
+
+    elif function_name == "visualize_safety_stock_network":
+        try:
+            opt_result = arguments["optimization_result"]
+
+            if opt_result.get("status") != "success":
+                return {
+                    "status": "error",
+                    "message": "最適化結果が成功状態ではありません"
+                }
+
+            # 可視化データの準備
+            viz_data = prepare_network_visualization_data(opt_result)
+
+            # ネットワーク図の生成
+            fig = visualize_safety_stock_network(
+                G=viz_data["G"],
+                pos=viz_data["pos"],
+                NRT=viz_data["NRT"],
+                MaxLI=viz_data["MaxLI"],
+                MinLT=viz_data["MinLT"],
+                stage_names=viz_data["stage_names"]
+            )
+
+            # グラフを保存
+            viz_id = str(uuid.uuid4())
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+            pio.write_html(fig, file_path)
+
+            return {
+                "status": "success",
+                "visualization_type": "安全在庫配置ネットワーク図",
+                "visualization_id": viz_id,
+                "network_summary": {
+                    "num_stages": len(viz_data["stage_names"]),
+                    "num_connections": viz_data["G"].number_of_edges(),
+                    "total_safety_stock": float(np.sum(viz_data["MaxLI"])),
+                    "avg_lead_time": float(np.mean(viz_data["MinLT"]))
+                },
+                "message": "安全在庫配置ネットワークを可視化しました"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"ネットワーク可視化エラー: {str(e)}"
             }
 
     else:
