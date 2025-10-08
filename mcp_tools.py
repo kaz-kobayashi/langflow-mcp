@@ -3020,6 +3020,17 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 if 'net_replenishment_time' not in item:
                     item['net_replenishment_time'] = item.get('process_time', 1)
 
+            # BOMデータのカラム名を標準形式に変換とデフォルト値設定
+            for bom in bom_data:
+                # 'quantity' を 'units' に変換
+                if 'quantity' in bom and 'units' not in bom:
+                    bom['units'] = bom.pop('quantity')
+                # デフォルト値の設定
+                if 'units' not in bom:
+                    bom['units'] = 1
+                if 'allocation' not in bom:
+                    bom['allocation'] = 1.0
+
             # DataFrameに変換
             network_data = {
                 "stages": items_data,
@@ -3086,6 +3097,17 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     item['capacity'] = 10000
                 if 'net_replenishment_time' not in item:
                     item['net_replenishment_time'] = item.get('process_time', 1)
+
+            # BOMデータのカラム名を標準形式に変換とデフォルト値設定
+            for bom in bom_data:
+                # 'quantity' を 'units' に変換
+                if 'quantity' in bom and 'units' not in bom:
+                    bom['units'] = bom.pop('quantity')
+                # デフォルト値の設定
+                if 'units' not in bom:
+                    bom['units'] = 1
+                if 'allocation' not in bom:
+                    bom['allocation'] = 1.0
 
             # DataFrameに変換
             network_data = {
