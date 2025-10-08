@@ -280,6 +280,15 @@ def optimize_with_one_cycle(
     # 初期化
     ELT, S = initial_base_stock_level(G, LT, mu, z, sigma)
 
+    # デバッグ: 初期値の確認
+    if np.any(np.isnan(S)) or np.any(np.isinf(S)):
+        print(f"WARNING: Initial S contains NaN or Inf:")
+        print(f"  mu: {mu}")
+        print(f"  sigma: {sigma}")
+        print(f"  z: {z}")
+        print(f"  ELT: {ELT}")
+        print(f"  S: {S}")
+
     # Adam パラメータ
     beta_2 = 0.999
     epsilon = 1e-8

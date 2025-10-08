@@ -3164,12 +3164,39 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     _optimization_cache[user_id] = {}
                 _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
 
+            # NaN/Infチェック
+            if np.isinf(result['best_cost']):
+                stage_results = []
+                for idx, row in result['stage_df'].iterrows():
+                    stage_results.append({
+                        "name": row.get('name', f"Stage {idx}"),
+                        "S": float(row['S']) if not np.isnan(row['S']) else 'NaN',
+                        "local_S": float(row['local_base_stock_level']) if not np.isnan(row['local_base_stock_level']) else 'NaN'
+                    })
+
+                # デバッグ情報の収集
+                debug_info = {
+                    "stage_df_input": stage_df.to_dict(orient='records'),
+                    "bom_df_input": bom_df.to_dict(orient='records'),
+                    "stage_results": stage_results,
+                    "num_iterations": len(result['cost_list']),
+                    "cost_history": result['cost_list'][:10]  # 最初の10個
+                }
+
+                return {
+                    "status": "error",
+                    "message": f"Fit One Cycle最適化が完了しましたが、最良コストは無限大 (inf) となりました。\n\n【原因の可能性】\n1. 容量制約が厳しすぎる（デフォルト10000個）\n2. 需要が大きすぎて在庫が追いつかない\n3. サプライチェーンの構造に問題がある\n\n【計算結果】\n基在庫レベル:\n" + "\n".join([f"- {s['name']}: {s['S']}個" for s in stage_results]),
+                    "best_cost": "inf",
+                    "debug_info": debug_info
+                }
+
             return {
                 "status": "success",
                 "best_cost": float(result['best_cost']),
                 "num_iterations": len(result['cost_list']),
                 "base_stock_levels": result['stage_df']['S'].tolist(),
                 "local_base_stock_levels": result['stage_df']['local_base_stock_level'].tolist(),
+                "stage_df": result['stage_df'].to_dict(orient='records'),
                 "visualization_id": viz_id,
                 "message": f"Fit One Cycle最適化が完了しました。最良コスト: {result['best_cost']:.2f}"
             }
