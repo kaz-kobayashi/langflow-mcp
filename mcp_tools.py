@@ -2938,44 +2938,78 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "calculate_eoq_incremental_discount":
         try:
+            # 入力データの検証
+            unit_costs = arguments["unit_costs"]
+            quantity_breaks = arguments["quantity_breaks"]
+
+            # リストの長さを確認
+            if len(unit_costs) != len(quantity_breaks):
+                return {
+                    "status": "error",
+                    "message": f"増分数量割引EOQ計算エラー: unit_costs（{len(unit_costs)}個）とquantity_breaks（{len(quantity_breaks)}個）の長さが一致しません。各価格帯に対して1つの最小発注量を指定してください。"
+                }
+
             result = calculate_eoq_with_incremental_discount(
                 K=arguments["K"],
                 d=arguments["d"],
                 h=arguments["h"],
                 b=arguments["b"],
                 r=arguments["r"],
-                unit_costs=arguments["unit_costs"],
-                quantity_breaks=arguments["quantity_breaks"]
+                unit_costs=unit_costs,
+                quantity_breaks=quantity_breaks
             )
             return {
                 "status": "success",
                 **result
             }
         except Exception as e:
+            import traceback
             return {
                 "status": "error",
-                "message": f"増分数量割引EOQ計算エラー: {str(e)}"
+                "message": f"増分数量割引EOQ計算エラー: {str(e)}",
+                "debug_info": {
+                    "unit_costs": arguments.get("unit_costs"),
+                    "quantity_breaks": arguments.get("quantity_breaks"),
+                    "traceback": traceback.format_exc()
+                }
             }
 
     elif function_name == "calculate_eoq_all_units_discount":
         try:
+            # 入力データの検証
+            unit_costs = arguments["unit_costs"]
+            quantity_breaks = arguments["quantity_breaks"]
+
+            # リストの長さを確認
+            if len(unit_costs) != len(quantity_breaks):
+                return {
+                    "status": "error",
+                    "message": f"全単位数量割引EOQ計算エラー: unit_costs（{len(unit_costs)}個）とquantity_breaks（{len(quantity_breaks)}個）の長さが一致しません。各価格帯に対して1つの最小発注量を指定してください。"
+                }
+
             result = calculate_eoq_with_all_units_discount(
                 K=arguments["K"],
                 d=arguments["d"],
                 h=arguments["h"],
                 b=arguments["b"],
                 r=arguments["r"],
-                unit_costs=arguments["unit_costs"],
-                quantity_breaks=arguments["quantity_breaks"]
+                unit_costs=unit_costs,
+                quantity_breaks=quantity_breaks
             )
             return {
                 "status": "success",
                 **result
             }
         except Exception as e:
+            import traceback
             return {
                 "status": "error",
-                "message": f"全単位数量割引EOQ計算エラー: {str(e)}"
+                "message": f"全単位数量割引EOQ計算エラー: {str(e)}",
+                "debug_info": {
+                    "unit_costs": arguments.get("unit_costs"),
+                    "quantity_breaks": arguments.get("quantity_breaks"),
+                    "traceback": traceback.format_exc()
+                }
             }
 
     elif function_name == "visualize_eoq":
