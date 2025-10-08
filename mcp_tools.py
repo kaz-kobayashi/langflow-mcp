@@ -36,6 +36,12 @@ from eoq_calculator import (
     visualize_eoq_analysis,
     visualize_eoq_with_discount
 )
+from lr_finder import (
+    find_optimal_learning_rate,
+    optimize_with_one_cycle,
+    visualize_lr_search,
+    visualize_training_progress
+)
 import numpy as np
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -1041,6 +1047,68 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["K", "d", "h", "b"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "find_optimal_learning_rate_periodic",
+            "description": "定期発注最適化のための最適学習率を探索します（LR Range Test）。学習率を指数的に増加させながら損失を記録し、最適な学習率を自動検出します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "items_data": {
+                        "type": "string",
+                        "description": "品目データのJSON配列文字列"
+                    },
+                    "bom_data": {
+                        "type": "string",
+                        "description": "BOMデータのJSON配列文字列"
+                    },
+                    "max_iter": {
+                        "type": "integer",
+                        "description": "探索の最大反復回数",
+                        "default": 50
+                    },
+                    "max_lr": {
+                        "type": "number",
+                        "description": "探索する最大学習率",
+                        "default": 10.0
+                    }
+                },
+                "required": ["items_data", "bom_data"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_periodic_with_one_cycle",
+            "description": "Fit One Cycleスケジューラを使用した高速な定期発注最適化を実行します。学習率とモメンタムを動的に調整し、効率的な収束を実現します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "items_data": {
+                        "type": "string",
+                        "description": "品目データのJSON配列文字列"
+                    },
+                    "bom_data": {
+                        "type": "string",
+                        "description": "BOMデータのJSON配列文字列"
+                    },
+                    "max_iter": {
+                        "type": "integer",
+                        "description": "最大反復回数",
+                        "default": 200
+                    },
+                    "max_lr": {
+                        "type": "number",
+                        "description": "最大学習率",
+                        "default": 1.0
+                    }
+                },
+                "required": ["items_data", "bom_data"]
             }
         }
     }
@@ -2928,6 +2996,101 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"EOQ可視化エラー: {str(e)}"
+            }
+
+    elif function_name == "find_optimal_learning_rate_periodic":
+        try:
+            # JSONデータのパース
+            items_data = json.loads(arguments["items_data"])
+            bom_data = json.loads(arguments["bom_data"])
+
+            # DataFrameに変換
+            stage_df, bom_df = prepare_stage_bom_data(items_data, bom_data)
+
+            # 学習率探索
+            lr_result = find_optimal_learning_rate(
+                stage_df,
+                bom_df,
+                max_iter=arguments.get("max_iter", 50),
+                n_samples=10,
+                n_periods=100,
+                max_lr=arguments.get("max_lr", 10.0)
+            )
+
+            # 可視化
+            fig = visualize_lr_search(lr_result)
+            viz_id = str(uuid.uuid4())
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+            pio.write_html(fig, file_path)
+
+            # ユーザーキャッシュに保存
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
+
+            return {
+                "status": "success",
+                "optimal_learning_rate": float(lr_result['optimal_lr']),
+                "best_cost": float(lr_result['best_cost']),
+                "num_iterations": len(lr_result['lr_list']),
+                "visualization_id": viz_id,
+                "message": f"最適学習率を検出しました: {lr_result['optimal_lr']:.2e}"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"学習率探索エラー: {str(e)}"
+            }
+
+    elif function_name == "optimize_periodic_with_one_cycle":
+        try:
+            # JSONデータのパース
+            items_data = json.loads(arguments["items_data"])
+            bom_data = json.loads(arguments["bom_data"])
+
+            # DataFrameに変換
+            stage_df, bom_df = prepare_stage_bom_data(items_data, bom_data)
+
+            # Fit One Cycle最適化
+            result = optimize_with_one_cycle(
+                stage_df,
+                bom_df,
+                max_iter=arguments.get("max_iter", 200),
+                n_samples=10,
+                n_periods=100,
+                max_lr=arguments.get("max_lr", 1.0)
+            )
+
+            # 訓練過程の可視化
+            fig = visualize_training_progress(result)
+            viz_id = str(uuid.uuid4())
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+            pio.write_html(fig, file_path)
+
+            # ユーザーキャッシュに保存
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
+
+            return {
+                "status": "success",
+                "best_cost": float(result['best_cost']),
+                "num_iterations": len(result['cost_list']),
+                "base_stock_levels": result['stage_df']['S'].tolist(),
+                "local_base_stock_levels": result['stage_df']['local_base_stock_level'].tolist(),
+                "visualization_id": viz_id,
+                "message": f"Fit One Cycle最適化が完了しました。最良コスト: {result['best_cost']:.2f}"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Fit One Cycle最適化エラー: {str(e)}"
             }
 
     else:
