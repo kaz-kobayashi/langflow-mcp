@@ -30,7 +30,7 @@ env/
 
 # Environment variables
 .env
-.env.local
+# Note: .env.local is tracked in git for local development reference
 
 # IDE
 .vscode/
@@ -59,3 +59,12 @@ Thumbs.db
 static/visualizations/*.html
 static/visualizations/*.png
 static/visualizations/*.jpg
+
+# Test results
+test_results.txt
+testresult.nd
+server.log
+
+# Development temporary files
+*.tmp
+*.bak

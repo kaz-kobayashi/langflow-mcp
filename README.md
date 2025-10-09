@@ -149,11 +149,13 @@ GitHub pushで自動デプロイが開始されます。
 
 ### 主要ドキュメント
 
+- **[DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md)**: 開発ワークフロー（ローカル開発→テスト→デプロイ）⭐️
 - **[MCP_TOOLS_API_REFERENCE.md](./MCP_TOOLS_API_REFERENCE.md)**: 全34個のMCPツールのAPI仕様
+- **[COMPREHENSIVE_TEST_EXAMPLES.md](./COMPREHENSIVE_TEST_EXAMPLES.md)**: 全MCPツールのテスト入力例
+- **[LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md)**: ローカル開発環境のセットアップガイド
 - **[PHASE13_SUMMARY.md](./PHASE13_SUMMARY.md)**: Phase 13実装の詳細サマリー
 - **[PHASE13_INPUT_EXAMPLES.md](./PHASE13_INPUT_EXAMPLES.md)**: Phase 13の動作確認用入力例
 - **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)**: Phase 12実装サマリー
-- **[LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md)**: ローカル開発環境のセットアップガイド
 
 ### テストコード
 
