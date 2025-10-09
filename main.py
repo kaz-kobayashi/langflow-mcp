@@ -15,13 +15,18 @@ from auth import (
     get_password_hash,
     verify_password,
     create_access_token,
-    get_current_user
+    get_current_user,
+    get_current_user_optional
 )
 from mcp_tools import MCP_TOOLS_DEFINITION, execute_mcp_function, get_visualization_html
 
 load_dotenv()
 
 app = FastAPI(title="AI Chat Agent")
+
+# Environment configuration
+ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+SKIP_AUTH = ENVIRONMENT == "local"  # ローカル環境では認証をスキップ
 
 # Initialize database
 init_db()
@@ -64,19 +69,26 @@ class Token(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """ログインページ"""
-    return templates.TemplateResponse("login.html", {"request": request})
+    """ホームページ - ローカル環境ではチャット画面、本番環境ではログイン画面"""
+    if SKIP_AUTH:
+        # ローカル環境では直接チャット画面を表示
+        return templates.TemplateResponse("index.html", {"request": request})
+    else:
+        # 本番環境ではログイン画面を表示
+        return templates.TemplateResponse("login.html", {"request": request})
 
 @app.get("/chat", response_class=HTMLResponse)
 async def chat_page(request: Request):
-    """チャットページ（認証済みユーザーのみ）"""
+    """チャットページ"""
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/api/config")
 async def get_config():
     """フロントエンド用の設定情報を返す"""
     return {
-        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        "environment": ENVIRONMENT,
+        "skip_auth": SKIP_AUTH
     }
 
 @app.post("/api/register", response_model=Token)
@@ -121,21 +133,22 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
 @app.post("/api/chat")
 async def chat(
     chat_request: ChatRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
-    """チャットエンドポイント - ストリーミング対応・Function Calling対応（認証必須）"""
+    """チャットエンドポイント - ストリーミング対応・Function Calling対応"""
 
     async def generate():
         try:
-            # Save user message to database
-            user_message = ChatHistory(
-                user_id=current_user.id,
-                role="user",
-                content=chat_request.messages[-1].content
-            )
-            db.add(user_message)
-            db.commit()
+            # Save user message to database (if user is logged in)
+            if current_user:
+                user_message = ChatHistory(
+                    user_id=current_user.id,
+                    role="user",
+                    content=chat_request.messages[-1].content
+                )
+                db.add(user_message)
+                db.commit()
 
             # システムプロンプトを追加してツール使用を強制
             system_message = {
@@ -235,14 +248,15 @@ async def chat(
                 assistant_content = message.content or ""
                 yield f"data: {json.dumps({'content': assistant_content})}\n\n"
 
-            # Save assistant message to database
-            assistant_message = ChatHistory(
-                user_id=current_user.id,
-                role="assistant",
-                content=assistant_content
-            )
-            db.add(assistant_message)
-            db.commit()
+            # Save assistant message to database (if user is logged in)
+            if current_user:
+                assistant_message = ChatHistory(
+                    user_id=current_user.id,
+                    role="assistant",
+                    content=assistant_content
+                )
+                db.add(assistant_message)
+                db.commit()
 
             yield "data: [DONE]\n\n"
 
