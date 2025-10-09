@@ -3758,6 +3758,305 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "traceback": traceback.format_exc()
             }
 
+    elif function_name == "dynamic_programming_for_SSA":
+        """
+        動的計画法による安全在庫配置（Safety Stock Allocation）の最適化
+
+        ツリー構造のサプライチェーンネットワークに対して、動的計画法により
+        安全在庫配置の厳密解を求めます。
+
+        Parameters:
+        -----------
+        items_data : list of dict
+            品目データ（JSON配列）。各品目は以下のフィールドを持つ：
+            - name : str - 品目名
+            - h : float - 在庫保管費用（単位あたり/期間）
+            - mu : float - 平均需要（最終製品のみ）
+            - sigma : float - 需要の標準偏差（最終製品のみ）
+            - proc_time : float - 処理時間
+            - lead_time_lb : float - リードタイム下限
+            - lead_time_ub : float - リードタイム上限
+
+        bom_data : list of dict
+            BOMデータ（JSON配列）。各エッジは以下のフィールドを持つ：
+            - child : str - 子品目名
+            - parent : str - 親品目名
+            - units : float - 使用単位数（デフォルト: 1）
+
+        z : float (optional)
+            安全在庫のサービスレベルに対応するZ値（デフォルト: 1.65 = 95%サービスレベル）
+
+        Returns:
+        --------
+        dict with:
+            - status : str - "success" or "error"
+            - total_cost : float - 最適な総安全在庫コスト
+            - guaranteed_lead_times : dict - 各品目の保証リードタイム（Lstar）
+            - net_replenishment_times : dict - 各品目の正味補充時間（NRT）
+            - message : str
+        """
+        try:
+            from scmopt2.optinv import dynamic_programming_for_SSA
+            from scmopt2.core import SCMGraph
+            import numpy as np
+            import networkx as nx
+            from scipy.special import erf
+
+            # パラメータ取得
+            items_data = arguments.get("items_data", [])
+            bom_data = arguments.get("bom_data", [])
+            z = arguments.get("z", 1.65)  # デフォルト: 95%サービスレベル
+
+            if not items_data:
+                return {
+                    "status": "error",
+                    "message": "items_dataが指定されていません"
+                }
+
+            # SCMGraphを構築
+            G = SCMGraph()
+
+            # 品目名→インデックスのマッピング
+            item_name_to_idx = {item["name"]: idx for idx, item in enumerate(items_data)}
+            n_items = len(items_data)
+
+            # ノードを追加
+            for idx, item in enumerate(items_data):
+                G.add_node(idx, **item)
+
+            # エッジを追加
+            for edge in bom_data:
+                child_idx = item_name_to_idx[edge["child"]]
+                parent_idx = item_name_to_idx[edge["parent"]]
+                units = edge.get("units", 1.0)
+                G.add_edge(child_idx, parent_idx, units=units)
+
+            # ツリー構造の検証
+            if not nx.is_tree(G.to_undirected()):
+                return {
+                    "status": "error",
+                    "message": "ネットワークがツリー構造ではありません。動的計画法はツリー構造のネットワークにのみ適用できます。"
+                }
+
+            if not nx.is_directed_acyclic_graph(G):
+                return {
+                    "status": "error",
+                    "message": "ネットワークに閉路が含まれています。"
+                }
+
+            # パラメータ配列を準備
+            ProcTime = np.zeros(n_items, dtype=int)  # 整数型配列
+            LTLB = np.zeros(n_items, dtype=int)  # 整数型配列
+            LTUB = np.zeros(n_items, dtype=int)  # 整数型配列
+            mu = np.zeros(n_items)
+            sigma = np.zeros(n_items)
+            h = np.zeros(n_items)
+
+            for idx, item in enumerate(items_data):
+                ProcTime[idx] = int(item.get("proc_time", 0))
+                LTLB[idx] = int(item.get("lead_time_lb", 0))
+                LTUB[idx] = int(item.get("lead_time_ub", 0))
+                h[idx] = item["h"]
+
+                # 需要パラメータ（最終製品のみ）
+                mu[idx] = item.get("mu", 0)
+                sigma[idx] = item.get("sigma", 0)
+
+            # 動的計画法を実行
+            total_cost, Lstar, NRT = dynamic_programming_for_SSA(
+                G, ProcTime, LTLB, LTUB, z, mu, sigma, h
+            )
+
+            # 結果を整形
+            guaranteed_lead_times = {}
+            net_replenishment_times = {}
+
+            for idx, item in enumerate(items_data):
+                item_name = item["name"]
+                guaranteed_lead_times[item_name] = float(Lstar[idx])
+                net_replenishment_times[item_name] = float(NRT[idx])
+
+            # 安全在庫レベルを計算
+            safety_stock_levels = {}
+            for idx, item in enumerate(items_data):
+                item_name = item["name"]
+                # 安全在庫 = z * sigma * sqrt(NRT)
+                if sigma[idx] > 0:
+                    ss = z * sigma[idx] * np.sqrt(NRT[idx])
+                    safety_stock_levels[item_name] = float(ss)
+                else:
+                    safety_stock_levels[item_name] = 0.0
+
+            return {
+                "status": "success",
+                "total_cost": float(total_cost),
+                "guaranteed_lead_times": guaranteed_lead_times,
+                "net_replenishment_times": net_replenishment_times,
+                "safety_stock_levels": safety_stock_levels,
+                "optimization_params": {
+                    "z_value": z,
+                    "service_level": f"{(0.5 + 0.5 * erf(z / np.sqrt(2))) * 100:.1f}%",
+                    "n_items": n_items,
+                    "network_type": "tree"
+                },
+                "message": f"動的計画法により安全在庫配置を最適化しました。総コスト: {total_cost:.2f}"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"動的計画法エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "base_stock_simulation_using_dist":
+        """
+        分布ベースの基在庫シミュレーション
+
+        単一段階在庫システムにおいて、確率分布オブジェクトから需要を生成して
+        定期発注方策のシミュレーションを実行します。
+
+        Parameters:
+        -----------
+        n_samples : int
+            サンプル数（モンテカルロシミュレーションの試行回数）
+        n_periods : int
+            シミュレーション期間
+        demand_dist : dict
+            需要分布の設定。以下のフィールドを持つ：
+            - type : str - 分布のタイプ（"normal", "uniform", "exponential", "poisson", "gamma", "lognormal"）
+            - params : dict - 分布のパラメータ（分布ごとに異なる）
+              * normal: {"mu": 平均, "sigma": 標準偏差}
+              * uniform: {"low": 下限, "high": 上限}
+              * exponential: {"scale": スケールパラメータ}
+              * poisson: {"lam": レート}
+              * gamma: {"shape": 形状パラメータ, "scale": スケール}
+              * lognormal: {"s": 形状パラメータ, "scale": スケール}
+        capacity : float (optional)
+            生産能力（デフォルト: 無限大）
+        lead_time : int (optional)
+            リードタイム（デフォルト: 1）
+        backorder_cost : float (optional)
+            バックオーダーコスト（デフォルト: 100）
+        holding_cost : float (optional)
+            在庫保管費用（デフォルト: 1）
+        base_stock_level : float (optional)
+            基在庫レベル（デフォルト: 自動計算）
+
+        Returns:
+        --------
+        dict with:
+            - status : str
+            - gradient : float - 基在庫レベルSに対する勾配
+            - average_cost : float - 平均コスト
+            - inventory_stats : dict - 在庫統計情報
+        """
+        try:
+            from scmopt2.optinv import base_stock_simulation_using_dist
+            import numpy as np
+            import scipy.stats as st
+
+            # パラメータ取得
+            n_samples = arguments.get("n_samples", 100)
+            n_periods = arguments.get("n_periods", 100)
+            demand_dist_config = arguments.get("demand_dist")
+
+            if not demand_dist_config:
+                return {
+                    "status": "error",
+                    "message": "demand_distが指定されていません"
+                }
+
+            # 分布オブジェクトを作成
+            dist_type = demand_dist_config.get("type", "normal")
+            dist_params = demand_dist_config.get("params", {})
+
+            if dist_type == "normal":
+                mu = dist_params.get("mu", 100)
+                sigma = dist_params.get("sigma", 10)
+                demand_dist = st.norm(loc=mu, scale=sigma)
+            elif dist_type == "uniform":
+                low = dist_params.get("low", 0)
+                high = dist_params.get("high", 200)
+                demand_dist = st.uniform(loc=low, scale=high-low)
+            elif dist_type == "exponential":
+                scale = dist_params.get("scale", 100)
+                demand_dist = st.expon(scale=scale)
+            elif dist_type == "poisson":
+                lam = dist_params.get("lam", 100)
+                demand_dist = st.poisson(mu=lam)
+            elif dist_type == "gamma":
+                shape = dist_params.get("shape", 2)
+                scale = dist_params.get("scale", 50)
+                demand_dist = st.gamma(a=shape, scale=scale)
+            elif dist_type == "lognormal":
+                s = dist_params.get("s", 0.5)
+                scale = dist_params.get("scale", 100)
+                demand_dist = st.lognorm(s=s, scale=scale)
+            else:
+                return {
+                    "status": "error",
+                    "message": f"サポートされていない分布タイプ: {dist_type}"
+                }
+
+            # 需要データを生成
+            demand = demand_dist.rvs((n_samples, n_periods))
+
+            # その他のパラメータ
+            capacity = arguments.get("capacity", 1e10)  # デフォルト: 無限大
+            LT = arguments.get("lead_time", 1)
+            b = arguments.get("backorder_cost", 100)
+            h = arguments.get("holding_cost", 1)
+
+            # 基在庫レベルS（指定されていない場合は自動計算）
+            S = arguments.get("base_stock_level")
+            if S is None:
+                # クリティカル比率を使った初期値
+                critical_ratio = b / (b + h)
+                S = demand_dist.ppf(critical_ratio) * (LT + 1)
+
+            # シミュレーション実行
+            gradient, average_cost, inventory_data = base_stock_simulation_using_dist(
+                n_samples, n_periods, demand, capacity, LT, b, h, S
+            )
+
+            # 在庫統計を計算
+            inventory_stats = {
+                "mean_inventory": float(inventory_data.mean()),
+                "std_inventory": float(inventory_data.std()),
+                "min_inventory": float(inventory_data.min()),
+                "max_inventory": float(inventory_data.max()),
+                "stockout_rate": float((inventory_data < 0).sum() / inventory_data.size),
+                "avg_backorder": float(inventory_data[inventory_data < 0].mean()) if (inventory_data < 0).any() else 0.0
+            }
+
+            return {
+                "status": "success",
+                "gradient": float(gradient),
+                "average_cost": float(average_cost),
+                "base_stock_level": float(S),
+                "inventory_stats": inventory_stats,
+                "simulation_params": {
+                    "n_samples": n_samples,
+                    "n_periods": n_periods,
+                    "demand_distribution": dist_type,
+                    "capacity": capacity,
+                    "lead_time": LT,
+                    "backorder_cost": b,
+                    "holding_cost": h
+                },
+                "message": f"分布ベースシミュレーションを実行しました（{dist_type}分布、{n_samples}サンプル、{n_periods}期間）"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"分布ベースシミュレーションエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
     else:
         return {
             "status": "error",
