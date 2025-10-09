@@ -1167,14 +1167,26 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         # 品目データを追加
         ws_items = wb["品目"]
         for item in items:
+            # パラメータ名のマッピング（複数の名前に対応）
+            avg_demand = (item.get("avg_demand") or
+                         item.get("average_demand") or
+                         item.get("mu") or 0)
+            demand_std = (item.get("demand_std") or
+                         item.get("std_demand") or
+                         item.get("sigma") or 0)
+            holding_cost = (item.get("holding_cost") or
+                           item.get("h") or 1)
+            stockout_cost = (item.get("stockout_cost") or
+                            item.get("b") or 100)
+
             ws_items.append([
                 item.get("name"),
                 item.get("process_time", 1),
                 item.get("max_service_time", 0),
-                item.get("avg_demand"),
-                item.get("demand_std"),
-                item.get("holding_cost", 1),
-                item.get("stockout_cost", 100),
+                avg_demand,
+                demand_std,
+                holding_cost,
+                stockout_cost,
                 item.get("fixed_cost", 1000)
             ])
 
@@ -1233,6 +1245,39 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # posをシリアライズ可能な形式に変換
             pos_data = {int(k): list(v) for k, v in pos.items()}
 
+            # 可視化の生成
+            try:
+                import uuid
+                import plotly.io as pio
+                from network_visualizer import visualize_safety_stock_network
+
+                # ステージ名のマッピング
+                stage_names = [item["name"] for item in items]
+
+                # 可視化の生成
+                fig = visualize_safety_stock_network(
+                    G=G,
+                    pos=pos,
+                    NRT=best_sol["best_NRT"],
+                    MaxLI=best_sol["best_MaxLI"],
+                    MinLT=best_sol["best_MinLT"],
+                    stage_names=stage_names
+                )
+
+                # 可視化の保存
+                viz_id = str(uuid.uuid4())
+                output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+                os.makedirs(output_dir, exist_ok=True)
+
+                file_path = os.path.join(output_dir, f"{viz_id}.html")
+                pio.write_html(fig, file_path)
+
+                visualization_id = viz_id
+                visualization_message = f"可視化が完了しました。visualization_id: {viz_id}"
+            except Exception as viz_error:
+                visualization_id = None
+                visualization_message = f"可視化の生成に失敗: {str(viz_error)}"
+
             return {
                 "status": "success",
                 "optimization_results": result_data,
@@ -1243,7 +1288,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "graph_info": {
                     "num_nodes": len(G.nodes()),
                     "num_edges": len(G.edges())
-                }
+                },
+                "visualization_id": visualization_id,
+                "message": visualization_message
             }
         except Exception as e:
             return {
