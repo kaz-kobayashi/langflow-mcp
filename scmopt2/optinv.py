@@ -2219,3 +2219,71 @@ def plot_simulation(stage_df, I, n_periods=1, samples=5, stage_id_list=None):
 #         },
 #     ),
 #     ]
+
+
+# ==============================
+# Phase 11-2: ヒストグラム分布フィット
+# ==============================
+
+def best_histogram(data, nbins=50):
+    """
+    需要データからヒストグラム形式の確率分布を生成
+
+    Parameters
+    ----------
+    data : array-like
+        需要データ
+    nbins : int, optional
+        ヒストグラムのビン数（デフォルト: 50）
+
+    Returns
+    -------
+    tuple
+        (fig, hist_dist)
+        - fig: Plotlyのグラフオブジェクト
+        - hist_dist: scipy.stats.rv_histogram オブジェクト
+    """
+    import plotly.graph_objects as go
+    import scipy.stats as st
+
+    data_range = (data.min(), data.max())
+    data = pd.Series(data)
+    bins = max(int(data_range[1] - data_range[0]), 1)
+    y, x = np.histogram(data, bins=min(bins, nbins))
+
+    if bins < 50:
+        # ビンの範囲は [i,i+1) なので、左に0.5だけシフト（平均を合わせるため）
+        x = x - 0.5
+
+    hist_dist = st.rv_histogram((y, x)).freeze()
+
+    # グラフの作成
+    D = [go.Histogram(
+        x=data.values,
+        histnorm="probability density",
+        name="Data Histogram",
+        nbinsx=200
+    )]
+
+    start = hist_dist.ppf(0.01)
+    end = hist_dist.ppf(0.99)
+    size = 10000
+    x_vals = np.linspace(start, end, size)
+    y_vals = hist_dist.pdf(x_vals)
+    pdf = pd.Series(y_vals, x_vals)
+
+    D.append(go.Scatter(
+        x=pdf.index,
+        y=pdf.values,
+        name="Best Fit Distribution"
+    ))
+
+    fig = go.Figure(D)
+    fig.update_layout(
+        title="Histogram Distribution Fit",
+        xaxis_title="Value",
+        yaxis_title="Probability Density",
+        template="plotly_white"
+    )
+
+    return fig, hist_dist

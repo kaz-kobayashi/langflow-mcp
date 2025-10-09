@@ -3293,6 +3293,118 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "traceback": traceback.format_exc()
             }
 
+    elif function_name == "visualize_supply_chain_network":
+        try:
+            from network_visualizer import visualize_supply_chain_network
+
+            # JSONデータのパース
+            items_data = json.loads(arguments["items_data"])
+            bom_data = json.loads(arguments["bom_data"])
+            layout = arguments.get("layout", "hierarchical")
+
+            # 最適化結果がある場合はパース
+            optimization_result = None
+            if "optimization_result" in arguments:
+                optimization_result = json.loads(arguments["optimization_result"])
+
+            # ネットワーク可視化
+            fig = visualize_supply_chain_network(
+                items_data,
+                bom_data,
+                optimization_result=optimization_result,
+                layout=layout
+            )
+
+            # グラフを保存
+            viz_id = str(uuid.uuid4())
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+            pio.write_html(fig, file_path)
+
+            # ユーザーキャッシュに保存
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
+
+            return {
+                "status": "success",
+                "visualization_id": viz_id,
+                "num_nodes": len(items_data),
+                "num_edges": len(bom_data),
+                "layout": layout,
+                "message": f"サプライチェーンネットワークを可視化しました（ノード: {len(items_data)}, エッジ: {len(bom_data)}）"
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"ネットワーク可視化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "fit_histogram_distribution":
+        try:
+            from scmopt2.optinv import best_histogram
+
+            # データのパース
+            demand_data = np.array(arguments["demand_data"])
+            nbins = arguments.get("nbins", 50)
+
+            # ヒストグラム分布フィット
+            fig, hist_dist = best_histogram(demand_data, nbins=nbins)
+
+            # グラフを保存
+            viz_id = str(uuid.uuid4())
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+            pio.write_html(fig, file_path)
+
+            # ユーザーキャッシュに保存
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
+
+            # 分布の統計量を計算
+            mean = float(hist_dist.mean())
+            std = float(hist_dist.std())
+            median = float(hist_dist.median())
+
+            # パーセンタイルを計算
+            percentiles = {
+                "5%": float(hist_dist.ppf(0.05)),
+                "25%": float(hist_dist.ppf(0.25)),
+                "50%": float(hist_dist.ppf(0.50)),
+                "75%": float(hist_dist.ppf(0.75)),
+                "95%": float(hist_dist.ppf(0.95))
+            }
+
+            return {
+                "status": "success",
+                "visualization_id": viz_id,
+                "distribution_stats": {
+                    "mean": mean,
+                    "std": std,
+                    "median": median,
+                    "percentiles": percentiles
+                },
+                "nbins": nbins,
+                "data_size": len(demand_data),
+                "message": f"ヒストグラム分布をフィットしました（データ数: {len(demand_data)}, ビン数: {nbins}）"
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"ヒストグラム分布フィットエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
     else:
         return {
             "status": "error",
