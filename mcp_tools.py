@@ -2054,10 +2054,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "calculate_safety_stock":
         # 安全在庫の計算
         try:
-            mu = arguments.get("mu")
-            sigma = arguments.get("sigma")
+            # 複数のパラメータ名に対応
+            mu = arguments.get("mu") or arguments.get("demand_mean") or arguments.get("average_demand")
+            sigma = arguments.get("sigma") or arguments.get("demand_std") or arguments.get("std_demand") or arguments.get("demand_std_dev")
             # lead_timeとLTの両方に対応
-            LT = arguments.get("lead_time") or arguments.get("LT")
+            LT = arguments.get("lead_time") or arguments.get("LT") or arguments.get("lead_time_days")
             service_level = arguments.get("service_level")
             h = arguments.get("holding_cost", None)
 
@@ -2455,42 +2456,65 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "simulate_base_stock_policy":
         # ベースストック方策シミュレーション
         try:
-            demand = np.array(arguments["demand"])
+            import numpy as np
+            from scmopt2.optinv import base_stock_simulation
+
+            # 需要データの取得または生成
+            demand_array = arguments.get("demand")
+            if demand_array is None:
+                # 需要データが指定されていない場合は生成
+                mu = arguments.get("demand_mean") or arguments.get("average_demand") or arguments.get("mu")
+                sigma = arguments.get("demand_std") or arguments.get("std_demand") or arguments.get("demand_std_dev") or arguments.get("sigma")
+                n_samples = arguments.get("n_samples", 100)
+                n_periods = arguments.get("n_periods", 200)
+
+                if mu is None or sigma is None:
+                    return {
+                        "status": "error",
+                        "message": "需要データ（demand）または需要の平均（demand_mean）と標準偏差（demand_std）が必要です"
+                    }
+
+                # 正規分布で需要を生成
+                demand = np.random.normal(mu, sigma, (n_samples, n_periods))
+                demand = np.maximum(demand, 0)  # 負の需要を0に
+            else:
+                demand = np.array(demand_array)
+                n_samples = demand.shape[0] if demand.ndim > 1 else 1
+                n_periods = demand.shape[1] if demand.ndim > 1 else len(demand)
+                if demand.ndim == 1:
+                    demand = demand.reshape(1, -1)
+
             S = arguments.get("base_stock_level")
             if S is None:
                 return {
                     "status": "error",
-                    "message": "base_stock_level（ベースストックレベル）パラメータが必要です。例: base_stock_level=50"
+                    "message": "base_stock_level（基在庫レベル）パラメータが必要です"
                 }
+
             LT = arguments.get("lead_time")
             if LT is None:
                 return {
                     "status": "error",
-                    "message": "lead_time（リードタイム）パラメータが必要です。例: lead_time=3"
+                    "message": "lead_time（リードタイム）パラメータが必要です"
                 }
-            capacity = arguments.get("capacity")
-            if capacity is None:
-                return {
-                    "status": "error",
-                    "message": "capacity（生産能力）パラメータが必要です。例: capacity=1000"
-                }
-            h = arguments.get("holding_cost")
+
+            capacity = arguments.get("capacity", 1e10)  # デフォルト: 無限大
+            h = arguments.get("holding_cost") or arguments.get("h")
             if h is None:
                 return {
                     "status": "error",
-                    "message": "holding_cost（在庫保管費用）パラメータが必要です。例: holding_cost=1.0"
+                    "message": "holding_cost（在庫保管費用）パラメータが必要です"
                 }
-            b = arguments.get("stockout_cost")
+
+            b = arguments.get("backorder_cost") or arguments.get("stockout_cost") or arguments.get("b")
             if b is None:
                 return {
                     "status": "error",
-                    "message": "stockout_cost（品切れ費用）パラメータが必要です。例: stockout_cost=100.0"
+                    "message": "backorder_cost（バックオーダーコスト）パラメータが必要です"
                 }
-            n_samples = arguments.get("n_samples", 5)
-            n_periods = len(demand) if len(demand) < 1000 else 100
 
-            # 修正版関数を実行
-            dC, total_cost, I = base_stock_simulation_fixed(
+            # シミュレーションを実行
+            dC, total_cost, I = base_stock_simulation(
                 n_samples=n_samples,
                 n_periods=n_periods,
                 demand=demand,
@@ -2508,27 +2532,26 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
             return {
                 "status": "success",
-                "policy_type": "ベースストック方策",
+                "policy_type": "基在庫方策",
                 "parameters": {
                     "base_stock_level_S": float(S),
                     "lead_time": int(LT),
                     "capacity": float(capacity),
                     "holding_cost": float(h),
-                    "stockout_cost": float(b)
+                    "backorder_cost": float(b)
                 },
                 "simulation_results": {
-                    "total_cost_per_period": total_cost,
-                    "derivative_dC_dS": float(dC),
-                    "n_samples": n_samples,
-                    "n_periods": n_periods
+                    "average_cost_per_period": float(total_cost),
+                    "gradient_dC_dS": float(dC),
+                    "n_samples": int(n_samples),
+                    "n_periods": int(n_periods)
                 },
                 "inventory_statistics": {
                     "average_inventory": avg_inventory,
                     "stockout_periods": stockout_periods,
-                    "stockout_rate": stockout_rate,
-                    "final_inventory": float(I[0, -1])
+                    "stockout_rate": stockout_rate
                 },
-                "message": f"ベースストック方策のシミュレーション完了。総コスト: {total_cost:.2f}円/期"
+                "message": f"基在庫方策のシミュレーション完了。平均コスト: {total_cost:.2f}円/期"
             }
         except Exception as e:
             return {
