@@ -2287,3 +2287,149 @@ def best_histogram(data, nbins=50):
     )
 
     return fig, hist_dist
+
+
+# ==============================
+# Phase 11-3: 多段階在庫シミュレーション（改良版）
+# ==============================
+
+def simulate_multistage_ss_policy(
+    n_samples=1,
+    n_periods=10,
+    n_stages=3,
+    mu=100.,
+    sigma=10.,
+    LT=None,
+    s=None,
+    S=None,
+    b=100.,
+    h=None,
+    fc=10000.
+):
+    """
+    多段階サプライチェーンにおける(s,S)方策の在庫シミュレーション（簡易版）
+
+    Parameters
+    ----------
+    n_samples : int
+        シミュレーションサンプル数
+    n_periods : int
+        シミュレーション期間
+    n_stages : int
+        段階数
+    mu : float
+        平均需要（最終段階のみ）
+    sigma : float
+        需要の標準偏差（最終段階のみ）
+    LT : array-like
+        各段階のリードタイム [LT0, LT1, ..., LT_{n_stages-1}]
+    s : array-like
+        各段階の発注点 [s0, s1, ..., s_{n_stages-1}]
+    S : array-like
+        各段階の基在庫レベル [S0, S1, ..., S_{n_stages-1}]
+    b : float
+        品切れ費用
+    h : array-like
+        各段階の在庫保管費用 [h0, h1, ..., h_{n_stages-1}]
+    fc : float
+        発注固定費用
+
+    Returns
+    -------
+    tuple
+        (average_cost, inventory_data, total_cost_by_sample)
+        - average_cost: 期間平均コスト（サンプル平均）
+        - inventory_data: 各段階の在庫推移
+        - total_cost_by_sample: 各サンプルの総コスト
+    """
+    # デフォルト値の設定
+    if LT is None:
+        LT = np.ones(n_stages, dtype=int)
+    else:
+        LT = np.array(LT, dtype=int)
+
+    if h is None:
+        h = np.ones(n_stages)
+    else:
+        h = np.array(h)
+
+    # sとSの自動計算（指定されていない場合）
+    if s is None or S is None:
+        omega = b / (b + h[0])
+        z = norm.ppf(omega)
+
+        if s is None:
+            s = np.zeros(n_stages)
+            for i in range(n_stages):
+                s[i] = LT[i] * mu + z * sigma * np.sqrt(LT[i])
+        else:
+            s = np.array(s)
+
+        if S is None:
+            S = np.zeros(n_stages)
+            for i in range(n_stages):
+                S[i] = s[i] * 1.5  # sの1.5倍をデフォルトとする
+        else:
+            S = np.array(S)
+    else:
+        s = np.array(s)
+        S = np.array(S)
+
+    # 需要の生成（最終段階のみ）
+    demand = np.maximum(np.random.normal(mu, sigma, (n_samples, n_periods)), 0.)
+
+    # 在庫量の初期化
+    I = np.zeros((n_samples, n_stages, n_periods + 1))  # 在庫レベル
+    NI = np.zeros((n_samples, n_stages))  # 在庫ポジション
+
+    # 初期在庫の設定
+    for i in range(n_stages):
+        I[:, i, 0] = S[i]
+        NI[:, i] = S[i]
+
+    # 生産・発注量
+    max_LT = LT.max()
+    production = np.zeros((n_samples, n_stages, max_LT))
+
+    # コスト
+    cost = np.zeros((n_samples, n_periods))
+    fixed_cost = np.zeros((n_samples, n_stages, n_periods))
+
+    # シミュレーション
+    for t in range(n_periods):
+        # 各段階を逆順（最終段階から）で処理
+        for i in range(n_stages - 1, -1, -1):
+            if i == n_stages - 1:
+                # 最終段階：顧客需要に対応
+                current_demand = demand[:, t]
+            else:
+                # 中間段階：次段階の発注量が需要となる
+                current_demand = production[:, i + 1, t % LT[i + 1]]
+
+            # 在庫ポジションの更新
+            NI[:, i] = NI[:, i] - current_demand
+
+            # (s,S)方策による発注
+            order = np.where(NI[:, i] < s[i], S[i] - NI[:, i], 0.)
+            fixed_cost[:, i, t] = np.where(NI[:, i] < s[i], fc, 0.)
+
+            # 発注後在庫ポジション
+            NI[:, i] = NI[:, i] + order
+            production[:, i, t % LT[i]] = order
+
+            # 実在庫の更新
+            if t >= LT[i]:
+                I[:, i, t + 1] = I[:, i, t] - current_demand + production[:, i, (t - LT[i]) % LT[i]]
+            else:
+                I[:, i, t + 1] = I[:, i, t] - current_demand
+
+        # コスト計算
+        for i in range(n_stages):
+            stage_cost = np.where(I[:, i, t + 1] < 0, -b * I[:, i, t + 1], h[i] * I[:, i, t + 1])
+            cost[:, t] += stage_cost + fixed_cost[:, i, t]
+
+    # 結果の集計
+    total_cost = np.sum(cost, axis=1)
+    average_cost = total_cost.mean() / n_periods
+
+    return average_cost, I, total_cost

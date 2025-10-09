@@ -3405,6 +3405,87 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "traceback": traceback.format_exc()
             }
 
+    elif function_name == "simulate_multistage_inventory":
+        try:
+            from scmopt2.optinv import simulate_multistage_ss_policy
+
+            # パラメータの取得
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 50)
+            n_stages = arguments.get("n_stages", 3)
+            mu = arguments.get("mu", 100.)
+            sigma = arguments.get("sigma", 10.)
+            b = arguments.get("b", 100.)
+            fc = arguments.get("fc", 1000.)
+
+            # 配列パラメータ
+            LT = arguments.get("LT")
+            if LT is not None:
+                LT = list(LT) if isinstance(LT, (list, tuple)) else [LT] * n_stages
+
+            h = arguments.get("h")
+            if h is not None:
+                h = list(h) if isinstance(h, (list, tuple)) else [h] * n_stages
+
+            s = arguments.get("s")
+            if s is not None:
+                s = list(s) if isinstance(s, (list, tuple)) else None
+
+            S = arguments.get("S")
+            if S is not None:
+                S = list(S) if isinstance(S, (list, tuple)) else None
+
+            # シミュレーション実行
+            avg_cost, inventory_data, total_cost = simulate_multistage_ss_policy(
+                n_samples=n_samples,
+                n_periods=n_periods,
+                n_stages=n_stages,
+                mu=mu,
+                sigma=sigma,
+                LT=LT,
+                s=s,
+                S=S,
+                b=b,
+                h=h,
+                fc=fc
+            )
+
+            # 統計量の計算
+            inventory_stats = []
+            for stage in range(n_stages):
+                stage_inv = inventory_data[:, stage, :]
+                inventory_stats.append({
+                    "stage": stage,
+                    "mean_inventory": float(stage_inv.mean()),
+                    "std_inventory": float(stage_inv.std()),
+                    "max_inventory": float(stage_inv.max()),
+                    "min_inventory": float(stage_inv.min()),
+                    "stockout_periods": int((stage_inv < 0).sum())
+                })
+
+            return {
+                "status": "success",
+                "average_cost": float(avg_cost),
+                "total_cost_mean": float(total_cost.mean()),
+                "total_cost_std": float(total_cost.std()),
+                "inventory_stats": inventory_stats,
+                "simulation_params": {
+                    "n_samples": n_samples,
+                    "n_periods": n_periods,
+                    "n_stages": n_stages,
+                    "mu": mu,
+                    "sigma": sigma
+                },
+                "message": f"多段階在庫シミュレーション完了（段階数: {n_stages}, 期間: {n_periods}, サンプル: {n_samples}）"
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"多段階在庫シミュレーションエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
     else:
         return {
             "status": "error",
