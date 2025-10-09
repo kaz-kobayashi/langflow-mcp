@@ -2246,36 +2246,36 @@ def best_histogram(data, nbins=50):
     import plotly.graph_objects as go
     import scipy.stats as st
 
-    data_range = (data.min(), data.max())
-    data = pd.Series(data)
-    bins = max(int(data_range[1] - data_range[0]), 1)
-    y, x = np.histogram(data, bins=min(bins, nbins))
+    data = np.array(data)
 
-    if bins < 50:
-        # ビンの範囲は [i,i+1) なので、左に0.5だけシフト（平均を合わせるため）
-        x = x - 0.5
+    # ヒストグラムを作成（確率密度で正規化）
+    counts, bin_edges = np.histogram(data, bins=nbins, density=True)
 
-    hist_dist = st.rv_histogram((y, x)).freeze()
+    # rv_histogramは(度数, ビンエッジ)を受け取り、内部で正規化するため
+    # densityをFalseにして度数を取得
+    counts_raw, bin_edges = np.histogram(data, bins=nbins, density=False)
+
+    # rv_histogramオブジェクトを作成
+    hist_dist = st.rv_histogram((counts_raw, bin_edges)).freeze()
 
     # グラフの作成
     D = [go.Histogram(
-        x=data.values,
+        x=data,
         histnorm="probability density",
         name="Data Histogram",
-        nbinsx=200
+        nbinsx=nbins,
+        marker=dict(opacity=0.7)
     )]
 
-    start = hist_dist.ppf(0.01)
-    end = hist_dist.ppf(0.99)
-    size = 10000
-    x_vals = np.linspace(start, end, size)
+    # フィット分布のPDFをプロット
+    x_vals = np.linspace(data.min(), data.max(), 1000)
     y_vals = hist_dist.pdf(x_vals)
-    pdf = pd.Series(y_vals, x_vals)
 
     D.append(go.Scatter(
-        x=pdf.index,
-        y=pdf.values,
-        name="Best Fit Distribution"
+        x=x_vals,
+        y=y_vals,
+        name="Best Fit Distribution",
+        line=dict(color='red', width=2)
     ))
 
     fig = go.Figure(D)
