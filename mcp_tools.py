@@ -51,7 +51,14 @@ import uuid
 from datetime import datetime
 
 # ユーザーごとの計算結果キャッシュ
-# {user_id: {"G": graph, "pos": positions, "best_sol": solution, "items": items_data, "bom": bom_data}}
+# {user_id: {
+#   "G": graph,
+#   "pos": positions,
+#   "best_sol": solution,
+#   "items": items_data,
+#   "bom": bom_data,
+#   "last_simulation": {"inventory_data": ..., "stage_names": ..., "params": ...}
+# }}
 _optimization_cache = {}
 
 
@@ -3471,6 +3478,30 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     "stockout_periods": int((stage_inv < 0).sum())
                 })
 
+            # シミュレーション結果をキャッシュに保存
+            if user_id:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+
+                # デフォルトの段階名を生成
+                stage_names = [f"Stage_{i}" for i in range(n_stages)]
+
+                _optimization_cache[user_id]["last_simulation"] = {
+                    "inventory_data": inventory_data.tolist(),  # NumPy配列をリストに変換
+                    "stage_names": stage_names,
+                    "n_periods": n_periods,
+                    "n_samples": n_samples,
+                    "n_stages": n_stages,
+                    "params": {
+                        "mu": mu,
+                        "sigma": sigma,
+                        "LT": LT,
+                        "h": h,
+                        "b": b,
+                        "fc": fc
+                    }
+                }
+
             return {
                 "status": "success",
                 "average_cost": float(avg_cost),
@@ -3484,7 +3515,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     "mu": mu,
                     "sigma": sigma
                 },
-                "message": f"多段階在庫シミュレーション完了（段階数: {n_stages}, 期間: {n_periods}, サンプル: {n_samples}）"
+                "message": f"多段階在庫シミュレーション完了（段階数: {n_stages}, 期間: {n_periods}, サンプル: {n_samples}）。結果は保存されました。続けて可視化できます。"
             }
         except Exception as e:
             import traceback
@@ -3637,14 +3668,32 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             import pandas as pd
 
             # パラメータの取得
-            inventory_data = np.array(arguments["inventory_data"])  # shape: (n_samples, n_stages, n_periods+1)
-            stage_names = arguments.get("stage_names")
-            n_periods = arguments.get("n_periods")
+            # inventory_dataが指定されていない場合は、キャッシュから取得
+            inventory_data_arg = arguments.get("inventory_data")
+
+            if inventory_data_arg is None:
+                # キャッシュから最後のシミュレーション結果を取得
+                if user_id and user_id in _optimization_cache and "last_simulation" in _optimization_cache[user_id]:
+                    cached_sim = _optimization_cache[user_id]["last_simulation"]
+                    inventory_data = np.array(cached_sim["inventory_data"])
+                    stage_names = arguments.get("stage_names", cached_sim.get("stage_names"))
+                    n_periods = arguments.get("n_periods", cached_sim.get("n_periods"))
+                    n_stages = cached_sim.get("n_stages")
+                else:
+                    return {
+                        "status": "error",
+                        "message": "在庫データが指定されておらず、キャッシュにも保存されたシミュレーション結果がありません。先にシミュレーションを実行してください。"
+                    }
+            else:
+                inventory_data = np.array(inventory_data_arg)
+                stage_names = arguments.get("stage_names")
+                n_periods = arguments.get("n_periods")
+                n_stages = inventory_data.shape[1]
+
             samples = arguments.get("samples", 5)
             stage_id_list = arguments.get("stage_id_list")
 
             # stage_dfの作成
-            n_stages = inventory_data.shape[1]
             if stage_names is None:
                 stage_names = [f"Stage_{i}" for i in range(n_stages)]
 
