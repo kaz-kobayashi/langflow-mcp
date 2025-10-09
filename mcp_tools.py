@@ -2766,11 +2766,22 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     item['h'] = item.pop('holding_cost')
                 if 'stockout_cost' in item and 'b' not in item:
                     item['b'] = item.pop('stockout_cost')
+
                 # デフォルト値の設定
                 if 'capacity' not in item:
                     item['capacity'] = 10000
+                if 'process_time' not in item:
+                    item['process_time'] = 1
                 if 'net_replenishment_time' not in item:
                     item['net_replenishment_time'] = item.get('process_time', 1)
+
+                # 必須カラムのデフォルト値（LLMが生成しなかった場合）
+                if 'average_demand' not in item:
+                    item['average_demand'] = 0
+                if 'sigma' not in item:
+                    item['sigma'] = 0
+                if 'name' not in item:
+                    item['name'] = f"Stage_{stages.index(item)}"
 
             # stage_dfとbom_dfを準備
             stage_df, bom_df = prepare_stage_bom_data(network_data)
@@ -3077,11 +3088,22 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     item['h'] = item.pop('holding_cost')
                 if 'stockout_cost' in item and 'b' not in item:
                     item['b'] = item.pop('stockout_cost')
+
                 # デフォルト値の設定
                 if 'capacity' not in item:
                     item['capacity'] = 10000
+                if 'process_time' not in item:
+                    item['process_time'] = 1
                 if 'net_replenishment_time' not in item:
                     item['net_replenishment_time'] = item.get('process_time', 1)
+
+                # 必須カラムのデフォルト値（LLMが生成しなかった場合）
+                if 'average_demand' not in item:
+                    item['average_demand'] = 0
+                if 'sigma' not in item:
+                    item['sigma'] = 0
+                if 'name' not in item:
+                    item['name'] = f"Stage_{items_data.index(item)}"
 
             # BOMデータのカラム名を標準形式に変換とデフォルト値設定
             for bom in bom_data:
@@ -3168,11 +3190,22 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     item['h'] = item.pop('holding_cost')
                 if 'stockout_cost' in item and 'b' not in item:
                     item['b'] = item.pop('stockout_cost')
+
                 # デフォルト値の設定
                 if 'capacity' not in item:
                     item['capacity'] = 10000
+                if 'process_time' not in item:
+                    item['process_time'] = 1
                 if 'net_replenishment_time' not in item:
                     item['net_replenishment_time'] = item.get('process_time', 1)
+
+                # 必須カラムのデフォルト値（LLMが生成しなかった場合）
+                if 'average_demand' not in item:
+                    item['average_demand'] = 0
+                if 'sigma' not in item:
+                    item['sigma'] = 0
+                if 'name' not in item:
+                    item['name'] = f"Stage_{items_data.index(item)}"
 
             # BOMデータのカラム名を標準形式に変換とデフォルト値設定
             for bom in bom_data:
