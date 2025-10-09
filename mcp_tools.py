@@ -2297,12 +2297,14 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "visualize_demand_histogram":
         # 需要ヒストグラム可視化
         try:
+            from scmopt2.optinv import best_histogram
+
             demand_data = np.array(arguments["demand"])
             nbins = arguments.get("nbins", 30)
 
             # best_histogram関数を実行
-            # 戻り値: (fig, stats_dict)
-            fig, stats = best_histogram(demand_data, nbins=nbins)
+            # 戻り値: (fig, hist_dist)
+            fig, hist_dist = best_histogram(demand_data, nbins=nbins)
 
             # UUIDベースのviz_idを生成
             viz_id = str(uuid.uuid4())
@@ -2323,20 +2325,26 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             min_val = float(demand_data.min())
             max_val = float(demand_data.max())
 
+            # フィット分布からの統計量
+            fitted_mean = float(hist_dist.mean())
+            fitted_std = float(hist_dist.std())
+
             return {
                 "status": "success",
                 "visualization_type": "需要ヒストグラム",
                 "statistics": {
-                    "mean": mean_val,
-                    "median": median_val,
-                    "standard_deviation": std_val,
-                    "min": min_val,
-                    "max": max_val,
+                    "data_mean": mean_val,
+                    "data_median": median_val,
+                    "data_std": std_val,
+                    "data_min": min_val,
+                    "data_max": max_val,
+                    "fitted_mean": fitted_mean,
+                    "fitted_std": fitted_std,
                     "sample_size": len(demand_data),
                     "nbins": nbins
                 },
                 "visualization_id": viz_id,
-                "message": "需要データのヒストグラムを作成しました。"
+                "message": "需要データのヒストグラムを作成し、確率分布をフィットしました。"
             }
         except Exception as e:
             return {
