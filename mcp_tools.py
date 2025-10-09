@@ -3494,6 +3494,142 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "traceback": traceback.format_exc()
             }
 
+    elif function_name == "simulate_network_base_stock":
+        # ネットワークベースストックシミュレーション
+        try:
+            from scmopt2.optinv import network_base_stock_simulation
+            from scmopt2.core import SCMGraph
+
+            # パラメータの取得
+            items_data = json.loads(arguments["items_data"])
+            bom_data = json.loads(arguments["bom_data"])
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 50)
+            demand_data = arguments.get("demand_data")  # Dict or array
+            capacity = arguments.get("capacity")  # Array
+            base_stock = arguments.get("base_stock")  # Array (S)
+            phi = arguments.get("phi")  # BOM matrix
+            alpha = arguments.get("alpha")  # Allocation matrix
+
+            # SCMGraphを構築
+            G = SCMGraph()
+            n_stages = len(items_data)
+
+            # ノードを追加
+            for idx, item in enumerate(items_data):
+                G.add_node(idx, **item)
+
+            # エッジを追加
+            for bom in bom_data:
+                child_idx = next((i for i, item in enumerate(items_data) if item["name"] == bom["child"]), None)
+                parent_idx = next((i for i, item in enumerate(items_data) if item["name"] == bom["parent"]), None)
+                if child_idx is not None and parent_idx is not None:
+                    G.add_edge(child_idx, parent_idx)
+
+            # パラメータの準備
+            LT = np.array([item.get("lead_time", 1) for item in items_data])
+            ELT = np.array([item.get("echelon_lead_time", LT[i]) for i, item in enumerate(items_data)])
+            h = np.array([item.get("h", item.get("holding_cost", 1)) for item in items_data])
+            b = np.array([item.get("b", item.get("stockout_cost", 100)) for item in items_data])
+
+            # 需要データの準備
+            if demand_data is None:
+                # デフォルト需要（最終段階のみ）
+                demand = {}
+                for i in range(n_stages):
+                    if G.out_degree(i) == 0:  # 最終需要地点
+                        avg_demand = items_data[i].get("average_demand", 100)
+                        std_demand = items_data[i].get("std_demand", 10)
+                        demand[i] = np.random.normal(avg_demand, std_demand, (n_samples, n_periods))
+                    else:
+                        demand[i] = np.zeros((n_samples, n_periods))
+            else:
+                demand = {}
+                for i, d in enumerate(demand_data):
+                    demand[i] = np.array(d)
+
+            # Capacity
+            if capacity is None:
+                capacity = np.array([1e6 for _ in range(n_stages)])  # 無制限
+            else:
+                capacity = np.array(capacity)
+
+            # Base stock level
+            if base_stock is None:
+                # デフォルト: 平均需要 * リードタイム * 2
+                S = np.zeros(n_stages)
+                for i in range(n_stages):
+                    if G.out_degree(i) == 0:
+                        avg_d = items_data[i].get("average_demand", 100)
+                        S[i] = avg_d * LT[i] * 2
+                    else:
+                        S[i] = 200  # デフォルト値
+            else:
+                S = np.array(base_stock)
+
+            # Phi (BOM matrix)
+            if phi is None:
+                phi_matrix = np.zeros((n_stages, n_stages))
+                for bom in bom_data:
+                    child_idx = next((i for i, item in enumerate(items_data) if item["name"] == bom["child"]), None)
+                    parent_idx = next((i for i, item in enumerate(items_data) if item["name"] == bom["parent"]), None)
+                    if child_idx is not None and parent_idx is not None:
+                        phi_matrix[child_idx, parent_idx] = bom.get("units", 1)
+                phi = phi_matrix
+            else:
+                phi = np.array(phi)
+
+            # Alpha (Allocation matrix)
+            if alpha is None:
+                alpha_matrix = np.ones((n_stages, n_stages))
+                for bom in bom_data:
+                    child_idx = next((i for i, item in enumerate(items_data) if item["name"] == bom["child"]), None)
+                    parent_idx = next((i for i, item in enumerate(items_data) if item["name"] == bom["parent"]), None)
+                    if child_idx is not None and parent_idx is not None:
+                        alpha_matrix[child_idx, parent_idx] = bom.get("allocation", 1.0)
+                alpha = alpha_matrix
+            else:
+                alpha = np.array(alpha)
+
+            # シミュレーション実行
+            dC, total_cost, I = network_base_stock_simulation(
+                G, n_samples, n_periods, demand, capacity, LT, ELT, b, h, S, phi, alpha
+            )
+
+            # 結果の集計
+            inventory_stats = []
+            for stage in range(n_stages):
+                stage_inv = I[:, stage, :]
+                inventory_stats.append({
+                    "stage": stage,
+                    "stage_name": items_data[stage].get("name", f"Stage_{stage}"),
+                    "average_inventory": float(stage_inv.mean()),
+                    "std_inventory": float(stage_inv.std()),
+                    "min_inventory": float(stage_inv.min()),
+                    "max_inventory": float(stage_inv.max()),
+                    "stockout_count": int((stage_inv < 0).sum())
+                })
+
+            return {
+                "status": "success",
+                "total_cost": float(total_cost),
+                "gradient": dC.tolist(),
+                "inventory_stats": inventory_stats,
+                "simulation_params": {
+                    "n_samples": n_samples,
+                    "n_periods": n_periods,
+                    "n_stages": n_stages
+                },
+                "message": f"ネットワークベースストックシミュレーション完了（{n_stages}段階, {n_periods}期間, {n_samples}サンプル）"
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"ネットワークベースストックシミュレーションエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
     else:
         return {
             "status": "error",
