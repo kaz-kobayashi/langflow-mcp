@@ -2101,6 +2101,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "calculate_safety_stock":
         # 安全在庫の計算
         try:
+            import numpy as np
+            import scipy.stats as stats
+
             # 複数のパラメータ名に対応
             mu = arguments.get("mu") or arguments.get("demand_mean") or arguments.get("average_demand")
             sigma = arguments.get("sigma") or arguments.get("demand_std") or arguments.get("std_demand") or arguments.get("demand_std_dev")
