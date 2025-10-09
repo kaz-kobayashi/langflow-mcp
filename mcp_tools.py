@@ -1118,6 +1118,41 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["items_data", "bom_data"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "simulate_network_base_stock",
+            "description": "分岐構造を持つサプライチェーンネットワークで基在庫方策のシミュレーションを実行します。ネットワーク全体での在庫配置を最適化し、総コストを計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "items_data": {
+                        "type": "string",
+                        "description": "品目データのJSON配列文字列。各品目には name, h, b, average_demand, std_demand, lead_time, echelon_lead_time, capacity が必要"
+                    },
+                    "bom_data": {
+                        "type": "string",
+                        "description": "BOMデータのJSON配列文字列。child, parent, units, allocation (分岐の場合) を含む"
+                    },
+                    "base_stock_levels": {
+                        "type": "string",
+                        "description": "各品目の基在庫レベルを指定した辞書のJSON文字列。例: {\"原材料\": 500, \"中間品A\": 300}"
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数",
+                        "default": 30
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間",
+                        "default": 100
+                    }
+                },
+                "required": ["items_data", "bom_data", "base_stock_levels"]
+            }
+        }
     }
 ]
 
