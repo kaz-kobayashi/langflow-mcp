@@ -2766,6 +2766,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     item['h'] = item.pop('holding_cost')
                 if 'stockout_cost' in item and 'b' not in item:
                     item['b'] = item.pop('stockout_cost')
+                # デフォルト値の設定
+                if 'capacity' not in item:
+                    item['capacity'] = 10000
+                if 'net_replenishment_time' not in item:
+                    item['net_replenishment_time'] = item.get('process_time', 1)
 
             # stage_dfとbom_dfを準備
             stage_df, bom_df = prepare_stage_bom_data(network_data)
@@ -3248,9 +3253,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "message": f"Fit One Cycle最適化が完了しました。最良コスト: {result['best_cost']:.2f}"
             }
         except Exception as e:
+            import traceback
             return {
                 "status": "error",
-                "message": f"Fit One Cycle最適化エラー: {str(e)}"
+                "message": f"Fit One Cycle最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
             }
 
     else:
