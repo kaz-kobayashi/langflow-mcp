@@ -3630,6 +3630,85 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "traceback": traceback.format_exc()
             }
 
+    elif function_name == "visualize_simulation_trajectories":
+        # シミュレーション軌道の可視化
+        try:
+            from scmopt2.optinv import plot_simulation
+            import pandas as pd
+
+            # パラメータの取得
+            inventory_data = np.array(arguments["inventory_data"])  # shape: (n_samples, n_stages, n_periods+1)
+            stage_names = arguments.get("stage_names")
+            n_periods = arguments.get("n_periods")
+            samples = arguments.get("samples", 5)
+            stage_id_list = arguments.get("stage_id_list")
+
+            # stage_dfの作成
+            n_stages = inventory_data.shape[1]
+            if stage_names is None:
+                stage_names = [f"Stage_{i}" for i in range(n_stages)]
+
+            stage_df = pd.DataFrame({
+                "name": stage_names
+            })
+
+            # n_periodsの自動設定
+            if n_periods is None:
+                n_periods = inventory_data.shape[2]
+
+            # samplesの制限
+            max_samples = inventory_data.shape[0]
+            samples = min(samples, max_samples)
+
+            # グラフ作成
+            fig = plot_simulation(stage_df, inventory_data, n_periods=n_periods, samples=samples, stage_id_list=stage_id_list)
+
+            # UUIDベースのviz_idを生成
+            viz_id = str(uuid.uuid4())
+
+            # HTMLとして保存
+            html_content = fig.to_html(include_plotlyjs='cdn')
+
+            # キャッシュに保存
+            if user_id:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            # 統計情報を計算
+            statistics = []
+            for stage in range(n_stages):
+                stage_inv = inventory_data[:, stage, :n_periods]
+                statistics.append({
+                    "stage": stage,
+                    "stage_name": stage_names[stage],
+                    "average_inventory": float(stage_inv.mean()),
+                    "std_inventory": float(stage_inv.std()),
+                    "min_inventory": float(stage_inv.min()),
+                    "max_inventory": float(stage_inv.max())
+                })
+
+            return {
+                "status": "success",
+                "visualization_id": viz_id,
+                "visualization_type": "シミュレーション軌道",
+                "statistics": statistics,
+                "params": {
+                    "n_samples": int(inventory_data.shape[0]),
+                    "n_stages": n_stages,
+                    "n_periods": n_periods,
+                    "samples_displayed": samples
+                },
+                "message": f"シミュレーション軌道を可視化しました（{n_stages}段階, {n_periods}期間, {samples}サンプル表示）"
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"シミュレーション軌道可視化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
     else:
         return {
             "status": "error",
