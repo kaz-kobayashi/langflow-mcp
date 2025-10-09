@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel, EmailStr
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
@@ -52,7 +52,7 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[Message]
-    model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    model: str = os.getenv("OPENAI_MODEL_NAME", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
 
 class UserRegister(BaseModel):
     email: EmailStr
@@ -86,7 +86,7 @@ async def chat_page(request: Request):
 async def get_config():
     """フロントエンド用の設定情報を返す"""
     return {
-        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        "model": os.getenv("OPENAI_MODEL_NAME", os.getenv("OPENAI_MODEL", "gpt-4o-mini")),
         "environment": ENVIRONMENT,
         "skip_auth": SKIP_AUTH
     }
