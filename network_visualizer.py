@@ -74,9 +74,8 @@ def visualize_safety_stock_network(G, pos, NRT, MaxLI, MinLT, stage_names=None):
             color=MinLT,
             colorbar=dict(
                 thickness=15,
-                title='保証リードタイム<br>(MinLT)',
-                xanchor='left',
-                titleside='right'
+                title=dict(text='保証リードタイム<br>(MinLT)', side='right'),
+                xanchor='left'
             ),
             line=dict(width=2, color='#333')
         ),
@@ -468,9 +467,8 @@ def _create_node_trace(
             size=30,
             colorbar=dict(
                 thickness=15,
-                title='在庫レベル' if optimization_result else '平均需要',
-                xanchor='left',
-                titleside='right'
+                title=dict(text='在庫レベル' if optimization_result else '平均需要', side='right'),
+                xanchor='left'
             ),
             line=dict(width=2, color='DarkSlateGrey')
         )
