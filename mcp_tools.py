@@ -2791,9 +2791,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "success",
                 "optimization_type": "定期発注最適化",
-                "best_cost": result["best_cost"],
-                "converged": result["converged"],
-                "iterations": result["final_iteration"],
+                "best_cost": float(result["best_cost"]),
+                "converged": bool(result["converged"]),
+                "iterations": int(result["final_iteration"]),
                 "stages": stage_result,
                 "echelon_lead_time": result["echelon_lead_time"],
                 "optimization_history": result["optimization_history"],
