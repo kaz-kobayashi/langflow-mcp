@@ -3120,18 +3120,31 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     _optimization_cache[user_id] = {}
                 _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
 
+            # Inf/NaNチェック
+            best_cost = lr_result['best_cost']
+            if np.isinf(best_cost) or np.isnan(best_cost):
+                return {
+                    "status": "error",
+                    "message": f"最適学習率の探索が完了しましたが、最良コストは無限大（Infinity）となりました。\n\n推奨学習率: {lr_result['optimal_lr']:.2e}\n\nなお、最適化プロセスは指定された条件のもとで完了しましたが、コストが無限大となっていることに留意してください。\n\n訓練過程の可視化グラフが生成されました。可視化が完了しました。上に表示されたリンクをクリックして確認してください。",
+                    "optimal_learning_rate": float(lr_result['optimal_lr']),
+                    "best_cost": "infinity",
+                    "visualization_id": viz_id
+                }
+
             return {
                 "status": "success",
                 "optimal_learning_rate": float(lr_result['optimal_lr']),
-                "best_cost": float(lr_result['best_cost']),
+                "best_cost": float(best_cost),
                 "num_iterations": len(lr_result['lr_list']),
                 "visualization_id": viz_id,
                 "message": f"最適学習率を検出しました: {lr_result['optimal_lr']:.2e}"
             }
         except Exception as e:
+            import traceback
             return {
                 "status": "error",
-                "message": f"学習率探索エラー: {str(e)}"
+                "message": f"学習率探索エラー: {str(e)}",
+                "traceback": traceback.format_exc()
             }
 
     elif function_name == "optimize_periodic_with_one_cycle":
