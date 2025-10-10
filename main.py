@@ -166,10 +166,10 @@ async def chat(
 
 1. 利用可能なツール（function calling）がある場合は、必ずそれを使用してください
 2. 各ツールの使い分け：
-   - 経済発注量（EOQ）計算:
-     * 基本EOQ → calculate_eoq
-     * 増分数量割引EOQ → calculate_eoq_incremental_discount（発注量に応じて段階的に単価が下がる）
-     * 全単位数量割引EOQ → calculate_eoq_all_units_discount（発注量に応じて全数量の単価が下がる）
+   - 経済発注量（EOQ）計算（推奨：_rawバージョンを使用）:
+     * 基本EOQ → calculate_eoq_raw（年間需要、発注コスト、保管費率、単価をそのまま渡す）
+     * 増分数量割引EOQ → calculate_eoq_incremental_discount_raw（発注量に応じて段階的に単価が下がる）
+     * 全単位数量割引EOQ → calculate_eoq_all_units_discount_raw（発注量に応じて全数量の単価が下がる）
    - 安全在庫計算 → calculate_safety_stock（単一品目の安全在庫計算、可視化不可）
    - サプライチェーンネットワークの安全在庫最適化 → optimize_safety_stock_allocation（複数品目のネットワーク最適化、可視化可能）
    - グラフや図の可視化 → visualize_last_optimization（optimize_safety_stock_allocationの結果のみ可視化可能）
@@ -179,21 +179,11 @@ async def chat(
    - ユーザーが「正規分布」「ガンマ分布」など分布タイプと統計パラメータ（平均、標準偏差など）を指定した場合 → **base_stock_simulation_using_dist を使用**
    - ユーザーが具体的な需要配列（例: [98, 105, 92, ...]）を提供した場合 → simulate_base_stock_policy を使用
    - 絶対に需要配列の生成を要求しないこと！分布パラメータがあれば base_stock_simulation_using_dist が自動生成します
-4. 重要：EOQ数量割引のパラメータ変換：
-   - **増分数量割引**の場合、calculate_eoq_incremental_discountツールを使用
-   - **全単位数量割引**の場合、calculate_eoq_all_units_discountツールを使用
-   - ユーザーが単価テーブル形式で指定した場合（例: [{"quantity": 0, "price": 12.0}, {"quantity": 500, "price": 11.5}]）:
-     * unit_costs: 価格の配列 [12.0, 11.5, 11.0, 10.5] ← 必ず全ての価格を含める
-     * quantity_breaks: 最小数量の配列 [0, 500, 1000, 2000] ← 必ず0から始め、全ての数量を含める（unit_costsと同じ長さ）
-     * 重要: 両方の配列は同じ長さでなければなりません！
-   - 在庫保管費率（%）が指定された場合:
-     * r = 保管費率（小数形式、例: 20% → 0.2）
-     * h = 最初の単価 × r ÷ 365（日次コストに変換）
-     * 例: 単価12.0円、保管費率20% → h = 12.0 × 0.2 ÷ 365 = 0.00658
-   - 年間需要が指定された場合:
-     * d = 年間需要 ÷ 365（日次需要に変換）
-     * 例: 年間需要12,000個 → d = 12000 ÷ 365 = 32.88
-   - バックオーダーコスト（b）が指定されていない場合: b = 0
+4. 重要：EOQ計算の手順（Two-Step Processing）：
+   - ユーザーが年間需要、発注コスト、保管費率、単価（テーブル）を指定した場合
+   - **必ず_rawバージョンのFunction（calculate_eoq_*_raw）を使用してください**
+   - ユーザーから受け取った値をそのまま渡してください（パラメータ変換は自動的に行われます）
+   - 例：年間需要15000個、発注コスト500円、保管費率25%、単価テーブル → そのまま渡す
 5. 重要：定期発注最適化（optimize_periodic_inventory）のパラメータ指定：
    - 段階ごとに異なる値（例: 在庫保管費用: [0.5, 1.0, 2.0, 5.0]）が指定された場合：
      * 各段階のhフィールドに配列の対応する値を設定してください（Stage0はh=0.5, Stage1はh=1.0など）

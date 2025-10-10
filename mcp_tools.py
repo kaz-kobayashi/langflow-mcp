@@ -48,6 +48,81 @@ import plotly.graph_objects as go
 from scipy import stats
 import os
 import uuid
+
+
+# ===== Two-Step Processing: Parameter Conversion Functions =====
+
+def convert_eoq_params_from_raw(raw_params):
+    """
+    EOQ計算用の生パラメータ（LLMが抽出した情報）を、
+    実際の計算用パラメータに変換する
+
+    Args:
+        raw_params: {
+            "annual_demand": int,        # 年間需要
+            "order_cost": float,          # 発注コスト
+            "holding_cost_rate": float,   # 在庫保管費率（小数: 0.25 = 25%）
+            "price_table": [{"quantity": int, "price": float}],  # 単価テーブル
+            "backorder_cost": Optional[float]  # バックオーダーコスト（任意）
+        }
+
+    Returns:
+        dict: 計算用パラメータ {d, K, h, r, unit_costs, quantity_breaks, b}
+    """
+    try:
+        # 必須フィールドチェック
+        required_fields = ["annual_demand", "order_cost", "holding_cost_rate", "price_table"]
+        for field in required_fields:
+            if field not in raw_params:
+                raise ValueError(f"必須フィールド '{field}' が不足しています")
+
+        # 抽出
+        annual_demand = raw_params["annual_demand"]
+        order_cost = raw_params["order_cost"]
+        holding_cost_rate = raw_params["holding_cost_rate"]
+        price_table = raw_params["price_table"]
+        backorder_cost = raw_params.get("backorder_cost", 0)
+
+        # バリデーション
+        if annual_demand <= 0:
+            raise ValueError(f"年間需要は正の値が必要: {annual_demand}")
+        if order_cost <= 0:
+            raise ValueError(f"発注コストは正の値が必要: {order_cost}")
+        if not 0 <= holding_cost_rate <= 1:
+            raise ValueError(f"在庫保管費率は0-1の範囲が必要: {holding_cost_rate}")
+        if not price_table or len(price_table) == 0:
+            raise ValueError("単価テーブルが空です")
+
+        # 変換処理（確実にPythonで実行）
+        d = annual_demand / 365.0  # 日次需要
+        K = float(order_cost)
+
+        # 単価テーブルをソートして配列に変換
+        sorted_table = sorted(price_table, key=lambda x: x["quantity"])
+        unit_costs = [float(item["price"]) for item in sorted_table]
+        quantity_breaks = [int(item["quantity"]) for item in sorted_table]
+
+        # 在庫保管コスト（日次）
+        r = float(holding_cost_rate)
+        h = unit_costs[0] * r / 365.0  # 最初の単価を使用
+
+        b = float(backorder_cost) if backorder_cost else 0
+
+        # 結果
+        converted = {
+            "d": d,
+            "K": K,
+            "h": h,
+            "r": r,
+            "unit_costs": unit_costs,
+            "quantity_breaks": quantity_breaks,
+            "b": b
+        }
+
+        return converted
+
+    except Exception as e:
+        raise ValueError(f"パラメータ変換エラー: {str(e)}")
 from datetime import datetime
 
 # ユーザーごとの計算結果キャッシュ
@@ -84,32 +159,122 @@ def get_visualization_html(user_id: int, viz_id: str = None) -> str:
 
 # OpenAI Function Calling用のツール定義
 MCP_TOOLS_DEFINITION = [
+    # ===== Two-Step Processing: Raw parameter versions =====
     {
         "type": "function",
         "function": {
-            "name": "calculate_eoq",
-            "description": "経済発注量（EOQ: Economic Order Quantity）を計算します。発注固定費用、平均需要量、在庫保管費用、品切れ費用から最適な発注量を算出します。",
+            "name": "calculate_eoq_all_units_discount_raw",
+            "description": "【推奨】全単位数量割引を考慮したEOQを計算します。ユーザーが指定した年間需要、発注コスト、保管費率、単価テーブルをそのまま渡してください。パラメータ変換は自動で行われます。",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "K": {
+                    "annual_demand": {
+                        "type": "integer",
+                        "description": "年間需要量（units/年）- ユーザーが指定した値をそのまま"
+                    },
+                    "order_cost": {
                         "type": "number",
                         "description": "発注固定費用（円/回）"
                     },
-                    "d": {
+                    "holding_cost_rate": {
                         "type": "number",
-                        "description": "平均需要量（units/日）"
+                        "description": "在庫保管費率（小数形式: 0.25 = 25%）"
                     },
-                    "h": {
-                        "type": "number",
-                        "description": "在庫保管費用（円/unit/日）"
+                    "price_table": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "quantity": {"type": "integer", "description": "最小発注量"},
+                                "price": {"type": "number", "description": "その数量での単価"}
+                            },
+                            "required": ["quantity", "price"]
+                        },
+                        "description": "単価テーブル - ユーザーが指定した形式のまま [{\"quantity\": 0, \"price\": 15.0}, ...]"
                     },
-                    "b": {
+                    "backorder_cost": {
                         "type": "number",
-                        "description": "品切れ費用（円/unit/日）"
+                        "description": "バックオーダーコスト（円/unit/日）- オプション",
+                        "default": 0
                     }
                 },
-                "required": ["K", "d", "h", "b"]
+                "required": ["annual_demand", "order_cost", "holding_cost_rate", "price_table"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_eoq_incremental_discount_raw",
+            "description": "【推奨】増分数量割引を考慮したEOQを計算します。ユーザーが指定した年間需要、発注コスト、保管費率、単価テーブルをそのまま渡してください。パラメータ変換は自動で行われます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "annual_demand": {
+                        "type": "integer",
+                        "description": "年間需要量（units/年）- ユーザーが指定した値をそのまま"
+                    },
+                    "order_cost": {
+                        "type": "number",
+                        "description": "発注固定費用（円/回）"
+                    },
+                    "holding_cost_rate": {
+                        "type": "number",
+                        "description": "在庫保管費率（小数形式: 0.25 = 25%）"
+                    },
+                    "price_table": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "quantity": {"type": "integer", "description": "最小発注量"},
+                                "price": {"type": "number", "description": "その数量での単価"}
+                            },
+                            "required": ["quantity", "price"]
+                        },
+                        "description": "単価テーブル - ユーザーが指定した形式のまま [{\"quantity\": 0, \"price\": 12.0}, ...]"
+                    },
+                    "backorder_cost": {
+                        "type": "number",
+                        "description": "バックオーダーコスト（円/unit/日）- オプション",
+                        "default": 0
+                    }
+                },
+                "required": ["annual_demand", "order_cost", "holding_cost_rate", "price_table"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_eoq_raw",
+            "description": "【推奨】基本的なEOQを計算します。ユーザーが指定した年間需要、発注コスト、保管費率、単価をそのまま渡してください。パラメータ変換は自動で行われます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "annual_demand": {
+                        "type": "integer",
+                        "description": "年間需要量（units/年）"
+                    },
+                    "order_cost": {
+                        "type": "number",
+                        "description": "発注固定費用（円/回）"
+                    },
+                    "holding_cost_rate": {
+                        "type": "number",
+                        "description": "在庫保管費率（小数形式: 0.25 = 25%）"
+                    },
+                    "unit_price": {
+                        "type": "number",
+                        "description": "単価（円/unit）"
+                    },
+                    "backorder_cost": {
+                        "type": "number",
+                        "description": "バックオーダーコスト（円/unit/日）- オプション",
+                        "default": 0
+                    }
+                },
+                "required": ["annual_demand", "order_cost", "holding_cost_rate", "unit_price"]
             }
         }
     },
@@ -902,6 +1067,14 @@ MCP_TOOLS_DEFINITION = [
                     "learning_rate": {
                         "type": "number",
                         "description": "学習率（デフォルト：1.0）"
+                    },
+                    "backorder_cost": {
+                        "type": "number",
+                        "description": "全段階共通のバックオーダーコスト（各段階でbが未指定の場合に使用、デフォルト：100）"
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "全段階共通の在庫保管コスト（各段階でhが未指定の場合に使用、デフォルト：1）"
                     }
                 },
                 "required": ["network_data"]
@@ -939,92 +1112,6 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["optimization_result"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "calculate_eoq_incremental_discount",
-            "description": "増分数量割引対応のEOQを計算します。発注量に応じて単価が段階的に安くなる場合の最適発注量を算出します。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "K": {
-                        "type": "number",
-                        "description": "発注固定費用（円/回）"
-                    },
-                    "d": {
-                        "type": "number",
-                        "description": "平均需要量（units/日）"
-                    },
-                    "h": {
-                        "type": "number",
-                        "description": "在庫保管費用（円/unit/日）"
-                    },
-                    "b": {
-                        "type": "number",
-                        "description": "品切れ費用（円/unit/日）"
-                    },
-                    "r": {
-                        "type": "number",
-                        "description": "割引率"
-                    },
-                    "unit_costs": {
-                        "type": "array",
-                        "items": {"type": "number"},
-                        "description": "各価格帯の単価リスト [c0, c1, c2, ...]"
-                    },
-                    "quantity_breaks": {
-                        "type": "array",
-                        "items": {"type": "number"},
-                        "description": "各価格帯の最小発注量 [θ0, θ1, θ2, ...]"
-                    }
-                },
-                "required": ["K", "d", "h", "b", "r", "unit_costs", "quantity_breaks"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "calculate_eoq_all_units_discount",
-            "description": "全単位数量割引対応のEOQを計算します。発注量に応じて全数量の単価が安くなる場合の最適発注量を算出します。",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "K": {
-                        "type": "number",
-                        "description": "発注固定費用（円/回）"
-                    },
-                    "d": {
-                        "type": "number",
-                        "description": "平均需要量（units/日）"
-                    },
-                    "h": {
-                        "type": "number",
-                        "description": "在庫保管費用（円/unit/日）"
-                    },
-                    "b": {
-                        "type": "number",
-                        "description": "品切れ費用（円/unit/日）"
-                    },
-                    "r": {
-                        "type": "number",
-                        "description": "割引率"
-                    },
-                    "unit_costs": {
-                        "type": "array",
-                        "items": {"type": "number"},
-                        "description": "各価格帯の単価リスト [c0, c1, c2, ...]"
-                    },
-                    "quantity_breaks": {
-                        "type": "array",
-                        "items": {"type": "number"},
-                        "description": "各価格帯の最小発注量 [θ0, θ1, θ2, ...]"
-                    }
-                },
-                "required": ["K", "d", "h", "b", "r", "unit_costs", "quantity_breaks"]
             }
         }
     },
@@ -1153,6 +1240,67 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["items_data", "bom_data", "base_stock_levels"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "base_stock_simulation_using_dist",
+            "description": "確率分布を指定して基在庫方策のシミュレーションを実行します。分布パラメータから自動的に需要を生成し、シミュレーションを実行します。正規分布、ガンマ分布、ポアソン分布など6種類の分布に対応しています。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "demand_dist": {
+                        "type": "object",
+                        "description": "需要分布の設定。typeフィールドで分布タイプ（normal, gamma, poisson, uniform, exponential, lognormal）を指定し、paramsフィールドで分布パラメータを指定します",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "description": "分布タイプ（normal, gamma, poisson, uniform, exponential, lognormal）"
+                            },
+                            "params": {
+                                "type": "object",
+                                "description": "分布パラメータ。normal: {mu, sigma}, gamma: {shape, scale}, poisson: {lam}, uniform: {low, high}, exponential: {scale}, lognormal: {s, scale}"
+                            }
+                        }
+                    },
+                    "base_stock_level": {
+                        "type": "number",
+                        "description": "基在庫レベルS。指定しない場合は自動計算されます"
+                    },
+                    "capacity": {
+                        "type": "number",
+                        "description": "生産能力。デフォルトは無限大",
+                        "default": 1e10
+                    },
+                    "lead_time": {
+                        "type": "integer",
+                        "description": "リードタイム（期）",
+                        "default": 1
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "在庫保管費用",
+                        "default": 1
+                    },
+                    "backorder_cost": {
+                        "type": "number",
+                        "description": "バックオーダーコスト（品切れコスト）",
+                        "default": 100
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "モンテカルロシミュレーションのサンプル数",
+                        "default": 100
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間",
+                        "default": 100
+                    }
+                },
+                "required": ["demand_dist"]
+            }
+        }
     }
 ]
 
@@ -1169,7 +1317,110 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         実行結果の辞書
     """
 
-    if function_name == "calculate_eoq":
+    # ===== Two-Step Processing: Raw parameter versions =====
+    if function_name == "calculate_eoq_all_units_discount_raw":
+        try:
+            # Step 1: パラメータ変換
+            converted_params = convert_eoq_params_from_raw(arguments)
+
+            # Step 2: 実際の計算実行
+            result = calculate_eoq_with_all_units_discount(
+                K=converted_params["K"],
+                d=converted_params["d"],
+                h=converted_params["h"],
+                b=converted_params["b"],
+                r=converted_params["r"],
+                unit_costs=converted_params["unit_costs"],
+                quantity_breaks=converted_params["quantity_breaks"]
+            )
+            return {
+                "status": "success",
+                **result,
+                "converted_params": converted_params  # デバッグ用
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"全単位数量割引EOQ計算エラー: {str(e)}",
+                "traceback": traceback.format_exc(),
+                "raw_arguments": arguments
+            }
+
+    elif function_name == "calculate_eoq_incremental_discount_raw":
+        try:
+            # Step 1: パラメータ変換
+            converted_params = convert_eoq_params_from_raw(arguments)
+
+            # Step 2: 実際の計算実行
+            result = calculate_eoq_with_incremental_discount(
+                K=converted_params["K"],
+                d=converted_params["d"],
+                h=converted_params["h"],
+                b=converted_params["b"],
+                r=converted_params["r"],
+                unit_costs=converted_params["unit_costs"],
+                quantity_breaks=converted_params["quantity_breaks"]
+            )
+            return {
+                "status": "success",
+                **result,
+                "converted_params": converted_params  # デバッグ用
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"増分数量割引EOQ計算エラー: {str(e)}",
+                "traceback": traceback.format_exc(),
+                "raw_arguments": arguments
+            }
+
+    elif function_name == "calculate_eoq_raw":
+        try:
+            # 基本EOQ用の簡易変換
+            annual_demand = arguments["annual_demand"]
+            order_cost = arguments["order_cost"]
+            holding_cost_rate = arguments["holding_cost_rate"]
+            unit_price = arguments["unit_price"]
+            backorder_cost = arguments.get("backorder_cost", 0)
+
+            # 変換
+            d = annual_demand / 365.0
+            K = float(order_cost)
+            r = float(holding_cost_rate)
+            h = unit_price * r / 365.0
+            b = float(backorder_cost)
+
+            # 計算実行
+            result = eoq(K=K, d=d, h=h, b=b, r=r, c=0.0, theta=0.0)
+            Q_star, TC_star = result
+
+            return {
+                "status": "success",
+                "optimal_order_quantity": float(Q_star),
+                "total_cost": float(TC_star),
+                "annual_total_cost": float(TC_star * 365),
+                "parameters": {
+                    "annual_demand": annual_demand,
+                    "daily_demand": d,
+                    "order_cost": K,
+                    "holding_cost_rate": r,
+                    "daily_holding_cost": h,
+                    "unit_price": unit_price,
+                    "backorder_cost": b
+                }
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"基本EOQ計算エラー: {str(e)}",
+                "traceback": traceback.format_exc(),
+                "raw_arguments": arguments
+            }
+
+    elif function_name == "calculate_eoq":
         result = eoq(
             K=arguments["K"],
             d=arguments["d"],
@@ -2346,6 +2597,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "find_best_distribution":
         # 最適需要分布の自動選択
         try:
+            import numpy as np
+            import uuid
+            import os
             demand_data = np.array(arguments["demand"])
 
             # best_distribution関数を実行
@@ -2355,14 +2609,13 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # UUIDベースのviz_idを生成
             viz_id = str(uuid.uuid4())
 
-            # HTMLとして保存
-            html_content = fig.to_html(include_plotlyjs='cdn')
+            # 可視化をファイルシステムに保存
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
 
-            # キャッシュに保存
-            if user_id:
-                if user_id not in _optimization_cache:
-                    _optimization_cache[user_id] = {}
-                _optimization_cache[user_id][viz_id] = html_content
+            import plotly.io as pio
+            pio.write_html(fig, file_path)
 
             return {
                 "status": "success",
@@ -2390,6 +2643,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "visualize_demand_histogram":
         # 需要ヒストグラム可視化
         try:
+            import numpy as np
+            import uuid
+            import os
             from scmopt2.optinv import best_histogram
 
             demand_data = np.array(arguments["demand"])
@@ -2402,14 +2658,13 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # UUIDベースのviz_idを生成
             viz_id = str(uuid.uuid4())
 
-            # HTMLとして保存
-            html_content = fig.to_html(include_plotlyjs='cdn')
+            # 可視化をファイルシステムに保存
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
 
-            # キャッシュに保存
-            if user_id:
-                if user_id not in _optimization_cache:
-                    _optimization_cache[user_id] = {}
-                _optimization_cache[user_id][viz_id] = html_content
+            import plotly.io as pio
+            pio.write_html(fig, file_path)
 
             # 基本統計量を計算
             mean_val = float(demand_data.mean())
@@ -2706,6 +2961,16 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             method = arguments.get("method", "exponential_smoothing")
             confidence_level = arguments.get("confidence_level", 0.95)
 
+            # メソッド名のエイリアス変換
+            method_aliases = {
+                "ses": "exponential_smoothing",  # Simple Exponential Smoothing
+                "ma": "moving_average",          # Moving Average
+                "sma": "moving_average",         # Simple Moving Average
+                "linear": "linear_trend",        # Linear Trend
+                "trend": "linear_trend"
+            }
+            method = method_aliases.get(method, method)
+
             # オプションパラメータ
             kwargs = {}
             if "window" in arguments:
@@ -2747,6 +3012,16 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             forecast_periods = arguments.get("forecast_periods", 7)
             method = arguments.get("method", "exponential_smoothing")
             confidence_level = arguments.get("confidence_level", 0.95)
+
+            # メソッド名のエイリアス変換
+            method_aliases = {
+                "ses": "exponential_smoothing",  # Simple Exponential Smoothing
+                "ma": "moving_average",          # Moving Average
+                "sma": "moving_average",         # Simple Moving Average
+                "linear": "linear_trend",        # Linear Trend
+                "trend": "linear_trend"
+            }
+            method = method_aliases.get(method, method)
 
             # オプションパラメータ
             kwargs = {}
@@ -2866,9 +3141,23 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             n_periods = arguments.get("n_periods", 100)
             learning_rate = arguments.get("learning_rate", 1.0)
 
+            # 共通パラメータの取得（全段階に適用される値）
+            default_backorder_cost = arguments.get("backorder_cost", 100)
+            default_holding_cost = arguments.get("holding_cost", 1)
+
             # BOMデータのカラム名を標準形式に変換とデフォルト値設定
             connections = network_data.get("connections", [])
             for bom in connections:
+                # 'from'/'to' を 'child'/'parent' に変換
+                if 'from' in bom and 'child' not in bom:
+                    bom['child'] = bom.pop('from')
+                if 'to' in bom and 'parent' not in bom:
+                    bom['parent'] = bom.pop('to')
+                # 'source'/'target' を 'child'/'parent' に変換（別の命名規則）
+                if 'source' in bom and 'child' not in bom:
+                    bom['child'] = bom.pop('source')
+                if 'target' in bom and 'parent' not in bom:
+                    bom['parent'] = bom.pop('target')
                 # 'quantity' を 'units' に変換
                 if 'quantity' in bom and 'units' not in bom:
                     bom['units'] = bom.pop('quantity')
@@ -2905,6 +3194,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     item['sigma'] = 0
                 if 'name' not in item:
                     item['name'] = f"Stage_{stages.index(item)}"
+                # 重要: bとhが欠落している場合は共通パラメータを使用
+                if 'b' not in item:
+                    item['b'] = default_backorder_cost
+                if 'h' not in item:
+                    item['h'] = default_holding_cost
 
             # stage_dfとbom_dfを準備
             stage_df, bom_df = prepare_stage_bom_data(network_data)
@@ -3107,6 +3401,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "status": "error",
                 "message": f"増分数量割引EOQ計算エラー: {str(e)}",
                 "debug_info": {
+                    "K": arguments.get("K"),
+                    "d": arguments.get("d"),
+                    "h": arguments.get("h"),
+                    "b": arguments.get("b"),
+                    "r": arguments.get("r"),
                     "unit_costs": arguments.get("unit_costs"),
                     "quantity_breaks": arguments.get("quantity_breaks"),
                     "traceback": traceback.format_exc()
@@ -3636,6 +3935,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "simulate_network_base_stock":
         # ネットワークベースストックシミュレーション
         try:
+            import numpy as np
             from scmopt2.optinv import network_base_stock_simulation
             from scmopt2.core import SCMGraph
 
