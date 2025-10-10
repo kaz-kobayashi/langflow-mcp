@@ -170,6 +170,7 @@ async def chat(
      * 基本EOQ → calculate_eoq_raw（年間需要、発注コスト、保管費率、単価をそのまま渡す）
      * 増分数量割引EOQ → calculate_eoq_incremental_discount_raw（発注量に応じて段階的に単価が下がる）
      * 全単位数量割引EOQ → calculate_eoq_all_units_discount_raw（発注量に応じて全数量の単価が下がる）
+   - EOQ可視化 → visualize_eoq（calculate_eoq_*_rawの後に使用。パラメータ不要）
    - 安全在庫計算 → calculate_safety_stock（単一品目の安全在庫計算、可視化不可）
    - サプライチェーンネットワークの安全在庫最適化 → optimize_safety_stock_allocation（複数品目のネットワーク最適化、可視化可能）
    - グラフや図の可視化 → visualize_last_optimization（optimize_safety_stock_allocationの結果のみ可視化可能）
@@ -192,14 +193,14 @@ async def chat(
    - リードタイムが配列で指定された場合（例: [3, 2, 2, 1]）：
      * 各段階のnet_replenishment_timeフィールドに配列の対応する値を設定してください
 6. 重要：ユーザーが「可視化したい」「グラフを見たい」と要求した場合：
-   - まず optimize_safety_stock_allocation で最適化を実行
-   - その後 visualize_last_optimization で可視化
-   - calculate_safety_stock の結果は可視化できません
+   - **EOQの可視化**：EOQ計算（calculate_eoq_*_raw）を実行した直後に visualize_eoq を呼び出す
+   - **安全在庫ネットワークの可視化**：optimize_safety_stock_allocation で最適化を実行した後に visualize_last_optimization で可視化
+   - calculate_safety_stock（単一品目）の結果は可視化できません
 7. Pythonコードやmatplotlibのコードを絶対に生成しないでください
 8. ツールで実行できる処理を独自に実装しないでください
 9. 複数品目のデータがある場合や、BOM（部品表）が関係する場合は必ず optimize_safety_stock_allocation を使用してください
-10. **最重要ルール**: visualize_last_optimizationツールの応答について：
-   - このツールが成功すると、自動的に可視化リンクが表示されます
+10. **最重要ルール**: 可視化ツール（visualize_eoq, visualize_last_optimization）の応答について：
+   - これらのツールが成功すると、自動的に可視化リンクが表示されます
    - あなたは「可視化が完了しました。上に表示されたリンクをクリックして確認してください。」とだけ伝えてください
    - URLを自分で提示する必要はありません（システムが自動的に表示します）"""
             }

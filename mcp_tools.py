@@ -1119,28 +1119,11 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "visualize_eoq",
-            "description": "EOQ分析の総コスト曲線を可視化します。発注量とコストの関係をグラフで表示します。",
+            "description": "直前に計算したEOQ結果を可視化します。calculate_eoq_*_rawで計算した後に使用してください。総コスト曲線や数量割引のグラフを表示します。",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "K": {
-                        "type": "number",
-                        "description": "発注固定費用（円/回）"
-                    },
-                    "d": {
-                        "type": "number",
-                        "description": "平均需要量（units/日）"
-                    },
-                    "h": {
-                        "type": "number",
-                        "description": "在庫保管費用（円/unit/日）"
-                    },
-                    "b": {
-                        "type": "number",
-                        "description": "品切れ費用（円/unit/日）"
-                    }
-                },
-                "required": ["K", "d", "h", "b"]
+                "properties": {},
+                "required": []
             }
         }
     },
@@ -1333,6 +1316,14 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 unit_costs=converted_params["unit_costs"],
                 quantity_breaks=converted_params["quantity_breaks"]
             )
+
+            # ユーザーキャッシュに保存（可視化用）
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id]["last_eoq_params"] = converted_params
+                _optimization_cache[user_id]["last_eoq_type"] = "all_units_discount"
+
             return {
                 "status": "success",
                 **result,
@@ -1362,6 +1353,14 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 unit_costs=converted_params["unit_costs"],
                 quantity_breaks=converted_params["quantity_breaks"]
             )
+
+            # ユーザーキャッシュに保存（可視化用）
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id]["last_eoq_params"] = converted_params
+                _optimization_cache[user_id]["last_eoq_type"] = "incremental_discount"
+
             return {
                 "status": "success",
                 **result,
@@ -1395,6 +1394,19 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # 計算実行
             result = eoq(K=K, d=d, h=h, b=b, r=r, c=0.0, theta=0.0)
             Q_star, TC_star = result
+
+            # ユーザーキャッシュに保存（可視化用）
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id]["last_eoq_params"] = {
+                    "K": K,
+                    "d": d,
+                    "h": h,
+                    "b": b,
+                    "r": r
+                }
+                _optimization_cache[user_id]["last_eoq_type"] = "basic"
 
             return {
                 "status": "success",
@@ -3452,12 +3464,44 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "visualize_eoq":
         try:
-            fig = visualize_eoq_analysis(
-                K=arguments["K"],
-                d=arguments["d"],
-                h=arguments["h"],
-                b=arguments.get("b")
-            )
+            # キャッシュから最後のEOQ計算パラメータを取得
+            if user_id is None or user_id not in _optimization_cache:
+                return {
+                    "status": "error",
+                    "message": "先にEOQ計算を実行してください（calculate_eoq_*_raw）"
+                }
+
+            cache = _optimization_cache[user_id]
+            if "last_eoq_params" not in cache or "last_eoq_type" not in cache:
+                return {
+                    "status": "error",
+                    "message": "EOQ計算の履歴が見つかりません。先にcalculate_eoq_*_rawを実行してください"
+                }
+
+            params = cache["last_eoq_params"]
+            eoq_type = cache["last_eoq_type"]
+
+            # EOQタイプに応じて可視化
+            if eoq_type == "all_units_discount" or eoq_type == "incremental_discount":
+                # 数量割引EOQ可視化
+                fig = visualize_eoq_with_discount(
+                    K=params["K"],
+                    d=params["d"],
+                    h=params["h"],
+                    b=params["b"],
+                    r=params["r"],
+                    unit_costs=params["unit_costs"],
+                    quantity_breaks=params["quantity_breaks"],
+                    discount_type=eoq_type
+                )
+            else:
+                # 基本EOQ可視化
+                fig = visualize_eoq_analysis(
+                    K=params["K"],
+                    d=params["d"],
+                    h=params["h"],
+                    b=params["b"]
+                )
 
             # グラフを保存
             viz_id = str(uuid.uuid4())
@@ -3467,25 +3511,13 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             file_path = os.path.join(output_dir, f"{viz_id}.html")
             pio.write_html(fig, file_path)
 
-            # ユーザーキャッシュに保存
-            if user_id is not None:
-                if user_id not in _optimization_cache:
-                    _optimization_cache[user_id] = {}
-                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
-
-            # 基本EOQ結果も計算
-            eoq_result = calc_eoq_basic(
-                K=arguments["K"],
-                d=arguments["d"],
-                h=arguments["h"],
-                b=arguments.get("b")
-            )
+            # キャッシュに保存
+            _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
 
             return {
                 "status": "success",
-                "visualization_type": "EOQ分析グラフ",
+                "visualization_type": f"EOQ可視化（{eoq_type}）",
                 "visualization_id": viz_id,
-                "optimal_order_quantity": eoq_result["optimal_order_quantity"],
                 "message": "EOQ分析を可視化しました"
             }
         except Exception as e:
