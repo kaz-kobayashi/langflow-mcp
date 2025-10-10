@@ -11,6 +11,16 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/javascript.min.js"></script>
+
     <style>
         [x-cloak] { display: none !important; }
 
@@ -49,6 +59,154 @@
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
+        /* Markdown styling */
+        .markdown-content {
+            line-height: 1.6;
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4 {
+            font-weight: bold;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-content h1 { font-size: 1.5em; }
+        .markdown-content h2 { font-size: 1.3em; }
+        .markdown-content h3 { font-size: 1.1em; }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-left: 1.5em;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-content li {
+            margin-bottom: 0.25em;
+        }
+
+        .markdown-content code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875em;
+        }
+
+        .markdown-content pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 0.5em 0;
+        }
+
+        .markdown-content pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .markdown-content a {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .markdown-content a:hover {
+            color: #1d4ed8;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1em;
+            margin-left: 0;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.5em 0;
+        }
+
+        .markdown-content table th,
+        .markdown-content table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5em;
+            text-align: left;
+        }
+
+        .markdown-content table th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+        }
+
+        /* Code block styling */
+        .hljs {
+            border-radius: 0.5rem;
+            font-size: 0.875em;
+        }
+
+        /* User message styling (white text on blue background) */
+        .user-message .markdown-content a {
+            color: #bfdbfe;
+            text-decoration: underline;
+        }
+
+        .user-message .markdown-content a:hover {
+            color: #dbeafe;
+        }
+
+        .user-message .markdown-content code {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .user-message .markdown-content pre {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* JSON collapsible styling */
+        .json-collapsible {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin: 0.5em 0;
+            overflow: hidden;
+        }
+
+        .json-collapsible-header {
+            background-color: #f3f4f6;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .json-collapsible-header:hover {
+            background-color: #e5e7eb;
+        }
+
+        .json-collapsible-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .json-toggle-icon {
+            transition: transform 0.2s;
+        }
+
+        .json-toggle-icon.collapsed {
+            transform: rotate(-90deg);
+        }
     </style>
 </head>
 <body class="bg-gray-50" x-data="chatApp()" x-init="init()">
@@ -61,6 +219,7 @@
                     <p class="text-sm text-gray-200 mt-1">Powered by LLM</p>
                 </div>
                 <button
+                    x-show="!skipAuth"
                     @click="logout()"
                     class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
                 >
@@ -93,14 +252,12 @@
                         <div
                             class="max-w-[75%] rounded-lg px-4 py-3"
                             :class="message.role === 'user'
-                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white user-message'
                                 : 'bg-gray-100 text-gray-800'"
                         >
                             <div class="flex items-start gap-2">
                                 <span class="text-lg" x-text="message.role === 'user' ? '👤' : '🤖'"></span>
-                                <div class="flex-1">
-                                    <p class="text-sm whitespace-pre-wrap" x-html="formatMessage(message.content)"></p>
-                                </div>
+                                <div class="flex-1 markdown-content text-sm" x-html="formatMessage(message.content)"></div>
                             </div>
                         </div>
                     </div>
@@ -169,25 +326,29 @@
                 messages: [],
                 userInput: '',
                 isLoading: false,
-                modelName: 'gpt-4o-mini', // デフォルト値
+                modelName: 'qwen2.5:latest', // デフォルト値（ローカル開発用）
+                skipAuth: false, // 認証スキップフラグ
 
                 async init() {
-                    // Check if user is logged in
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        window.location.href = '/';
-                        return;
-                    }
-
                     // サーバーから設定を取得
                     try {
                         const response = await fetch('/api/config');
                         if (response.ok) {
                             const config = await response.json();
                             this.modelName = config.model;
+                            this.skipAuth = config.skip_auth;
                         }
                     } catch (error) {
                         console.error('Failed to load config:', error);
+                    }
+
+                    // Check if user is logged in (unless auth is skipped)
+                    if (!this.skipAuth) {
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                            window.location.href = '/';
+                            return;
+                        }
                     }
 
                     // Load messages from localStorage
@@ -264,20 +425,76 @@
                                             const funcName = parsed.function_call.name;
                                             const funcResult = parsed.function_call.result;
 
-                                            let funcDisplay;
+                                            let funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n\n`;
+
                                             // Check if result contains visualization URL or ID
                                             if (funcResult.visualization_url) {
                                                 const vizUrl = funcResult.visualization_url;
                                                 const message = funcResult.message || '可視化結果を表示';
-                                                funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
+                                                funcDisplay += `📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
                                             } else if (funcResult.visualization_id) {
                                                 const vizId = funcResult.visualization_id;
                                                 const vizUrl = `/api/visualization/${vizId}`;
                                                 const message = funcResult.message || '可視化結果を表示';
-                                                funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
-                                            } else {
-                                                funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n\`\`\`json\n${JSON.stringify(funcResult, null, 2)}\n\`\`\`\n\n`;
+                                                funcDisplay += `📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
                                             }
+
+                                            // Display key results if available
+                                            if (funcResult.status === 'success') {
+                                                funcDisplay += `✅ **ステータス**: 成功\n\n`;
+
+                                                // Display important metrics
+                                                if (funcResult.message) {
+                                                    funcDisplay += `📝 **結果**: ${funcResult.message}\n\n`;
+                                                }
+
+                                                // Extract key metrics to display
+                                                const keyMetrics = [];
+
+                                                // EOQ results
+                                                if (funcResult.optimal_order_quantity !== undefined) keyMetrics.push(`📦 **最適発注量**: ${funcResult.optimal_order_quantity.toFixed(2)} units`);
+                                                if (funcResult.total_cost !== undefined) keyMetrics.push(`💰 **総コスト**: ${funcResult.total_cost.toFixed(2)} 円/年`);
+                                                if (funcResult.ordering_cost !== undefined) keyMetrics.push(`📝 発注コスト: ${funcResult.ordering_cost.toFixed(2)} 円/年`);
+                                                if (funcResult.holding_cost !== undefined) keyMetrics.push(`📦 在庫保管コスト: ${funcResult.holding_cost.toFixed(2)} 円/年`);
+                                                if (funcResult.purchase_cost !== undefined) keyMetrics.push(`💵 購入コスト: ${funcResult.purchase_cost.toFixed(2)} 円/年`);
+
+                                                // Optimization results
+                                                if (funcResult.best_cost !== undefined) keyMetrics.push(`💰 **総コスト**: ${funcResult.best_cost.toFixed(2)}`);
+                                                if (funcResult.average_cost !== undefined) keyMetrics.push(`📊 平均コスト: ${funcResult.average_cost.toFixed(2)}`);
+                                                if (funcResult.optimal_Q !== undefined) keyMetrics.push(`📦 **最適発注量**: ${funcResult.optimal_Q.toFixed(2)}`);
+                                                if (funcResult.iterations !== undefined) keyMetrics.push(`🔄 反復回数: ${funcResult.iterations}`);
+
+                                                // Forecast results
+                                                if (funcResult.forecast && Array.isArray(funcResult.forecast)) {
+                                                    const forecastSummary = funcResult.forecast.slice(0, 3).map(v => v.toFixed(1)).join(', ');
+                                                    keyMetrics.push(`📈 予測値: [${forecastSummary}, ...]`);
+                                                }
+
+                                                // Distribution fitting results
+                                                if (funcResult.best_distribution) {
+                                                    keyMetrics.push(`📊 **最適分布**: ${funcResult.best_distribution}`);
+                                                }
+
+                                                if (keyMetrics.length > 0) {
+                                                    funcDisplay += `**主な結果**:\n${keyMetrics.map(m => `${m}`).join('\n')}\n\n`;
+                                                }
+                                            } else if (funcResult.status === 'error') {
+                                                funcDisplay += `❌ **エラー**: ${funcResult.message}\n\n`;
+                                            }
+
+                                            // Add collapsible detailed JSON
+                                            const detailsId = `json-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                                            funcDisplay += `<details class="json-collapsible" id="${detailsId}">
+                                                <summary class="json-collapsible-header">
+                                                    <span>📋 詳細な結果を表示</span>
+                                                    <span class="json-toggle-icon">▼</span>
+                                                </summary>
+                                                <div class="json-collapsible-content">
+\`\`\`json
+${JSON.stringify(funcResult, null, 2)}
+\`\`\`
+                                                </div>
+                                            </details>\n\n`;
 
                                             assistantMessage += funcDisplay;
                                             this.messages[this.messages.length - 1].content = assistantMessage;
@@ -330,21 +547,38 @@
                 },
 
                 formatMessage(content) {
-                    // Escape HTML to prevent XSS
-                    let formatted = content
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/"/g, '&quot;')
-                        .replace(/'/g, '&#039;');
+                    // Configure marked.js
+                    marked.setOptions({
+                        breaks: true,
+                        gfm: true,
+                        headerIds: false,
+                        mangle: false,
+                        highlight: function(code, lang) {
+                            if (lang && hljs.getLanguage(lang)) {
+                                try {
+                                    return hljs.highlight(code, { language: lang }).value;
+                                } catch (err) {}
+                            }
+                            return hljs.highlightAuto(code).value;
+                        }
+                    });
 
-                    // Convert Markdown links [text](url) to HTML
-                    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 underline hover:text-blue-800">$1</a>');
+                    // Render Markdown to HTML
+                    let html = marked.parse(content);
 
-                    // Convert **bold** to HTML
-                    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    // Post-process: Make all links open in new tab
+                    html = html.replace(/<a href=/g, '<a target="_blank" href=');
 
-                    return formatted;
+                    // Apply syntax highlighting to code blocks that weren't highlighted
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    tempDiv.querySelectorAll('pre code').forEach((block) => {
+                        if (!block.classList.contains('hljs')) {
+                            hljs.highlightElement(block);
+                        }
+                    });
+
+                    return tempDiv.innerHTML;
                 }
             }
         }

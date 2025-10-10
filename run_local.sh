@@ -10,6 +10,8 @@ echo ""
 if [ -f .env.local ]; then
     echo "✓ .env.localから環境変数を読み込みます"
     cp .env.local .env
+    # 環境変数を読み込む
+    export $(grep -v '^#' .env | xargs)
 else
     echo "✗ .env.localが見つかりません"
     exit 1
@@ -21,13 +23,16 @@ echo "Ollamaの状態を確認中..."
 if curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
     echo "✓ Ollamaが起動しています"
 
-    # gpt-oss:latestモデルが存在するか確認
-    if curl -s http://localhost:11434/api/tags | grep -q "gpt-oss:latest"; then
-        echo "✓ gpt-oss:latestモデルが利用可能です"
+    # .envから読み込んだモデル名を使用
+    MODEL_NAME=${OPENAI_MODEL_NAME:-gpt-oss:latest}
+    echo "使用するモデル: $MODEL_NAME"
+
+    if curl -s http://localhost:11434/api/tags | grep -q "$MODEL_NAME"; then
+        echo "✓ ${MODEL_NAME}モデルが利用可能です"
     else
-        echo "⚠ gpt-oss:latestモデルが見つかりません"
+        echo "⚠ ${MODEL_NAME}モデルが見つかりません"
         echo "  以下のコマンドでモデルをプルしてください："
-        echo "  ollama pull gpt-oss:latest"
+        echo "  ollama pull $MODEL_NAME"
         exit 1
     fi
 else
