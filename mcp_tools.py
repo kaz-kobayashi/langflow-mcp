@@ -106,7 +106,8 @@ def convert_eoq_params_from_raw(raw_params):
         r = float(holding_cost_rate)
         h = unit_costs[0] * r / 365.0  # 最初の単価を使用
 
-        b = float(backorder_cost) if backorder_cost else 0
+        # バックオーダーコスト: 0の場合はNoneに変換（eoq関数の仕様）
+        b = float(backorder_cost) if backorder_cost else None
 
         # 結果
         converted = {
@@ -1389,7 +1390,8 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             K = float(order_cost)
             r = float(holding_cost_rate)
             h = unit_price * r / 365.0
-            b = float(backorder_cost)
+            # バックオーダーコスト: 0の場合はNoneに変換（eoq関数の仕様）
+            b = float(backorder_cost) if backorder_cost else None
 
             # 計算実行
             result = eoq(K=K, d=d, h=h, b=b, r=r, c=0.0, theta=0.0)
