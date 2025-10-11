@@ -449,7 +449,7 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "optimize_qr_policy",
-            "description": "(Q,R)方策の最適パラメータを計算します。シミュレーションベースの最適化により、最適な発注量Qと発注点Rを求めます。",
+            "description": "(Q,R)方策（連続監視型・定量発注方式）の最適パラメータを計算します。在庫が発注点R以下になったら一定量Qを発注する方策です。シミュレーションベースの最適化により、最適なQとRを求めます。注意：(s,S)方策や定期発注方式とは異なります。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -547,7 +547,7 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "optimize_ss_policy",
-            "description": "(s,S)方策の最適パラメータを計算します。シミュレーションベースの最適化により、最適な発注点sと基在庫レベルSを求めます。",
+            "description": "(s,S)方策（連続監視型在庫管理方式）の最適パラメータを計算します。在庫が発注点s以下になったら基在庫レベルSまで発注する方策です。シミュレーションベースの最適化により、最適なsとSを求めます。注意：定期発注方式（periodic review）とは異なります。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -1013,7 +1013,7 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "optimize_periodic_inventory",
-            "description": "定期発注方策の最適化（Adam最適化アルゴリズムによる基在庫レベル最適化）。サプライチェーンネットワークの各ステージの基在庫レベルを最適化し、総コストを最小化します。",
+            "description": "定期発注方式（Periodic Review System）の最適化。一定期間ごとに在庫を確認して発注する方式で、サプライチェーンネットワークの各ステージの基在庫レベルをAdam最適化アルゴリズムで最適化します。注意：(s,S)方策（連続監視型）、(Q,R)方策とは異なる方式です。",
             "parameters": {
                 "type": "object",
                 "properties": {
