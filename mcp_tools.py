@@ -3872,53 +3872,98 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             import uuid
             import os
             import plotly.io as pio
-            from network_visualizer import visualize_supply_chain_network
+            import sys
 
-            # JSONデータのパース
-            items_data = json.loads(arguments["items_data"])
-            bom_data = json.loads(arguments["bom_data"])
-            layout = arguments.get("layout", "hierarchical")
+            # Step 1: Import the visualization function
+            try:
+                from network_visualizer import visualize_supply_chain_network
+            except ImportError as ie:
+                return {
+                    "status": "error",
+                    "message": f"network_visualizer モジュールのインポートエラー: {str(ie)}",
+                    "python_version": sys.version,
+                    "cwd": os.getcwd()
+                }
 
-            # 最適化結果がある場合はパース
+            # Step 2: Parse JSON data
+            try:
+                items_data = json.loads(arguments["items_data"])
+                bom_data = json.loads(arguments["bom_data"])
+                layout = arguments.get("layout", "hierarchical")
+            except json.JSONDecodeError as je:
+                return {
+                    "status": "error",
+                    "message": f"JSON パースエラー: {str(je)}",
+                    "items_data_raw": arguments.get("items_data", "")[:200],
+                    "bom_data_raw": arguments.get("bom_data", "")[:200]
+                }
+
+            # Step 3: Parse optimization result if provided
             optimization_result = None
             if "optimization_result" in arguments:
-                optimization_result = json.loads(arguments["optimization_result"])
+                try:
+                    optimization_result = json.loads(arguments["optimization_result"])
+                except json.JSONDecodeError as je:
+                    return {
+                        "status": "error",
+                        "message": f"最適化結果のJSONパースエラー: {str(je)}"
+                    }
 
-            # ネットワーク可視化
-            fig = visualize_supply_chain_network(
-                items_data,
-                bom_data,
-                optimization_result=optimization_result,
-                layout=layout
-            )
+            # Step 4: Visualize network
+            try:
+                fig = visualize_supply_chain_network(
+                    items_data,
+                    bom_data,
+                    optimization_result=optimization_result,
+                    layout=layout
+                )
+            except Exception as ve:
+                import traceback
+                return {
+                    "status": "error",
+                    "message": f"可視化関数実行エラー: {str(ve)}",
+                    "traceback": traceback.format_exc(),
+                    "num_items": len(items_data),
+                    "num_bom": len(bom_data),
+                    "layout": layout
+                }
 
-            # グラフを保存
-            viz_id = str(uuid.uuid4())
-            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
-            os.makedirs(output_dir, exist_ok=True)
+            # Step 5: Save graph
+            try:
+                viz_id = str(uuid.uuid4())
+                output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+                os.makedirs(output_dir, exist_ok=True)
 
-            file_path = os.path.join(output_dir, f"{viz_id}.html")
-            pio.write_html(fig, file_path)
+                file_path = os.path.join(output_dir, f"{viz_id}.html")
+                pio.write_html(fig, file_path)
 
-            # ユーザーキャッシュに保存
-            if user_id is not None:
-                if user_id not in _optimization_cache:
-                    _optimization_cache[user_id] = {}
-                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
+                # ユーザーキャッシュに保存
+                if user_id is not None:
+                    if user_id not in _optimization_cache:
+                        _optimization_cache[user_id] = {}
+                    _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
 
-            return {
-                "status": "success",
-                "visualization_id": viz_id,
-                "num_nodes": len(items_data),
-                "num_edges": len(bom_data),
-                "layout": layout,
-                "message": f"サプライチェーンネットワークを可視化しました（ノード: {len(items_data)}, エッジ: {len(bom_data)}）"
-            }
+                return {
+                    "status": "success",
+                    "visualization_id": viz_id,
+                    "num_nodes": len(items_data),
+                    "num_edges": len(bom_data),
+                    "layout": layout,
+                    "message": f"サプライチェーンネットワークを可視化しました（ノード: {len(items_data)}, エッジ: {len(bom_data)}）"
+                }
+            except Exception as se:
+                import traceback
+                return {
+                    "status": "error",
+                    "message": f"グラフ保存エラー: {str(se)}",
+                    "traceback": traceback.format_exc(),
+                    "output_dir": output_dir
+                }
         except Exception as e:
             import traceback
             return {
                 "status": "error",
-                "message": f"ネットワーク可視化エラー: {str(e)}",
+                "message": f"予期しないエラー: {str(e)}",
                 "traceback": traceback.format_exc()
             }
 
