@@ -1646,6 +1646,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # 可視化の生成
             try:
                 import uuid
+                import os
                 import plotly.io as pio
                 from network_visualizer import visualize_safety_stock_network
 
@@ -1786,14 +1787,29 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             }
 
         try:
+            import uuid
+            import plotly.io as pio
+            from network_visualizer import visualize_safety_stock_network
+
             # キャッシュから取得
             cache = _optimization_cache[user_id]
             G = cache["G"]
             pos = cache["pos"]
             best_sol = cache["best_sol"]
+            items = cache.get("items", [])
+
+            # ステージ名のマッピング
+            stage_names = [item["name"] for item in items] if items else None
 
             # 可視化
-            fig = draw_graph_for_SSA(G, pos, best_sol["best_NRT"], best_sol["best_MaxLI"], best_sol["best_MinLT"])
+            fig = visualize_safety_stock_network(
+                G=G,
+                pos=pos,
+                NRT=best_sol["best_NRT"],
+                MaxLI=best_sol["best_MaxLI"],
+                MinLT=best_sol["best_MinLT"],
+                stage_names=stage_names
+            )
 
             # HTMLをメモリ上で生成して、キャッシュに保存
             html_content = pio.to_html(fig, include_plotlyjs='cdn')
