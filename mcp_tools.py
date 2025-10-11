@@ -1319,6 +1319,63 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["demand_dist"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_simulation_trajectories",
+            "description": "マルチステージ在庫シミュレーションの軌道を可視化します。各段階の在庫レベルの時系列変化を表示し、複数サンプルの軌道を重ねて表示することで、在庫変動パターンを視覚的に理解できます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "inventory_data": {
+                        "type": "array",
+                        "description": "在庫データの3次元配列 [samples, stages, periods]。指定しない場合は最後のシミュレーション結果をキャッシュから取得します"
+                    },
+                    "stage_names": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "各段階の名前のリスト。例: ['原材料', '中間品', '完成品']"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "表示する期間数。指定しない場合はデータの全期間を表示"
+                    },
+                    "samples": {
+                        "type": "integer",
+                        "description": "表示するサンプル数（軌道の本数）",
+                        "default": 5
+                    },
+                    "stage_id_list": {
+                        "type": "array",
+                        "items": {"type": "integer"},
+                        "description": "可視化する段階のIDリスト。指定しない場合は全段階を表示"
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_supply_chain_network",
+            "description": "サプライチェーンネットワークの構造をインタラクティブなグラフで可視化します。ノード（品目）とエッジ（部品展開関係）を表示し、ネットワーク全体の構造を把握できます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "items_data": {
+                        "type": "string",
+                        "description": "品目データのJSON文字列。例: '[{\"name\": \"原材料A\", \"h\": 0.5, \"avg_demand\": 100}, ...]'"
+                    },
+                    "bom_data": {
+                        "type": "string",
+                        "description": "BOM（部品展開表）データのJSON文字列。例: '[{\"child\": \"原材料A\", \"parent\": \"中間品1\"}, ...]'"
+                    }
+                },
+                "required": ["items_data", "bom_data"]
+            }
+        }
     }
 ]
 
@@ -3804,6 +3861,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "visualize_supply_chain_network":
         try:
+            import json
+            import uuid
+            import os
+            import plotly.io as pio
             from network_visualizer import visualize_supply_chain_network
 
             # JSONデータのパース

@@ -204,11 +204,14 @@ async def chat(
 7. 重要：ユーザーが「可視化したい」「グラフを見たい」と要求した場合：
    - **EOQの可視化**：EOQ計算（calculate_eoq_*_raw）を実行した直後に visualize_eoq を呼び出す
    - **安全在庫ネットワークの可視化**：optimize_safety_stock_allocation で最適化を実行した後に visualize_last_optimization で可視化
+   - **需要ヒストグラムの可視化**：visualize_demand_histogram（ヒストグラム+フィット分布）または find_best_distribution（80以上の分布から最適フィッティング）を使用
+   - **シミュレーション軌道の可視化**：マルチステージシミュレーション後に visualize_simulation_trajectories で在庫レベルの時系列変化を表示
+   - **サプライチェーンネットワークの可視化**：visualize_supply_chain_network で品目とBOMの関係をグラフ表示
    - calculate_safety_stock（単一品目）の結果は可視化できません
 8. Pythonコードやmatplotlibのコードを絶対に生成しないでください
 9. ツールで実行できる処理を独自に実装しないでください
 10. 複数品目のデータがある場合や、BOM（部品表）が関係する場合は必ず optimize_safety_stock_allocation を使用してください
-11. **最重要ルール**: 可視化ツール（visualize_eoq, visualize_last_optimization）の応答について：
+11. **最重要ルール**: 可視化ツール（visualize_eoq, visualize_last_optimization, find_best_distribution, visualize_demand_histogram, visualize_simulation_trajectories, visualize_supply_chain_network, visualize_forecast, visualize_periodic_optimization, visualize_safety_stock_network）の応答について：
    - これらのツールが成功すると、自動的に可視化リンクが表示されます
    - あなたは「可視化が完了しました。上に表示されたリンクをクリックして確認してください。」とだけ伝えてください
    - URLを自分で提示する必要はありません（システムが自動的に表示します）"""
