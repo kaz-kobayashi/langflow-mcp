@@ -1187,23 +1187,27 @@ MCP_TOOLS_DEFINITION = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "items_data": {
-                        "type": "string",
-                        "description": "品目データのJSON配列文字列"
-                    },
-                    "bom_data": {
-                        "type": "string",
-                        "description": "BOMデータのJSON配列文字列"
+                    "network_data": {
+                        "type": "object",
+                        "description": "ネットワーク定義（stagesとconnectionsを含む）"
                     },
                     "backorder_cost": {
                         "type": "number",
-                        "description": "全段階共通のバックオーダーコスト（円/個）。各段階で異なる値を使う場合はitems_dataのbフィールドで指定してください。",
+                        "description": "全段階共通のバックオーダーコスト（円/個）。各段階で異なる値を使う場合はnetwork_data.stages[].bフィールドで指定してください。",
                         "default": 100
                     },
                     "holding_cost": {
                         "type": "number",
-                        "description": "全段階共通の在庫保管費用（円/個/日）。各段階で異なる値を使う場合はitems_dataのhフィールドで指定してください。",
+                        "description": "全段階共通の在庫保管費用（円/個/日）。各段階で異なる値を使う場合はnetwork_data.stages[].hフィールドで指定してください。",
                         "default": 1
+                    },
+                    "n_samples": {
+                        "type": "integer",
+                        "description": "シミュレーションサンプル数（デフォルト：10）"
+                    },
+                    "n_periods": {
+                        "type": "integer",
+                        "description": "シミュレーション期間（デフォルト：100）"
                     },
                     "max_iter": {
                         "type": "integer",
@@ -1216,7 +1220,7 @@ MCP_TOOLS_DEFINITION = [
                         "default": 1.0
                     }
                 },
-                "required": ["items_data", "bom_data"]
+                "required": ["network_data"]
             }
         }
     },
@@ -3649,16 +3653,41 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "optimize_periodic_with_one_cycle":
         try:
-            # JSONデータのパース
-            items_data = json.loads(arguments["items_data"])
-            bom_data = json.loads(arguments["bom_data"])
+            network_data = arguments["network_data"]
+            max_iter = arguments.get("max_iter", 200)
+            n_samples = arguments.get("n_samples", 10)
+            n_periods = arguments.get("n_periods", 100)
+            max_lr = arguments.get("max_lr", 1.0)
 
             # 共通パラメータの取得（全段階に適用される値）
             default_backorder_cost = arguments.get("backorder_cost", 100)
             default_holding_cost = arguments.get("holding_cost", 1)
 
-            # カラム名を標準形式に変換
-            for item in items_data:
+            # BOMデータのカラム名を標準形式に変換とデフォルト値設定
+            connections = network_data.get("connections", [])
+            for bom in connections:
+                # 'from'/'to' を 'child'/'parent' に変換
+                if 'from' in bom and 'child' not in bom:
+                    bom['child'] = bom.pop('from')
+                if 'to' in bom and 'parent' not in bom:
+                    bom['parent'] = bom.pop('to')
+                # 'source'/'target' を 'child'/'parent' に変換（別の命名規則）
+                if 'source' in bom and 'child' not in bom:
+                    bom['child'] = bom.pop('source')
+                if 'target' in bom and 'parent' not in bom:
+                    bom['parent'] = bom.pop('target')
+                # 'quantity' を 'units' に変換
+                if 'quantity' in bom and 'units' not in bom:
+                    bom['units'] = bom.pop('quantity')
+                # デフォルト値の設定
+                if 'units' not in bom:
+                    bom['units'] = 1
+                if 'allocation' not in bom:
+                    bom['allocation'] = 1.0
+
+            # stagesデータのカラム名変換
+            stages = network_data.get("stages", [])
+            for item in stages:
                 if 'avg_demand' in item and 'average_demand' not in item:
                     item['average_demand'] = item.pop('avg_demand')
                 if 'demand_std' in item and 'sigma' not in item:
@@ -3682,39 +3711,24 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 if 'sigma' not in item:
                     item['sigma'] = 0
                 if 'name' not in item:
-                    item['name'] = f"Stage_{items_data.index(item)}"
+                    item['name'] = f"Stage_{stages.index(item)}"
                 # 重要: bとhが欠落している場合は共通パラメータを使用
                 if 'b' not in item:
                     item['b'] = default_backorder_cost
                 if 'h' not in item:
                     item['h'] = default_holding_cost
 
-            # BOMデータのカラム名を標準形式に変換とデフォルト値設定
-            for bom in bom_data:
-                # 'quantity' を 'units' に変換
-                if 'quantity' in bom and 'units' not in bom:
-                    bom['units'] = bom.pop('quantity')
-                # デフォルト値の設定
-                if 'units' not in bom:
-                    bom['units'] = 1
-                if 'allocation' not in bom:
-                    bom['allocation'] = 1.0
-
-            # DataFrameに変換
-            network_data = {
-                "stages": items_data,
-                "connections": bom_data
-            }
+            # stage_dfとbom_dfを準備
             stage_df, bom_df = prepare_stage_bom_data(network_data)
 
             # Fit One Cycle最適化
             result = optimize_with_one_cycle(
                 stage_df,
                 bom_df,
-                max_iter=arguments.get("max_iter", 200),
-                n_samples=10,
-                n_periods=100,
-                max_lr=arguments.get("max_lr", 1.0)
+                max_iter=max_iter,
+                n_samples=n_samples,
+                n_periods=n_periods,
+                max_lr=max_lr
             )
 
             # 訓練過程の可視化
