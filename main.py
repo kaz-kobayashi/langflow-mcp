@@ -317,31 +317,32 @@ async def get_visualization(viz_id: str):
         output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
         file_path = os.path.join(output_dir, f"{viz_id}.html")
 
-        logger.info(f"Looking for visualization {viz_id}")
-        logger.info(f"File path: {file_path}")
-        logger.info(f"File exists: {os.path.exists(file_path)}")
+        print(f"[VIZ DEBUG] Looking for visualization {viz_id}")
+        print(f"[VIZ DEBUG] File path: {file_path}")
+        print(f"[VIZ DEBUG] File exists: {os.path.exists(file_path)}")
 
         if os.path.exists(file_path):
             with open(file_path, 'r', encoding='utf-8') as f:
                 html_content = f.read()
-            logger.info(f"Visualization found in file system: {viz_id}")
+            print(f"[VIZ DEBUG] Visualization found in file system: {viz_id}")
             return HTMLResponse(content=html_content)
 
         # ファイルが見つからない場合、キャッシュから探す
         from mcp_tools import _optimization_cache
 
-        logger.info(f"Number of users in cache: {len(_optimization_cache)}")
+        print(f"[VIZ DEBUG] Number of users in cache: {len(_optimization_cache)}")
 
         # 全ユーザーのキャッシュから探す
         for user_id, cache in _optimization_cache.items():
-            logger.info(f"Checking cache for user {user_id}: {len(cache)} items")
+            print(f"[VIZ DEBUG] Checking cache for user {user_id}: {len(cache)} items")
             if viz_id in cache:
                 html_content = cache[viz_id]
-                logger.info(f"Visualization found in cache for user {user_id}: {viz_id}")
+                print(f"[VIZ DEBUG] Visualization found in cache for user {user_id}: {viz_id}")
                 return HTMLResponse(content=html_content)
 
         # どこにも見つからない場合
-        logger.error(f"Visualization not found anywhere: {viz_id}")
+        print(f"[VIZ DEBUG] Visualization not found anywhere: {viz_id}")
+        print(f"[VIZ DEBUG] Available users in cache: {list(_optimization_cache.keys())}")
         raise HTTPException(
             status_code=404,
             detail=f"Visualization not found: {viz_id}"
