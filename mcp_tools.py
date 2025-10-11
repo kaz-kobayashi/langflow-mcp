@@ -3023,6 +3023,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "visualize_forecast":
         # 需要予測の可視化
         try:
+            import numpy as np
+            import uuid as uuid_module
+            import os
+
             demand_history = arguments["demand_history"]
             forecast_periods = arguments.get("forecast_periods", 7)
             method = arguments.get("method", "exponential_smoothing")
@@ -3119,14 +3123,12 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             )
 
             # UUIDベースのviz_idを生成
-            import uuid as uuid_module
             viz_id = str(uuid_module.uuid4())
 
             # HTMLとして保存
             html_content = fig.to_html(include_plotlyjs='cdn')
 
             # ファイルシステムに保存
-            import os
             output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
             os.makedirs(output_dir, exist_ok=True)
             file_path = os.path.join(output_dir, f"{viz_id}.html")
