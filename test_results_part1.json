@@ -1,0 +1,45 @@
+{
+  "timestamp": "2025-10-11T21:05:34.684351",
+  "category": "在庫最適化（4ツール）",
+  "total_tests": 4,
+  "passed": 4,
+  "failed": 0,
+  "results": [
+    {
+      "category": "在庫最適化",
+      "tool_name": "optimize_safety_stock_allocation",
+      "description": "タブーサーチによる安全在庫配置の最適化",
+      "status": "success",
+      "success": true,
+      "result_summary": {
+        "total_cost": 301.4992400471655
+      }
+    },
+    {
+      "category": "在庫最適化",
+      "tool_name": "calculate_safety_stock",
+      "description": "安全在庫の計算",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "在庫最適化",
+      "tool_name": "optimize_periodic_inventory",
+      "description": "定期発注方策の最適化（Adam）",
+      "status": "success",
+      "success": true,
+      "result_summary": {
+        "best_cost": 84690.49986715507
+      }
+    },
+    {
+      "category": "在庫最適化",
+      "tool_name": "optimize_ss_policy",
+      "description": "(s,S)発注方策の最適化",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    }
+  ]
+}

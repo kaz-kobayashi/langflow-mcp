@@ -1697,7 +1697,6 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             }
 
     elif function_name == "analyze_inventory_network":
-        import json
         items = json.loads(arguments["items_data"])
         bom = json.loads(arguments["bom_data"])
 
@@ -3266,7 +3265,13 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "optimize_periodic_inventory":
         try:
-            network_data = arguments["network_data"]
+            # network_dataをJSONパース（文字列の場合）
+            network_data_raw = arguments["network_data"]
+            if isinstance(network_data_raw, str):
+                network_data = json.loads(network_data_raw)
+            else:
+                network_data = network_data_raw
+
             max_iter = arguments.get("max_iter", 100)
             n_samples = arguments.get("n_samples", 10)
             n_periods = arguments.get("n_periods", 100)
@@ -3617,7 +3622,6 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "find_optimal_learning_rate_periodic":
         try:
-            import json
             import uuid
             import os
             import numpy as np
@@ -3868,7 +3872,6 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "visualize_supply_chain_network":
         try:
-            import json
             import uuid
             import os
             import plotly.io as pio

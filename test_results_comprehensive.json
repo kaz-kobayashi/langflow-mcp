@@ -1,0 +1,145 @@
+{
+  "timestamp": "2025-10-11T21:06:55.675209",
+  "total_tests": 12,
+  "passed": 6,
+  "failed": 6,
+  "pass_rate": "50.0%",
+  "categories": {
+    "在庫最適化": {
+      "total": 2,
+      "passed": 2
+    },
+    "シミュレーション": {
+      "total": 2,
+      "passed": 1
+    },
+    "発注方策": {
+      "total": 1,
+      "passed": 1
+    },
+    "需要予測": {
+      "total": 2,
+      "passed": 0
+    },
+    "EOQ": {
+      "total": 2,
+      "passed": 0
+    },
+    "Wagner-Whitin": {
+      "total": 1,
+      "passed": 1
+    },
+    "ネットワーク分析": {
+      "total": 1,
+      "passed": 0
+    },
+    "ポリシー比較": {
+      "total": 1,
+      "passed": 1
+    }
+  },
+  "results": [
+    {
+      "category": "在庫最適化",
+      "tool_name": "calculate_safety_stock",
+      "description": "安全在庫の計算",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "在庫最適化",
+      "tool_name": "optimize_ss_policy",
+      "description": "(s,S)発注方策の最適化",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "シミュレーション",
+      "tool_name": "simulate_qr_policy",
+      "description": "(Q,R)方策のシミュレーション",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "シミュレーション",
+      "tool_name": "simulate_base_stock_policy",
+      "description": "基在庫方策のシミュレーション",
+      "status": "error",
+      "success": false,
+      "result_summary": {},
+      "error_message": "base_stock_level（基在庫レベル）パラメータが必要です"
+    },
+    {
+      "category": "発注方策",
+      "tool_name": "optimize_qr_policy",
+      "description": "(Q,R)方策の最適化",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "需要予測",
+      "tool_name": "forecast_demand",
+      "description": "需要予測（移動平均・指数平滑）",
+      "status": "error",
+      "success": false,
+      "result_summary": {},
+      "error_message": "需要予測エラー: 'demand_history'"
+    },
+    {
+      "category": "需要予測",
+      "tool_name": "analyze_demand_pattern",
+      "description": "需要パターン分析",
+      "status": "error",
+      "success": false,
+      "result_summary": {},
+      "error_message": "需要分析エラー: 'demand'"
+    },
+    {
+      "category": "EOQ",
+      "tool_name": "calculate_eoq_basic_raw",
+      "description": "基本EOQ計算",
+      "status": "error",
+      "success": false,
+      "result_summary": {},
+      "error_message": "Unknown function: calculate_eoq_basic_raw"
+    },
+    {
+      "category": "EOQ",
+      "tool_name": "calculate_eoq_backorder_raw",
+      "description": "バックオーダー対応EOQ",
+      "status": "error",
+      "success": false,
+      "result_summary": {},
+      "error_message": "Unknown function: calculate_eoq_backorder_raw"
+    },
+    {
+      "category": "Wagner-Whitin",
+      "tool_name": "calculate_wagner_whitin",
+      "description": "動的発注計画",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "ネットワーク分析",
+      "tool_name": "analyze_inventory_network",
+      "description": "サプライチェーンネットワーク分析",
+      "status": "error",
+      "success": false,
+      "result_summary": {},
+      "error_message": "エラー：少なくとも1つの品目に正の需要が必要です．"
+    },
+    {
+      "category": "ポリシー比較",
+      "tool_name": "compare_inventory_policies",
+      "description": "在庫方策の比較",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    }
+  ]
+}
