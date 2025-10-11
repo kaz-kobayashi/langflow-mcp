@@ -972,6 +972,10 @@ MCP_TOOLS_DEFINITION = [
                     "alpha": {
                         "type": "number",
                         "description": "指数平滑法の平滑化パラメータ（0-1、exponential_smoothingの場合のみ使用）。デフォルト：0.3"
+                    },
+                    "visualize": {
+                        "type": "boolean",
+                        "description": "予測結果を可視化するかどうか（デフォルト：false）"
                     }
                 },
                 "required": ["demand_history"]
@@ -3107,6 +3111,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             forecast_periods = arguments.get("forecast_periods", 7)
             method = arguments.get("method", "exponential_smoothing")
             confidence_level = arguments.get("confidence_level", 0.95)
+            visualize = arguments.get("visualize", False)
 
             # メソッド名のエイリアス変換
             method_aliases = {
@@ -3134,7 +3139,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 **kwargs
             )
 
-            return {
+            response = {
                 "status": "success",
                 "forecast_type": "需要予測",
                 "forecast": result["forecast"],
@@ -3146,6 +3151,108 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "forecast_periods": forecast_periods,
                 "message": f"{result['method_info']['method']}により{forecast_periods}期間の需要予測を行いました"
             }
+
+            # 可視化が要求された場合
+            if visualize:
+                try:
+                    import numpy as np
+                    import uuid as uuid_module
+                    import os
+
+                    # 時系列データの準備
+                    n_history = len(demand_history)
+                    history_x = list(range(1, n_history + 1))
+                    forecast_x = list(range(n_history + 1, n_history + forecast_periods + 1))
+
+                    # Plotlyグラフ作成
+                    fig = go.Figure()
+
+                    # 過去データ
+                    fig.add_trace(go.Scatter(
+                        x=history_x,
+                        y=demand_history,
+                        mode='lines+markers',
+                        name='過去の需要',
+                        line=dict(color='blue', width=2),
+                        marker=dict(size=6)
+                    ))
+
+                    # 予測値
+                    fig.add_trace(go.Scatter(
+                        x=forecast_x,
+                        y=result["forecast"],
+                        mode='lines+markers',
+                        name='予測値',
+                        line=dict(color='red', width=2, dash='dash'),
+                        marker=dict(size=6, symbol='diamond')
+                    ))
+
+                    # 信頼区間（帯グラフ）
+                    fig.add_trace(go.Scatter(
+                        x=forecast_x + forecast_x[::-1],
+                        y=result["upper_bound"] + result["lower_bound"][::-1],
+                        fill='toself',
+                        fillcolor='rgba(255,0,0,0.2)',
+                        line=dict(color='rgba(255,255,255,0)'),
+                        name=f'{int(confidence_level*100)}%信頼区間',
+                        showlegend=True
+                    ))
+
+                    # レイアウト設定
+                    method_name = result["method_info"]["method"]
+                    fig.update_layout(
+                        title=f"需要予測結果（{method_name}）",
+                        xaxis_title="期間",
+                        yaxis_title="需要量",
+                        template="plotly_white",
+                        hovermode='x unified',
+                        legend=dict(
+                            yanchor="top",
+                            y=0.99,
+                            xanchor="left",
+                            x=0.01
+                        )
+                    )
+
+                    # 境界線を追加（過去と未来の境界）
+                    fig.add_vline(
+                        x=n_history + 0.5,
+                        line_dash="dot",
+                        line_color="gray",
+                        annotation_text="予測開始",
+                        annotation_position="top"
+                    )
+
+                    # UUIDベースのviz_idを生成
+                    viz_id = str(uuid_module.uuid4())
+
+                    # HTMLとして保存
+                    html_content = fig.to_html(include_plotlyjs='cdn')
+
+                    # ファイルシステムに保存
+                    output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+                    os.makedirs(output_dir, exist_ok=True)
+                    file_path = os.path.join(output_dir, f"{viz_id}.html")
+
+                    print(f"[VIZ DEBUG] forecast_demand: Saving visualization to {file_path}")
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(html_content)
+                    print(f"[VIZ DEBUG] forecast_demand: File saved, size: {len(html_content)} bytes")
+
+                    # キャッシュにも保存
+                    if user_id:
+                        if user_id not in _optimization_cache:
+                            _optimization_cache[user_id] = {}
+                        _optimization_cache[user_id][viz_id] = html_content
+                        print(f"[VIZ DEBUG] forecast_demand: Saved to cache for user {user_id}")
+
+                    response["visualization_id"] = viz_id
+                    response["message"] = f"{method_name}により{forecast_periods}期間の需要予測を行い、可視化しました"
+                except Exception as viz_error:
+                    print(f"[VIZ DEBUG] forecast_demand: Visualization error: {str(viz_error)}")
+                    response["visualization_error"] = f"可視化エラー: {str(viz_error)}"
+
+            return response
         except Exception as e:
             return {
                 "status": "error",
