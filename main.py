@@ -313,20 +313,31 @@ async def chat(
 async def get_visualization(viz_id: str):
     """可視化HTMLを取得（認証不要 - viz_idはUUIDで推測困難）"""
     try:
-        # ファイルシステムから可視化HTMLを読み込む
+        # まずファイルシステムから可視化HTMLを読み込む
         output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
         file_path = os.path.join(output_dir, f"{viz_id}.html")
 
-        if not os.path.exists(file_path):
-            raise HTTPException(
-                status_code=404,
-                detail=f"Visualization not found: {viz_id}"
-            )
+        if os.path.exists(file_path):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            return HTMLResponse(content=html_content)
 
-        with open(file_path, 'r', encoding='utf-8') as f:
-            html_content = f.read()
+        # ファイルが見つからない場合、キャッシュから探す
+        from mcp_tools import _optimization_cache
 
-        return HTMLResponse(content=html_content)
+        # 全ユーザーのキャッシュから探す
+        for user_id, cache in _optimization_cache.items():
+            if viz_id in cache:
+                html_content = cache[viz_id]
+                return HTMLResponse(content=html_content)
+
+        # どこにも見つからない場合
+        raise HTTPException(
+            status_code=404,
+            detail=f"Visualization not found: {viz_id}"
+        )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=404,
