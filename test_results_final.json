@@ -1,0 +1,180 @@
+{
+  "timestamp": "2025-10-11T22:03:25.764267",
+  "total_tests": 14,
+  "passed": 14,
+  "failed": 0,
+  "pass_rate": "100.0%",
+  "categories": {
+    "在庫最適化": {
+      "total": 4,
+      "passed": 4
+    },
+    "シミュレーション": {
+      "total": 2,
+      "passed": 2
+    },
+    "発注方策": {
+      "total": 1,
+      "passed": 1
+    },
+    "需要予測": {
+      "total": 2,
+      "passed": 2
+    },
+    "EOQ": {
+      "total": 2,
+      "passed": 2
+    },
+    "Wagner-Whitin": {
+      "total": 1,
+      "passed": 1
+    },
+    "ネットワーク分析": {
+      "total": 1,
+      "passed": 1
+    },
+    "ポリシー比較": {
+      "total": 1,
+      "passed": 1
+    }
+  },
+  "results": [
+    {
+      "category": "在庫最適化",
+      "tool_name": "calculate_safety_stock",
+      "description": "安全在庫の計算",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "在庫最適化",
+      "tool_name": "optimize_ss_policy",
+      "description": "(s,S)発注方策の最適化",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "在庫最適化",
+      "tool_name": "optimize_periodic_inventory",
+      "description": "定期発注方策の最適化（Adam）",
+      "status": "success",
+      "success": true,
+      "result_summary": {
+        "best_cost": 87754.32965418915
+      }
+    },
+    {
+      "category": "在庫最適化",
+      "tool_name": "optimize_safety_stock_allocation",
+      "description": "タブーサーチによる安全在庫配置",
+      "status": "success",
+      "success": true,
+      "result_summary": {
+        "total_cost": 301.4992400471655
+      }
+    },
+    {
+      "category": "シミュレーション",
+      "tool_name": "simulate_qr_policy",
+      "description": "(Q,R)方策のシミュレーション",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "シミュレーション",
+      "tool_name": "simulate_base_stock_policy",
+      "description": "基在庫方策のシミュレーション",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "発注方策",
+      "tool_name": "optimize_qr_policy",
+      "description": "(Q,R)方策の最適化",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "需要予測",
+      "tool_name": "forecast_demand",
+      "description": "需要予測（移動平均）",
+      "status": "success",
+      "success": true,
+      "result_summary": {
+        "forecast": [
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816,
+          94.63828346548816
+        ]
+      }
+    },
+    {
+      "category": "需要予測",
+      "tool_name": "analyze_demand_pattern",
+      "description": "需要パターン分析",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "EOQ",
+      "tool_name": "calculate_eoq_raw",
+      "description": "基本EOQ計算",
+      "status": "success",
+      "success": true,
+      "result_summary": {
+        "optimal_order_quantity": 2449.4897427831784,
+        "total_cost": 13.421861604291387,
+        "annual_total_cost": 4898.979485566356
+      }
+    },
+    {
+      "category": "EOQ",
+      "tool_name": "calculate_eoq_raw",
+      "description": "バックオーダー対応EOQ",
+      "status": "success",
+      "success": true,
+      "result_summary": {
+        "optimal_order_quantity": 2449.5568511719193,
+        "total_cost": 13.421493897166835,
+        "annual_total_cost": 4898.845272465895
+      }
+    },
+    {
+      "category": "Wagner-Whitin",
+      "tool_name": "calculate_wagner_whitin",
+      "description": "動的発注計画",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "ネットワーク分析",
+      "tool_name": "analyze_inventory_network",
+      "description": "サプライチェーンネットワーク分析",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    },
+    {
+      "category": "ポリシー比較",
+      "tool_name": "compare_inventory_policies",
+      "description": "在庫方策の比較",
+      "status": "success",
+      "success": true,
+      "result_summary": {}
+    }
+  ]
+}
