@@ -186,9 +186,15 @@ async def chat(
    - ユーザーから受け取った値をそのまま渡してください（パラメータ変換は自動的に行われます）
    - 例：年間需要15000個、発注コスト500円、保管費率25%、単価テーブル → そのまま渡す
 5. 重要：定期発注最適化のツール選択：
-   - **Adamアルゴリズム**（beta1, beta2パラメータ）を使う場合 → **optimize_periodic_inventory** を使用
+   - **Adamアルゴリズム**（beta1, beta2パラメータ）を使う場合 → **optimize_periodic_inventory**（algorithm="adam"）を使用
+   - **Momentumアルゴリズム**（momentumパラメータ）を使う場合 → **optimize_periodic_inventory**（algorithm="momentum"）を使用
+   - **SGD（確率的勾配降下法）**を使う場合 → **optimize_periodic_inventory**（algorithm="sgd"）を使用
    - **Fit One Cycleスケジューラ**を使う場合 → optimize_periodic_with_one_cycle を使用
 6. 重要：定期発注最適化（optimize_periodic_inventory）のパラメータ指定：
+   - algorithmパラメータで最適化アルゴリズムを指定：
+     * "adam": Adamアルゴリズム（beta1, beta2が必要）
+     * "momentum": Momentumアルゴリズム（momentumパラメータが必要）
+     * "sgd": 確率的勾配降下法（追加パラメータ不要）
    - 段階ごとに異なる値（例: 在庫保管費用: [0.5, 1.0, 2.0, 5.0]）が指定された場合：
      * 各段階のhフィールドに配列の対応する値を設定してください（Stage0はh=0.5, Stage1はh=1.0など）
    - 全段階共通の値（例: バックオーダーコスト: 100）が指定された場合：

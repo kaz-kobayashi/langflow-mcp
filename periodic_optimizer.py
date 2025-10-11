@@ -16,12 +16,14 @@ def optimize_periodic_inventory(
     n_periods=100,
     seed=1,
     learning_rate=1.0,
+    algorithm="adam",
     beta_1=0.9,
     beta_2=0.999,
+    momentum=0.9,
     convergence_threshold=1e-5
 ):
     """
-    定期発注方策の最適化（Adam最適化アルゴリズム）
+    定期発注方策の最適化（複数の最適化アルゴリズムに対応）
 
     Parameters
     ----------
@@ -39,10 +41,14 @@ def optimize_periodic_inventory(
         乱数シード
     learning_rate : float
         学習率（α）
+    algorithm : str
+        最適化アルゴリズム ("adam", "momentum", "sgd")
     beta_1 : float
-        1次モーメント減衰率
+        Adamの1次モーメント減衰率（algorithmが"adam"の場合のみ使用）
     beta_2 : float
-        2次モーメント減衰率
+        Adamの2次モーメント減衰率（algorithmが"adam"の場合のみ使用）
+    momentum : float
+        Momentumの減衰率（algorithmが"momentum"の場合のみ使用）
     convergence_threshold : float
         収束判定閾値
 
@@ -98,10 +104,16 @@ def optimize_periodic_inventory(
     # 初期基在庫レベルの設定
     ELT, S = initial_base_stock_level(G, LT, mu, z, sigma)
 
-    # Adam最適化の初期化
+    # 最適化の初期化
     epsilon = 1e-8
-    m_t = np.zeros(n)
-    v_t = np.zeros(n)
+
+    # アルゴリズムに応じた変数の初期化
+    if algorithm == "adam":
+        m_t = np.zeros(n)  # 1次モーメント
+        v_t = np.zeros(n)  # 2次モーメント
+    elif algorithm == "momentum":
+        v_t = np.zeros(n)  # 速度ベクトル
+    # sgdの場合は追加の変数は不要
 
     best_cost = np.inf
     best_S = S.copy()
@@ -115,7 +127,7 @@ def optimize_periodic_inventory(
         "base_stock_levels": []
     }
 
-    # Adam最適化ループ
+    # 最適化ループ
     for t in range(max_iter):
         # シミュレーション実行と勾配計算
         dC, cost, I = network_base_stock_simulation(
@@ -129,18 +141,30 @@ def optimize_periodic_inventory(
 
         g_t = dC  # 勾配
 
-        # 移動平均の更新
-        m_t = beta_1 * m_t + (1 - beta_1) * g_t
+        # アルゴリズムに応じたパラメータ更新
+        if algorithm == "adam":
+            # Adam: 1次・2次モーメントの移動平均
+            m_t = beta_1 * m_t + (1 - beta_1) * g_t
+            v_t = beta_2 * v_t + (1 - beta_2) * (g_t ** 2)
 
-        # 勾配の二乗の移動平均の更新
-        v_t = beta_2 * v_t + (1 - beta_2) * (g_t ** 2)
+            # バイアス補正
+            m_cap = m_t / (1 - beta_1 ** (t + 1))
+            v_cap = v_t / (1 - beta_2 ** (t + 1))
 
-        # バイアス補正
-        m_cap = m_t / (1 - beta_1 ** (t + 1))
-        v_cap = v_t / (1 - beta_2 ** (t + 1))
+            # パラメータ更新
+            S = S - (learning_rate * m_cap) / (np.sqrt(v_cap) + epsilon)
 
-        # パラメータ更新
-        S = S - (learning_rate * m_cap) / (np.sqrt(v_cap) + epsilon)
+        elif algorithm == "momentum":
+            # Momentum: 速度ベクトルの更新
+            v_t = momentum * v_t + learning_rate * g_t
+            S = S - v_t
+
+        elif algorithm == "sgd":
+            # SGD: 単純な勾配降下
+            S = S - learning_rate * g_t
+
+        else:
+            raise ValueError(f"Unknown algorithm: {algorithm}. Choose from 'adam', 'momentum', or 'sgd'.")
 
         # 勾配ノルムの計算
         gradient_norm = np.linalg.norm(g_t)

@@ -1013,7 +1013,7 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "optimize_periodic_inventory",
-            "description": "定期発注方式（Periodic Review System）の最適化。一定期間ごとに在庫を確認して発注する方式で、サプライチェーンネットワークの各ステージの基在庫レベルをAdam最適化アルゴリズム（beta1, beta2パラメータ対応）で最適化します。Adamアルゴリズムを使う場合はこちらを選択してください。注意：(s,S)方策（連続監視型）、(Q,R)方策とは異なる方式です。",
+            "description": "定期発注方式（Periodic Review System）の最適化。一定期間ごとに在庫を確認して発注する方式で、サプライチェーンネットワークの各ステージの基在庫レベルを最適化します。複数の最適化アルゴリズムに対応：Adam（beta1, beta2）、Momentum（momentum）、SGD。algorithmパラメータで選択してください。注意：(s,S)方策（連続監視型）、(Q,R)方策とは異なる方式です。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -1072,13 +1072,22 @@ MCP_TOOLS_DEFINITION = [
                         "type": "number",
                         "description": "学習率（デフォルト：1.0）"
                     },
+                    "algorithm": {
+                        "type": "string",
+                        "description": "最適化アルゴリズム: 'adam', 'momentum', 'sgd' から選択（デフォルト：'adam'）",
+                        "enum": ["adam", "momentum", "sgd"]
+                    },
                     "beta1": {
                         "type": "number",
-                        "description": "Adamアルゴリズムの1次モーメント減衰率（デフォルト：0.9）"
+                        "description": "Adamアルゴリズムの1次モーメント減衰率（algorithmが'adam'の場合のみ使用、デフォルト：0.9）"
                     },
                     "beta2": {
                         "type": "number",
-                        "description": "Adamアルゴリズムの2次モーメント減衰率（デフォルト：0.999）"
+                        "description": "Adamアルゴリズムの2次モーメント減衰率（algorithmが'adam'の場合のみ使用、デフォルト：0.999）"
+                    },
+                    "momentum": {
+                        "type": "number",
+                        "description": "Momentumアルゴリズムの減衰率（algorithmが'momentum'の場合のみ使用、デフォルト：0.9）"
                     },
                     "backorder_cost": {
                         "type": "number",
@@ -3255,9 +3264,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # stage_dfとbom_dfを準備
             stage_df, bom_df = prepare_stage_bom_data(network_data)
 
-            # Adamパラメータの取得
+            # 最適化パラメータの取得
+            algorithm = arguments.get("algorithm", "adam")
             beta1 = arguments.get("beta1", 0.9)
             beta2 = arguments.get("beta2", 0.999)
+            momentum_param = arguments.get("momentum", 0.9)
 
             # 最適化実行
             result = optimize_periodic_util(
@@ -3267,8 +3278,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 n_samples=n_samples,
                 n_periods=n_periods,
                 learning_rate=learning_rate,
+                algorithm=algorithm,
                 beta_1=beta1,
-                beta_2=beta2
+                beta_2=beta2,
+                momentum=momentum_param
             )
 
             # DataFrameをJSONシリアライズ可能な形式に変換
