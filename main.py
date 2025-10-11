@@ -185,21 +185,24 @@ async def chat(
    - **必ず_rawバージョンのFunction（calculate_eoq_*_raw）を使用してください**
    - ユーザーから受け取った値をそのまま渡してください（パラメータ変換は自動的に行われます）
    - 例：年間需要15000個、発注コスト500円、保管費率25%、単価テーブル → そのまま渡す
-5. 重要：定期発注最適化（optimize_periodic_inventory）のパラメータ指定：
+5. 重要：定期発注最適化のツール選択：
+   - **Adamアルゴリズム**（beta1, beta2パラメータ）を使う場合 → **optimize_periodic_inventory** を使用
+   - **Fit One Cycleスケジューラ**を使う場合 → optimize_periodic_with_one_cycle を使用
+6. 重要：定期発注最適化（optimize_periodic_inventory）のパラメータ指定：
    - 段階ごとに異なる値（例: 在庫保管費用: [0.5, 1.0, 2.0, 5.0]）が指定された場合：
      * 各段階のhフィールドに配列の対応する値を設定してください（Stage0はh=0.5, Stage1はh=1.0など）
    - 全段階共通の値（例: バックオーダーコスト: 100）が指定された場合：
      * トップレベルのbackorder_costパラメータに設定してください（各段階のbフィールドは省略可能）
    - リードタイムが配列で指定された場合（例: [3, 2, 2, 1]）：
      * 各段階のnet_replenishment_timeフィールドに配列の対応する値を設定してください
-6. 重要：ユーザーが「可視化したい」「グラフを見たい」と要求した場合：
+7. 重要：ユーザーが「可視化したい」「グラフを見たい」と要求した場合：
    - **EOQの可視化**：EOQ計算（calculate_eoq_*_raw）を実行した直後に visualize_eoq を呼び出す
    - **安全在庫ネットワークの可視化**：optimize_safety_stock_allocation で最適化を実行した後に visualize_last_optimization で可視化
    - calculate_safety_stock（単一品目）の結果は可視化できません
-7. Pythonコードやmatplotlibのコードを絶対に生成しないでください
-8. ツールで実行できる処理を独自に実装しないでください
-9. 複数品目のデータがある場合や、BOM（部品表）が関係する場合は必ず optimize_safety_stock_allocation を使用してください
-10. **最重要ルール**: 可視化ツール（visualize_eoq, visualize_last_optimization）の応答について：
+8. Pythonコードやmatplotlibのコードを絶対に生成しないでください
+9. ツールで実行できる処理を独自に実装しないでください
+10. 複数品目のデータがある場合や、BOM（部品表）が関係する場合は必ず optimize_safety_stock_allocation を使用してください
+11. **最重要ルール**: 可視化ツール（visualize_eoq, visualize_last_optimization）の応答について：
    - これらのツールが成功すると、自動的に可視化リンクが表示されます
    - あなたは「可視化が完了しました。上に表示されたリンクをクリックして確認してください。」とだけ伝えてください
    - URLを自分で提示する必要はありません（システムが自動的に表示します）"""

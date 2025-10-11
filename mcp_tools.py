@@ -1013,7 +1013,7 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "optimize_periodic_inventory",
-            "description": "定期発注方式（Periodic Review System）の最適化。一定期間ごとに在庫を確認して発注する方式で、サプライチェーンネットワークの各ステージの基在庫レベルをAdam最適化アルゴリズムで最適化します。注意：(s,S)方策（連続監視型）、(Q,R)方策とは異なる方式です。",
+            "description": "定期発注方式（Periodic Review System）の最適化。一定期間ごとに在庫を確認して発注する方式で、サプライチェーンネットワークの各ステージの基在庫レベルをAdam最適化アルゴリズム（beta1, beta2パラメータ対応）で最適化します。Adamアルゴリズムを使う場合はこちらを選択してください。注意：(s,S)方策（連続監視型）、(Q,R)方策とは異なる方式です。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -1166,7 +1166,7 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "optimize_periodic_with_one_cycle",
-            "description": "Fit One Cycleスケジューラを使用した高速な定期発注最適化を実行します。学習率とモメンタムを動的に調整し、効率的な収束を実現します。",
+            "description": "Fit One Cycleスケジューラを使用した高速な定期発注最適化を実行します。学習率とモメンタムを動的に調整し、効率的な収束を実現します。注意：Adamアルゴリズム（beta1, beta2パラメータ）を使う場合はoptimize_periodic_inventoryを使用してください。",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -1177,6 +1177,16 @@ MCP_TOOLS_DEFINITION = [
                     "bom_data": {
                         "type": "string",
                         "description": "BOMデータのJSON配列文字列"
+                    },
+                    "backorder_cost": {
+                        "type": "number",
+                        "description": "全段階共通のバックオーダーコスト（円/個）。各段階で異なる値を使う場合はitems_dataのbフィールドで指定してください。",
+                        "default": 100
+                    },
+                    "holding_cost": {
+                        "type": "number",
+                        "description": "全段階共通の在庫保管費用（円/個/日）。各段階で異なる値を使う場合はitems_dataのhフィールドで指定してください。",
+                        "default": 1
                     },
                     "max_iter": {
                         "type": "integer",
@@ -3616,6 +3626,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             items_data = json.loads(arguments["items_data"])
             bom_data = json.loads(arguments["bom_data"])
 
+            # 共通パラメータの取得（全段階に適用される値）
+            default_backorder_cost = arguments.get("backorder_cost", 100)
+            default_holding_cost = arguments.get("holding_cost", 1)
+
             # カラム名を標準形式に変換
             for item in items_data:
                 if 'avg_demand' in item and 'average_demand' not in item:
@@ -3642,6 +3656,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     item['sigma'] = 0
                 if 'name' not in item:
                     item['name'] = f"Stage_{items_data.index(item)}"
+                # 重要: bとhが欠落している場合は共通パラメータを使用
+                if 'b' not in item:
+                    item['b'] = default_backorder_cost
+                if 'h' not in item:
+                    item['h'] = default_holding_cost
 
             # BOMデータのカラム名を標準形式に変換とデフォルト値設定
             for bom in bom_data:
