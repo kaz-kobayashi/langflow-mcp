@@ -2034,8 +2034,8 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             n_periods = arguments.get("n_periods", 100)
 
             # 最適化実行
-            # optimize_qr関数は (最適Q, 最適R) の2要素タプルを返す
-            optimal_Q, optimal_R = optimize_qr(
+            # optimize_qr関数は (最適R, 最適Q) の2要素タプルを返す
+            optimal_R, optimal_Q = optimize_qr(
                 n_samples=n_samples,
                 n_periods=n_periods,
                 mu=mu,
@@ -2327,12 +2327,12 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             Q_eoq, TC_eoq = eoq(K=fc, d=mu, h=h, b=b, r=0, c=0, theta=0)
             results["EOQ"] = {
                 "optimal_Q": float(Q_eoq),
-                "annual_cost": float(TC_eoq),
+                "daily_cost": float(TC_eoq),
                 "policy_description": "定量発注方式（固定発注量）"
             }
 
             # 2. (Q,R)方策
-            Q_qr, R_qr = optimize_qr(
+            R_qr, Q_qr = optimize_qr(
                 n_samples=n_samples, n_periods=n_periods,
                 mu=mu, sigma=sigma, LT=LT, b=b, h=h, fc=fc
             )
@@ -2366,8 +2366,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             }
 
             # 最適方策を決定
+            # EOQ関数は日次需要(mu)を使用しているため、既に日次コストを返している
             costs = {
-                "EOQ": results["EOQ"]["annual_cost"] / 365,  # 日あたりに変換
+                "EOQ": results["EOQ"]["daily_cost"],  # 既に日次コスト
                 "QR_policy": results["QR_policy"]["average_cost"],
                 "sS_policy": results["sS_policy"]["average_cost"]
             }
@@ -2734,7 +2735,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             results["EOQ"] = float(TC_eoq / 365)  # 日あたりに変換
 
             # 2. (Q,R)方策
-            Q_qr, R_qr = optimize_qr(
+            R_qr, Q_qr = optimize_qr(
                 n_samples=n_samples, n_periods=n_periods,
                 mu=mu, sigma=sigma, LT=LT, b=b, h=h, fc=fc
             )
