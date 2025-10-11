@@ -3740,7 +3740,13 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             import numpy as np
             import plotly.io as pio
 
-            network_data = arguments["network_data"]
+            # JSON文字列の場合はパース
+            network_data_raw = arguments["network_data"]
+            if isinstance(network_data_raw, str):
+                network_data = json.loads(network_data_raw)
+            else:
+                network_data = network_data_raw
+
             max_iter = arguments.get("max_iter", 200)
             n_samples = arguments.get("n_samples", 10)
             n_periods = arguments.get("n_periods", 100)
