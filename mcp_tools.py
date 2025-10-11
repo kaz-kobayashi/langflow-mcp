@@ -3653,6 +3653,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "optimize_periodic_with_one_cycle":
         try:
+            import uuid
+            import os
+            import numpy as np
+            import plotly.io as pio
+
             network_data = arguments["network_data"]
             max_iter = arguments.get("max_iter", 200)
             n_samples = arguments.get("n_samples", 10)
