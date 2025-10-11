@@ -1330,6 +1330,13 @@ MCP_TOOLS_DEFINITION = [
                 "properties": {
                     "inventory_data": {
                         "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {"type": "number"}
+                            }
+                        },
                         "description": "在庫データの3次元配列 [samples, stages, periods]。指定しない場合は最後のシミュレーション結果をキャッシュから取得します"
                     },
                     "stage_names": {
