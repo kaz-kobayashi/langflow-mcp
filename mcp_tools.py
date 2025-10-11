@@ -1633,6 +1633,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             }
 
     elif function_name == "analyze_inventory_network":
+        import json
         items = json.loads(arguments["items_data"])
         bom = json.loads(arguments["bom_data"])
 
@@ -3552,6 +3553,12 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "find_optimal_learning_rate_periodic":
         try:
+            import json
+            import uuid
+            import os
+            import numpy as np
+            import plotly.io as pio
+
             # JSONデータのパース
             items_data = json.loads(arguments["items_data"])
             bom_data = json.loads(arguments["bom_data"])
