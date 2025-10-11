@@ -1072,6 +1072,14 @@ MCP_TOOLS_DEFINITION = [
                         "type": "number",
                         "description": "学習率（デフォルト：1.0）"
                     },
+                    "beta1": {
+                        "type": "number",
+                        "description": "Adamアルゴリズムの1次モーメント減衰率（デフォルト：0.9）"
+                    },
+                    "beta2": {
+                        "type": "number",
+                        "description": "Adamアルゴリズムの2次モーメント減衰率（デフォルト：0.999）"
+                    },
                     "backorder_cost": {
                         "type": "number",
                         "description": "全段階共通のバックオーダーコスト（各段階でbが未指定の場合に使用、デフォルト：100）"
@@ -3247,6 +3255,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # stage_dfとbom_dfを準備
             stage_df, bom_df = prepare_stage_bom_data(network_data)
 
+            # Adamパラメータの取得
+            beta1 = arguments.get("beta1", 0.9)
+            beta2 = arguments.get("beta2", 0.999)
+
             # 最適化実行
             result = optimize_periodic_util(
                 stage_df=stage_df,
@@ -3254,7 +3266,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 max_iter=max_iter,
                 n_samples=n_samples,
                 n_periods=n_periods,
-                learning_rate=learning_rate
+                learning_rate=learning_rate,
+                beta_1=beta1,
+                beta_2=beta2
             )
 
             # DataFrameをJSONシリアライズ可能な形式に変換
