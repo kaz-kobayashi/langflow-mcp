@@ -2483,6 +2483,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "visualize_inventory_simulation":
         # シミュレーション結果の可視化
         try:
+            import uuid
+            import os
+            import numpy as np
+
             mu = arguments["mu"]
             sigma = arguments["sigma"]
             LT = arguments["lead_time"]
