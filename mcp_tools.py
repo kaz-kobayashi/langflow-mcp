@@ -2292,6 +2292,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
     elif function_name == "analyze_demand_pattern":
         # 需要パターンの統計分析
         try:
+            import numpy as np
             demand = np.array(arguments["demand"])
 
             # 基本統計量
