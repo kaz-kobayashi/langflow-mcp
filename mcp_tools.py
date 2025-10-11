@@ -200,6 +200,10 @@ MCP_TOOLS_DEFINITION = [
                         "type": "number",
                         "description": "バックオーダーコスト（円/unit/日）- オプション",
                         "default": 0
+                    },
+                    "visualize": {
+                        "type": "boolean",
+                        "description": "EOQ分析を可視化するかどうか（デフォルト：false）"
                     }
                 },
                 "required": ["annual_demand", "order_cost", "holding_cost_rate", "price_table"]
@@ -242,6 +246,10 @@ MCP_TOOLS_DEFINITION = [
                         "type": "number",
                         "description": "バックオーダーコスト（円/unit/日）- オプション",
                         "default": 0
+                    },
+                    "visualize": {
+                        "type": "boolean",
+                        "description": "EOQ分析を可視化するかどうか（デフォルト：false）"
                     }
                 },
                 "required": ["annual_demand", "order_cost", "holding_cost_rate", "price_table"]
@@ -276,6 +284,10 @@ MCP_TOOLS_DEFINITION = [
                         "type": "number",
                         "description": "バックオーダーコスト（円/unit/日）- オプション",
                         "default": 0
+                    },
+                    "visualize": {
+                        "type": "boolean",
+                        "description": "EOQ分析を可視化するかどうか（デフォルト：false）"
                     }
                 },
                 "required": ["annual_demand", "order_cost", "holding_cost_rate", "unit_price"]
@@ -1408,6 +1420,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         try:
             # Step 1: パラメータ変換
             converted_params = convert_eoq_params_from_raw(arguments)
+            visualize = arguments.get("visualize", False)
 
             # Step 2: 実際の計算実行
             result = calculate_eoq_with_all_units_discount(
@@ -1427,11 +1440,53 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 _optimization_cache[user_id]["last_eoq_params"] = converted_params
                 _optimization_cache[user_id]["last_eoq_type"] = "all_units_discount"
 
-            return {
+            response = {
                 "status": "success",
                 **result,
                 "converted_params": converted_params  # デバッグ用
             }
+
+            # 可視化が要求された場合
+            if visualize:
+                try:
+                    import uuid as uuid_module
+                    import os
+                    import plotly.io as pio
+
+                    fig = visualize_eoq_with_discount(
+                        K=converted_params["K"],
+                        d=converted_params["d"],
+                        h=converted_params["h"],
+                        b=converted_params["b"],
+                        r=converted_params["r"],
+                        unit_costs=converted_params["unit_costs"],
+                        quantity_breaks=converted_params["quantity_breaks"],
+                        discount_type="all_units"
+                    )
+
+                    # 可視化の保存
+                    viz_id = str(uuid_module.uuid4())
+                    output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+                    os.makedirs(output_dir, exist_ok=True)
+                    file_path = os.path.join(output_dir, f"{viz_id}.html")
+
+                    print(f"[VIZ DEBUG] calculate_eoq_all_units_discount_raw: Saving visualization to {file_path}")
+                    pio.write_html(fig, file_path)
+                    print(f"[VIZ DEBUG] calculate_eoq_all_units_discount_raw: File saved")
+
+                    # キャッシュにも保存
+                    if user_id:
+                        html_content = pio.to_html(fig, include_plotlyjs='cdn')
+                        _optimization_cache[user_id][viz_id] = html_content
+                        print(f"[VIZ DEBUG] calculate_eoq_all_units_discount_raw: Saved to cache for user {user_id}")
+
+                    response["visualization_id"] = viz_id
+                    response["message"] = "全単位数量割引EOQ計算が完了し、可視化しました"
+                except Exception as viz_error:
+                    print(f"[VIZ DEBUG] calculate_eoq_all_units_discount_raw: Visualization error: {str(viz_error)}")
+                    response["visualization_error"] = f"可視化エラー: {str(viz_error)}"
+
+            return response
         except Exception as e:
             import traceback
             return {
@@ -1445,6 +1500,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         try:
             # Step 1: パラメータ変換
             converted_params = convert_eoq_params_from_raw(arguments)
+            visualize = arguments.get("visualize", False)
 
             # Step 2: 実際の計算実行
             result = calculate_eoq_with_incremental_discount(
@@ -1464,11 +1520,53 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 _optimization_cache[user_id]["last_eoq_params"] = converted_params
                 _optimization_cache[user_id]["last_eoq_type"] = "incremental_discount"
 
-            return {
+            response = {
                 "status": "success",
                 **result,
                 "converted_params": converted_params  # デバッグ用
             }
+
+            # 可視化が要求された場合
+            if visualize:
+                try:
+                    import uuid as uuid_module
+                    import os
+                    import plotly.io as pio
+
+                    fig = visualize_eoq_with_discount(
+                        K=converted_params["K"],
+                        d=converted_params["d"],
+                        h=converted_params["h"],
+                        b=converted_params["b"],
+                        r=converted_params["r"],
+                        unit_costs=converted_params["unit_costs"],
+                        quantity_breaks=converted_params["quantity_breaks"],
+                        discount_type="incremental"
+                    )
+
+                    # 可視化の保存
+                    viz_id = str(uuid_module.uuid4())
+                    output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+                    os.makedirs(output_dir, exist_ok=True)
+                    file_path = os.path.join(output_dir, f"{viz_id}.html")
+
+                    print(f"[VIZ DEBUG] calculate_eoq_incremental_discount_raw: Saving visualization to {file_path}")
+                    pio.write_html(fig, file_path)
+                    print(f"[VIZ DEBUG] calculate_eoq_incremental_discount_raw: File saved")
+
+                    # キャッシュにも保存
+                    if user_id:
+                        html_content = pio.to_html(fig, include_plotlyjs='cdn')
+                        _optimization_cache[user_id][viz_id] = html_content
+                        print(f"[VIZ DEBUG] calculate_eoq_incremental_discount_raw: Saved to cache for user {user_id}")
+
+                    response["visualization_id"] = viz_id
+                    response["message"] = "増分数量割引EOQ計算が完了し、可視化しました"
+                except Exception as viz_error:
+                    print(f"[VIZ DEBUG] calculate_eoq_incremental_discount_raw: Visualization error: {str(viz_error)}")
+                    response["visualization_error"] = f"可視化エラー: {str(viz_error)}"
+
+            return response
         except Exception as e:
             import traceback
             return {
@@ -1486,6 +1584,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             holding_cost_rate = arguments["holding_cost_rate"]
             unit_price = arguments["unit_price"]
             backorder_cost = arguments.get("backorder_cost", 0)
+            visualize = arguments.get("visualize", False)
 
             # 変換
             d = annual_demand / 365.0
@@ -1512,7 +1611,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 }
                 _optimization_cache[user_id]["last_eoq_type"] = "basic"
 
-            return {
+            response = {
                 "status": "success",
                 "optimal_order_quantity": float(Q_star),
                 "total_cost": float(TC_star),
@@ -1527,6 +1626,39 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     "backorder_cost": b
                 }
             }
+
+            # 可視化が要求された場合
+            if visualize:
+                try:
+                    import uuid as uuid_module
+                    import os
+                    import plotly.io as pio
+
+                    fig = visualize_eoq_analysis(K=K, d=d, h=h, b=b)
+
+                    # 可視化の保存
+                    viz_id = str(uuid_module.uuid4())
+                    output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+                    os.makedirs(output_dir, exist_ok=True)
+                    file_path = os.path.join(output_dir, f"{viz_id}.html")
+
+                    print(f"[VIZ DEBUG] calculate_eoq_raw: Saving visualization to {file_path}")
+                    pio.write_html(fig, file_path)
+                    print(f"[VIZ DEBUG] calculate_eoq_raw: File saved")
+
+                    # キャッシュにも保存
+                    if user_id:
+                        html_content = pio.to_html(fig, include_plotlyjs='cdn')
+                        _optimization_cache[user_id][viz_id] = html_content
+                        print(f"[VIZ DEBUG] calculate_eoq_raw: Saved to cache for user {user_id}")
+
+                    response["visualization_id"] = viz_id
+                    response["message"] = "EOQ計算が完了し、可視化しました"
+                except Exception as viz_error:
+                    print(f"[VIZ DEBUG] calculate_eoq_raw: Visualization error: {str(viz_error)}")
+                    response["visualization_error"] = f"可視化エラー: {str(viz_error)}"
+
+            return response
         except Exception as e:
             import traceback
             return {
