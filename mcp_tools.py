@@ -3119,12 +3119,22 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             )
 
             # UUIDベースのviz_idを生成
-            viz_id = str(uuid.uuid4())
+            import uuid as uuid_module
+            viz_id = str(uuid_module.uuid4())
 
             # HTMLとして保存
             html_content = fig.to_html(include_plotlyjs='cdn')
 
-            # キャッシュに保存
+            # ファイルシステムに保存
+            import os
+            output_dir = os.environ.get("VISUALIZATION_OUTPUT_DIR", "/tmp/visualizations")
+            os.makedirs(output_dir, exist_ok=True)
+            file_path = os.path.join(output_dir, f"{viz_id}.html")
+
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+
+            # キャッシュにも保存
             if user_id:
                 if user_id not in _optimization_cache:
                     _optimization_cache[user_id] = {}
