@@ -2784,6 +2784,12 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             import plotly.io as pio
             pio.write_html(fig, file_path)
 
+            # ユーザーキャッシュに保存
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = pio.to_html(fig, include_plotlyjs='cdn')
+
             # 基本統計量を計算
             mean_val = float(demand_data.mean())
             median_val = float(np.median(demand_data))
