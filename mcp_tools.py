@@ -18,7 +18,10 @@ from scmopt2.optinv import (
     optimize_ss,
     ww,
     best_distribution,
-    best_histogram
+    best_histogram,
+    plot_inv_opt,
+    plot_inv_opt_lr_find,
+    plot_simulation
 )
 from fixed_multistage import (
     multi_stage_simulate_inventory_fixed,
@@ -3266,6 +3269,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
     elif function_name == "visualize_periodic_optimization":
         try:
+            import uuid
+            import os
+            import plotly.io as pio
+
             opt_result = arguments["optimization_result"]
 
             if opt_result.get("status") != "success":
@@ -3276,26 +3283,9 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
 
             history = opt_result["optimization_history"]
 
-            # コスト推移のグラフ
-            fig = go.Figure()
-
-            fig.add_trace(go.Scatter(
-                x=history["iteration"],
-                y=history["cost"],
-                mode='lines+markers',
-                name='総コスト',
-                line=dict(color='#1f77b4', width=2),
-                marker=dict(size=6)
-            ))
-
-            fig.update_layout(
-                title='定期発注最適化: コスト推移',
-                xaxis_title='反復回数',
-                yaxis_title='総コスト',
-                template='plotly_white',
-                hovermode='x unified',
-                height=400
-            )
+            # コスト推移のグラフ（notebook関数を使用）
+            cost_list = history["cost"]
+            fig = plot_inv_opt(cost_list)
 
             # グラフを保存
             viz_id = str(uuid.uuid4())
@@ -3305,37 +3295,10 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             file_path = os.path.join(output_dir, f"{viz_id}.html")
             pio.write_html(fig, file_path)
 
-            # 勾配ノルム推移のグラフ
-            fig2 = go.Figure()
-
-            fig2.add_trace(go.Scatter(
-                x=history["iteration"],
-                y=history["gradient_norm"],
-                mode='lines+markers',
-                name='勾配ノルム',
-                line=dict(color='#ff7f0e', width=2),
-                marker=dict(size=6)
-            ))
-
-            fig2.update_layout(
-                title='定期発注最適化: 勾配ノルム推移',
-                xaxis_title='反復回数',
-                yaxis_title='勾配ノルム',
-                yaxis_type='log',
-                template='plotly_white',
-                hovermode='x unified',
-                height=400
-            )
-
-            viz_id2 = str(uuid.uuid4())
-            file_path2 = os.path.join(output_dir, f"{viz_id2}.html")
-            pio.write_html(fig2, file_path2)
-
             return {
                 "status": "success",
                 "visualization_type": "定期発注最適化グラフ",
-                "cost_chart_id": viz_id,
-                "gradient_chart_id": viz_id2,
+                "visualization_id": viz_id,
                 "summary": {
                     "initial_cost": float(history["cost"][0]),
                     "final_cost": float(history["cost"][-1]),
