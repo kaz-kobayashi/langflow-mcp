@@ -1122,16 +1122,11 @@ MCP_TOOLS_DEFINITION = [
         "type": "function",
         "function": {
             "name": "visualize_periodic_optimization",
-            "description": "定期発注最適化の結果を可視化します。最適化の学習曲線、コストの推移、基在庫レベルの変化をインタラクティブなグラフで表示します。",
+            "description": "直前に実行した定期発注最適化の結果を可視化します。最適化の学習曲線、コストの推移、基在庫レベルの変化をインタラクティブなグラフで表示します。ユーザーが「結果を可視化して」「学習曲線を見せて」などと依頼した場合に使用します。",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "optimization_result": {
-                        "type": "object",
-                        "description": "optimize_periodic_inventoryの実行結果"
-                    }
-                },
-                "required": ["optimization_result"]
+                "properties": {},
+                "required": []
             }
         }
     },
@@ -3634,7 +3629,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             # DataFrameをJSONシリアライズ可能な形式に変換
             stage_result = result["stage_df"].to_dict(orient="records")
 
-            return {
+            response = {
                 "status": "success",
                 "optimization_type": "定期発注最適化",
                 "best_cost": float(result["best_cost"]),
@@ -3645,6 +3640,14 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 "optimization_history": result["optimization_history"],
                 "message": f"最適化完了: {result['final_iteration']}回の反復で総コスト{result['best_cost']:.2f}を達成"
             }
+
+            # ユーザーキャッシュに保存（可視化用）
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id]["last_periodic_optimization"] = response
+
+            return response
         except Exception as e:
             return {
                 "status": "error",
@@ -3657,7 +3660,19 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             import os
             import plotly.io as pio
 
-            opt_result = arguments["optimization_result"]
+            # キャッシュから最適化結果を取得
+            if user_id is None or user_id not in _optimization_cache:
+                return {
+                    "status": "error",
+                    "message": "最適化結果が見つかりません。先にoptimize_periodic_inventoryを実行してください。"
+                }
+
+            opt_result = _optimization_cache[user_id].get("last_periodic_optimization")
+            if opt_result is None:
+                return {
+                    "status": "error",
+                    "message": "定期発注最適化の結果が見つかりません。先にoptimize_periodic_inventoryを実行してください。"
+                }
 
             if opt_result.get("status") != "success":
                 return {
@@ -3677,12 +3692,25 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             os.makedirs(output_dir, exist_ok=True)
 
             file_path = os.path.join(output_dir, f"{viz_id}.html")
+            print(f"[VIZ DEBUG] visualize_periodic_optimization: Saving visualization to {file_path}")
             pio.write_html(fig, file_path)
+            print(f"[VIZ DEBUG] visualize_periodic_optimization: File saved")
+
+            # キャッシュにも保存
+            if user_id:
+                html_content = pio.to_html(fig, include_plotlyjs='cdn')
+                _optimization_cache[user_id][viz_id] = html_content
+                print(f"[VIZ DEBUG] visualize_periodic_optimization: Saved to cache for user {user_id}")
+
+            base_url = os.environ.get("BASE_URL", "http://localhost:8000")
+            viz_url = f"{base_url}/api/visualization/{viz_id}"
+            print(f"[VIZ DEBUG] visualize_periodic_optimization: Full URL: {viz_url}")
 
             return {
                 "status": "success",
                 "visualization_type": "定期発注最適化グラフ",
                 "visualization_id": viz_id,
+                "visualization_url": viz_url,
                 "summary": {
                     "initial_cost": float(history["cost"][0]),
                     "final_cost": float(history["cost"][-1]),
@@ -3690,7 +3718,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     "iterations": len(history["iteration"]),
                     "converged": opt_result["converged"]
                 },
-                "message": "定期発注最適化の結果を可視化しました"
+                "message": f"定期発注最適化の結果を可視化しました。ID: {viz_id}"
             }
         except Exception as e:
             return {
