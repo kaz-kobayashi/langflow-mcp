@@ -3379,7 +3379,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                         print(f"[VIZ DEBUG] forecast_demand: Saved to cache for user {user_id}")
 
                     response["visualization_id"] = viz_id
-                    response["message"] = f"{method_name}により{forecast_periods}期間の需要予測を行い、可視化しました"
+                    base_url = os.environ.get("BASE_URL", "http://localhost:8000")
+                    viz_url = f"{base_url}/api/visualization/{viz_id}"
+                    response["visualization_url"] = viz_url
+                    response["message"] = f"{method_name}により{forecast_periods}期間の需要予測を行い、可視化しました。ID: {viz_id}"
+                    print(f"[VIZ DEBUG] forecast_demand: Full URL: {viz_url}")
                 except Exception as viz_error:
                     print(f"[VIZ DEBUG] forecast_demand: Visualization error: {str(viz_error)}")
                     response["visualization_error"] = f"可視化エラー: {str(viz_error)}"
