@@ -253,14 +253,19 @@
                 errorMessage: null,
                 isLoading: false,
                 tokensIssued: 0,
+                adminPassword: '',
 
                 async init() {
+                    // URLパラメータから管理者パスワードを取得
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.adminPassword = urlParams.get('password') || '';
+
                     await this.loadUsers();
                 },
 
                 async loadUsers() {
                     try {
-                        const response = await fetch('/api/admin/users');
+                        const response = await fetch(`/api/admin/users?password=${encodeURIComponent(this.adminPassword)}`);
                         if (!response.ok) throw new Error('Failed to load users');
                         const data = await response.json();
                         this.users = data.users;
@@ -280,7 +285,10 @@
                         const response = await fetch('/api/admin/users', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.newUser)
+                            body: JSON.stringify({
+                                ...this.newUser,
+                                admin_password: this.adminPassword
+                            })
                         });
 
                         if (!response.ok) {
@@ -312,7 +320,7 @@
 
                 async reissueToken(user) {
                     try {
-                        const response = await fetch(`/api/admin/users/${user.id}/reissue-token`, {
+                        const response = await fetch(`/api/admin/users/${user.id}/reissue-token?password=${encodeURIComponent(this.adminPassword)}`, {
                             method: 'POST'
                         });
 
