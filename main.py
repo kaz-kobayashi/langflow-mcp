@@ -183,6 +183,21 @@ class WagnerWhitinParams(BaseModel):
     class Config:
         allow_population_by_field_name = True
 
+class DistributionFittingParams(BaseModel):
+    """最適分布フィッティングのパラメータモデル"""
+    demand: List[float] = Field(..., description="需要データの配列", min_items=1)
+
+    class Config:
+        allow_population_by_field_name = True
+
+class HistogramFittingParams(BaseModel):
+    """ヒストグラム分布フィッティングのパラメータモデル"""
+    demand_data: List[float] = Field(..., description="需要データの配列", min_items=1)
+    nbins: Optional[int] = Field(50, description="ヒストグラムのビン数", gt=0)
+
+    class Config:
+        allow_population_by_field_name = True
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """ホームページ - ローカル環境ではチャット画面、本番環境ではログイン画面"""
@@ -1018,6 +1033,9 @@ async def extract_parameters(
         "forecast_demand": DemandForecastParams,
         # 需要分析
         "analyze_demand_pattern": DemandAnalysisParams,
+        # 分布フィッティング
+        "find_best_distribution": DistributionFittingParams,
+        "fit_histogram_distribution": HistogramFittingParams,
         # Wagner-Whitin
         "calculate_wagner_whitin": WagnerWhitinParams,
     }
