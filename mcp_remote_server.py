@@ -3,13 +3,38 @@ MCP Server for Remote Supply Chain Inventory Optimization API
 Railway上のFastAPIエンドポイントを使用するMCPサーバー
 """
 
-from fastmcp import FastMCP
-import os
-from inventory_client import InventoryOptimizationClient
+import sys
+import traceback
+
+# エラーログを標準エラー出力に記録
+def log_error(message):
+    """エラーメッセージをstderrに出力"""
+    print(f"[MCP ERROR] {message}", file=sys.stderr, flush=True)
+
+try:
+    from fastmcp import FastMCP
+    import os
+    from inventory_client import InventoryOptimizationClient
+
+    log_error("Modules imported successfully")
+except Exception as e:
+    log_error(f"Failed to import modules: {e}")
+    log_error(traceback.format_exc())
+    sys.exit(1)
 
 # 環境変数から設定を読み込み
-API_BASE_URL = os.getenv("INVENTORY_API_URL", "https://web-production-1ed39.up.railway.app")
-API_TOKEN = os.getenv("INVENTORY_API_TOKEN")  # 必須: JWTトークン
+try:
+    API_BASE_URL = os.getenv("INVENTORY_API_URL", "https://web-production-1ed39.up.railway.app")
+    API_TOKEN = os.getenv("INVENTORY_API_TOKEN")  # 必須: JWTトークン
+
+    log_error(f"Environment variables loaded:")
+    log_error(f"  API_BASE_URL: {API_BASE_URL}")
+    log_error(f"  API_TOKEN present: {bool(API_TOKEN)}")
+    log_error(f"  API_TOKEN length: {len(API_TOKEN) if API_TOKEN else 0}")
+except Exception as e:
+    log_error(f"Failed to load environment variables: {e}")
+    log_error(traceback.format_exc())
+    sys.exit(1)
 
 # APIクライアントの初期化（遅延初期化）
 client = None
@@ -34,7 +59,13 @@ def get_client():
     return client
 
 # MCPサーバーの初期化
-mcp = FastMCP("Remote Inventory Optimizer")
+try:
+    mcp = FastMCP("Remote Inventory Optimizer")
+    log_error("FastMCP server initialized successfully")
+except Exception as e:
+    log_error(f"Failed to initialize FastMCP: {e}")
+    log_error(traceback.format_exc())
+    sys.exit(1)
 
 
 # =============================================================
@@ -363,4 +394,11 @@ def list_available_tools() -> dict:
 
 if __name__ == "__main__":
     # MCPサーバー起動
-    mcp.run()
+    try:
+        log_error("Starting MCP server...")
+        mcp.run()
+        log_error("MCP server stopped normally")
+    except Exception as e:
+        log_error(f"MCP server crashed: {e}")
+        log_error(traceback.format_exc())
+        sys.exit(1)

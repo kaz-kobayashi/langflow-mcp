@@ -207,6 +207,122 @@
         .json-toggle-icon.collapsed {
             transform: rotate(-90deg);
         }
+
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            max-width: 900px;
+            max-height: 90vh;
+            width: 90%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            ring: 2px;
+            ring-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .param-table th,
+        .param-table td {
+            padding: 0.5rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+        }
+
+        .param-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .param-table input {
+            width: 100%;
+            padding: 0.375rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+        }
+
+        .param-table input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
     </style>
 </head>
 <body class="bg-gray-50" x-data="chatApp()" x-init="init()">
@@ -280,6 +396,50 @@
                 </template>
             </div>
 
+            <!-- Quick Access Buttons -->
+            <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-700">🚀 機能選択</h3>
+                </div>
+
+                <!-- Guided Form Button (Primary) -->
+                <button
+                    @click="openGuidedForm()"
+                    class="w-full mb-3 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg text-sm font-semibold transition-all shadow-md hover:shadow-lg"
+                >
+                    ✨ 機能を選んで入力する（おすすめ）
+                </button>
+
+                <!-- Quick Access Buttons -->
+                <div class="text-xs text-gray-500 mb-2 font-medium">よく使う機能：</div>
+                <div class="flex flex-wrap gap-2">
+                    <button
+                        @click="openSupplyChainForm()"
+                        class="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-medium transition-colors border border-blue-200"
+                    >
+                        🏭 サプライチェーン最適化
+                    </button>
+                    <button
+                        @click="openQuickForm('eoq')"
+                        class="px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg text-xs font-medium transition-colors border border-green-200"
+                    >
+                        📦 EOQ計算
+                    </button>
+                    <button
+                        @click="openQuickForm('demand_forecast')"
+                        class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-xs font-medium transition-colors border border-amber-200"
+                    >
+                        📈 需要予測
+                    </button>
+                    <button
+                        @click="openQuickForm('safety_stock')"
+                        class="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-xs font-medium transition-colors border border-purple-200"
+                    >
+                        🛡️ 安全在庫計算
+                    </button>
+                </div>
+            </div>
+
             <!-- Input Area -->
             <div class="bg-white rounded-lg shadow-md p-4">
                 <form @submit.prevent="sendMessage()" class="flex gap-3">
@@ -320,6 +480,198 @@
         </footer>
     </div>
 
+    <!-- Guided Form Modal -->
+    <div x-show="showGuidedModal" x-cloak class="modal-overlay" @click.self="closeGuidedForm()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">✨ 機能を選んで入力</h2>
+                    <div class="text-sm text-gray-500 mt-1">
+                        <span x-show="guidedForm.step === 1">ステップ 1/3: カテゴリーを選択</span>
+                        <span x-show="guidedForm.step === 2">ステップ 2/3: 機能を選択</span>
+                        <span x-show="guidedForm.step === 3">ステップ 3/3: パラメータを入力</span>
+                    </div>
+                </div>
+                <button @click="closeGuidedForm()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Category Selection -->
+                <div x-show="guidedForm.step === 1" class="space-y-3">
+                    <p class="text-sm text-gray-600 mb-4">実行したい機能のカテゴリーを選んでください：</p>
+                    <template x-for="category in functionCategories" :key="category.id">
+                        <button
+                            @click="selectCategory(category)"
+                            class="w-full p-4 text-left border-2 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all"
+                            :class="guidedForm.selectedCategory?.id === category.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
+                        >
+                            <div class="flex items-start gap-3">
+                                <span class="text-3xl" x-text="category.icon"></span>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-gray-800" x-text="category.name"></div>
+                                    <div class="text-sm text-gray-600 mt-1" x-text="category.description"></div>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Step 2: Function Selection -->
+                <div x-show="guidedForm.step === 2" class="space-y-3">
+                    <button @click="guidedForm.step = 1" class="text-sm text-indigo-600 hover:text-indigo-700 mb-3">
+                        ← カテゴリー選択に戻る
+                    </button>
+                    <p class="text-sm text-gray-600 mb-4">実行したい機能を選んでください：</p>
+                    <template x-for="func in (guidedForm.selectedCategory?.functions || [])" :key="func.id">
+                        <button
+                            @click="selectFunction(func)"
+                            class="w-full p-4 text-left border-2 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-all"
+                            :class="guidedForm.selectedFunction?.id === func.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'"
+                        >
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl" x-text="func.icon"></span>
+                                <span class="font-medium text-gray-800" x-text="func.name"></span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Step 3: Parameter Input (Dynamic Form) -->
+                <div x-show="guidedForm.step === 3">
+                    <button @click="guidedForm.step = 2" class="text-sm text-indigo-600 hover:text-indigo-700 mb-3">
+                        ← 機能選択に戻る
+                    </button>
+                    <div x-show="guidedForm.selectedFunction" class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-2">
+                            <span class="text-2xl" x-text="guidedForm.selectedFunction?.icon"></span>
+                            <div>
+                                <div class="font-semibold text-gray-800" x-text="functionTemplates[guidedForm.selectedFunction?.id]?.name"></div>
+                                <div class="text-sm text-gray-600 mt-1" x-text="functionTemplates[guidedForm.selectedFunction?.id]?.description"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="dynamicFormFields" class="space-y-4">
+                        <!-- Dynamic fields will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    @click="closeGuidedForm()"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+                >
+                    キャンセル
+                </button>
+                <button
+                    x-show="guidedForm.step === 3"
+                    @click="submitGuidedForm()"
+                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                >
+                    実行する
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supply Chain Simulation Modal -->
+    <div x-show="showSupplyChainModal" x-cloak class="modal-overlay" @click.self="closeSupplyChainForm()">
+        <div class="modal-content" @click.away="closeSupplyChainForm()">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold text-gray-800">🏭 サプライチェーンシミュレーション</h2>
+                <button @click="closeSupplyChainForm()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Basic Parameters -->
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">基本パラメータ</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">サンプル数</label>
+                        <input type="number" x-model.number="scForm.numSamples" class="form-input" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">シミュレーション期間</label>
+                        <input type="number" x-model.number="scForm.periods" class="form-input" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">段階数</label>
+                        <input type="number" x-model.number="scForm.numStages" class="form-input" min="1" @change="updateStageData()">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">平均需要（個/日）</label>
+                        <input type="number" x-model.number="scForm.meanDemand" class="form-input" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">標準偏差（個/日）</label>
+                        <input type="number" x-model.number="scForm.stdDemand" class="form-input" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">バックオーダーコスト（円/個）</label>
+                        <input type="number" x-model.number="scForm.backorderCost" class="form-input" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">固定発注コスト（円）</label>
+                        <input type="number" x-model.number="scForm.fixedOrderCost" class="form-input" step="0.1">
+                    </div>
+                </div>
+
+                <!-- Stage-specific Parameters Table -->
+                <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">段階別パラメータ</h3>
+                <div class="table-container">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>段階</th>
+                                <th>リードタイム（日）</th>
+                                <th>発注点 s（個）</th>
+                                <th>基在庫レベル S（個）</th>
+                                <th>在庫保管費用 h（円/個/日）</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="(stage, index) in scForm.stages" :key="index">
+                                <tr>
+                                    <td x-text="'Stage ' + index"></td>
+                                    <td><input type="number" x-model.number="stage.leadTime" min="0"></td>
+                                    <td><input type="number" x-model.number="stage.reorderPoint" min="0"></td>
+                                    <td><input type="number" x-model.number="stage.baseStockLevel" min="0"></td>
+                                    <td><input type="number" x-model.number="stage.holdingCost" min="0" step="0.1"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    @click="closeSupplyChainForm()"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+                >
+                    キャンセル
+                </button>
+                <button
+                    @click="submitSupplyChainForm()"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                    チャットに送信
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function chatApp() {
             return {
@@ -328,6 +680,218 @@
                 isLoading: false,
                 modelName: 'qwen2.5:latest', // デフォルト値（ローカル開発用）
                 skipAuth: false, // 認証スキップフラグ
+
+                // Modal states
+                showSupplyChainModal: false,
+                showGuidedModal: false,
+
+                // Guided Form State
+                guidedForm: {
+                    step: 1, // 1: category selection, 2: function selection, 3: parameter input
+                    selectedCategory: null,
+                    selectedFunction: null,
+                    parameters: {}
+                },
+
+                // Function Categories and Definitions
+                functionCategories: [
+                    {
+                        id: 'simulation',
+                        name: 'シミュレーション',
+                        icon: '🎲',
+                        description: '在庫方策のシミュレーション',
+                        functions: [
+                            { id: 'simulate_qr', name: '(Q,R)連続発注方策', icon: '📊' },
+                            { id: 'simulate_ss', name: '(s,S)連続発注方策', icon: '📈' },
+                            { id: 'simulate_base_stock', name: '基在庫方策', icon: '📉' },
+                            { id: 'base_stock_simulation_using_dist', name: '分布ベース基在庫シミュレーション', icon: '🎯' }
+                        ]
+                    },
+                    {
+                        id: 'optimization',
+                        name: '在庫最適化',
+                        icon: '⚙️',
+                        description: '発注方策パラメータの最適化',
+                        functions: [
+                            { id: 'optimize_qr', name: '(Q,R)方策の最適化', icon: '🔧' },
+                            { id: 'optimize_ss', name: '(s,S)方策の最適化', icon: '🔨' },
+                            { id: 'optimize_periodic', name: '定期発注方策の最適化', icon: '⚡' },
+                            { id: 'optimize_safety_stock', name: '安全在庫配置の最適化', icon: '🛡️' }
+                        ]
+                    },
+                    {
+                        id: 'forecast',
+                        name: '需要予測・分析',
+                        icon: '📈',
+                        description: '需要データの分析と予測',
+                        functions: [
+                            { id: 'forecast_demand', name: '需要予測（指数平滑法/移動平均）', icon: '🔮' },
+                            { id: 'analyze_demand', name: '需要パターン分析', icon: '📊' },
+                            { id: 'find_best_distribution', name: '最適分布フィッティング', icon: '📉' },
+                            { id: 'fit_histogram', name: 'ヒストグラム分布', icon: '📊' }
+                        ]
+                    },
+                    {
+                        id: 'calculation',
+                        name: '在庫計算',
+                        icon: '🧮',
+                        description: '基本的な在庫計算',
+                        functions: [
+                            { id: 'calculate_safety_stock', name: '安全在庫計算', icon: '🛡️' },
+                            { id: 'calculate_eoq_incremental', name: 'EOQ（増分数量割引）', icon: '📦' },
+                            { id: 'calculate_eoq_all_units', name: 'EOQ（全単位数量割引）', icon: '📦' },
+                            { id: 'calculate_wagner_whitin', name: 'Wagner-Whitinアルゴリズム', icon: '📊' }
+                        ]
+                    }
+                ],
+
+                // Function Parameter Templates
+                functionTemplates: {
+                    'calculate_safety_stock': {
+                        name: '安全在庫計算',
+                        description: '需要の変動とリードタイムから安全在庫を計算します',
+                        fields: [
+                            { name: 'mu', label: '需要の平均（個/日）', type: 'number', default: 100, required: true, help: '1日あたりの平均需要量' },
+                            { name: 'sigma', label: '需要の標準偏差（個/日）', type: 'number', default: 15, required: true, help: '需要のばらつき' },
+                            { name: 'lead_time', label: 'リードタイム（日）', type: 'number', default: 7, required: true, help: '発注から納品までの日数' },
+                            { name: 'service_level', label: 'サービスレベル', type: 'number', default: 0.95, min: 0.5, max: 0.999, step: 0.01, required: true, help: '在庫切れを防ぐ確率（0.95 = 95%）' }
+                        ]
+                    },
+                    'forecast_demand': {
+                        name: '需要予測',
+                        description: '過去の需要データから将来の需要を予測します',
+                        fields: [
+                            { name: 'demand_history', label: '過去の需要データ', type: 'array', default: '[100, 105, 98, 110, 102]', required: true, help: '過去の需要データをカンマ区切りで入力' },
+                            { name: 'forecast_periods', label: '予測期間', type: 'number', default: 10, required: true, help: '何期先まで予測するか' },
+                            { name: 'method', label: '予測手法', type: 'select', options: [
+                                { value: 'exponential_smoothing', label: '指数平滑法' },
+                                { value: 'moving_average', label: '移動平均法' },
+                                { value: 'linear_trend', label: '線形トレンド法' }
+                            ], default: 'exponential_smoothing', required: true }
+                        ]
+                    },
+                    'calculate_eoq_incremental': {
+                        name: 'EOQ計算（増分数量割引）',
+                        description: '数量割引を考慮した経済的発注量を計算します',
+                        fields: [
+                            { name: 'annual_demand', label: '年間需要（個）', type: 'number', default: 12000, required: true },
+                            { name: 'order_cost', label: '発注コスト（円）', type: 'number', default: 500, required: true },
+                            { name: 'holding_cost_rate', label: '在庫保管費率（%）', type: 'number', default: 20, required: true, help: '年間の在庫保管費用率' },
+                            { name: 'price_table', label: '単価テーブル', type: 'table', columns: ['数量', '単価'], default: [[0, 12.0], [500, 11.5], [1000, 11.0]], required: true }
+                        ]
+                    },
+                    'simulate_qr': {
+                        name: '(Q,R)連続発注方策シミュレーション',
+                        description: '発注量Qと発注点Rを使った連続監視型在庫方策',
+                        fields: [
+                            { name: 'n_samples', label: 'サンプル数', type: 'number', default: 100, required: false },
+                            { name: 'n_periods', label: 'シミュレーション期間', type: 'number', default: 200, required: false },
+                            { name: 'Q', label: '発注量Q（個）', type: 'number', default: 150, required: true },
+                            { name: 'R', label: '発注点R（個）', type: 'number', default: 80, required: true },
+                            { name: 'mu', label: '需要の平均（個/日）', type: 'number', default: 100, required: true },
+                            { name: 'sigma', label: '需要の標準偏差', type: 'number', default: 15, required: true },
+                            { name: 'lead_time', label: 'リードタイム（日）', type: 'number', default: 5, required: true },
+                            { name: 'holding_cost', label: '在庫保管費用（円/個/日）', type: 'number', default: 1.0, required: true },
+                            { name: 'stockout_cost', label: '品切れコスト（円/個）', type: 'number', default: 100, required: true },
+                            { name: 'fixed_cost', label: '固定発注コスト（円）', type: 'number', default: 500, required: true }
+                        ]
+                    },
+                    'simulate_ss': {
+                        name: '(s,S)連続発注方策シミュレーション',
+                        description: '発注点sと基在庫レベルSを使った連続監視型在庫方策',
+                        fields: [
+                            { name: 'n_samples', label: 'サンプル数', type: 'number', default: 100, required: false },
+                            { name: 'n_periods', label: 'シミュレーション期間', type: 'number', default: 200, required: false },
+                            { name: 's', label: '発注点s（個）', type: 'number', default: 80, required: true },
+                            { name: 'S', label: '基在庫レベルS（個）', type: 'number', default: 200, required: true },
+                            { name: 'mu', label: '需要の平均（個/日）', type: 'number', default: 100, required: true },
+                            { name: 'sigma', label: '需要の標準偏差', type: 'number', default: 15, required: true },
+                            { name: 'lead_time', label: 'リードタイム（日）', type: 'number', default: 5, required: true },
+                            { name: 'holding_cost', label: '在庫保管費用（円/個/日）', type: 'number', default: 1.0, required: true },
+                            { name: 'stockout_cost', label: '品切れコスト（円/個）', type: 'number', default: 100, required: true },
+                            { name: 'fixed_cost', label: '固定発注コスト（円）', type: 'number', default: 500, required: true }
+                        ]
+                    },
+                    'optimize_qr': {
+                        name: '(Q,R)方策の最適化',
+                        description: '(Q,R)方策の最適な発注量Qと発注点Rを計算します',
+                        fields: [
+                            { name: 'mu', label: '需要の平均（個/日）', type: 'number', default: 100, required: true },
+                            { name: 'sigma', label: '需要の標準偏差', type: 'number', default: 15, required: true },
+                            { name: 'lead_time', label: 'リードタイム（日）', type: 'number', default: 5, required: true },
+                            { name: 'holding_cost', label: '在庫保管費用（円/個/日）', type: 'number', default: 1.0, required: true },
+                            { name: 'stockout_cost', label: '品切れコスト（円/個）', type: 'number', default: 100, required: true },
+                            { name: 'fixed_cost', label: '固定発注コスト（円）', type: 'number', default: 500, required: true }
+                        ]
+                    },
+                    'optimize_ss': {
+                        name: '(s,S)方策の最適化',
+                        description: '(s,S)方策の最適な発注点sと基在庫レベルSを計算します',
+                        fields: [
+                            { name: 'mu', label: '需要の平均（個/日）', type: 'number', default: 100, required: true },
+                            { name: 'sigma', label: '需要の標準偏差', type: 'number', default: 15, required: true },
+                            { name: 'lead_time', label: 'リードタイム（日）', type: 'number', default: 5, required: true },
+                            { name: 'holding_cost', label: '在庫保管費用（円/個/日）', type: 'number', default: 1.0, required: true },
+                            { name: 'stockout_cost', label: '品切れコスト（円/個）', type: 'number', default: 100, required: true },
+                            { name: 'fixed_cost', label: '固定発注コスト（円）', type: 'number', default: 500, required: true }
+                        ]
+                    },
+                    'simulate_base_stock': {
+                        name: '基在庫方策シミュレーション',
+                        description: '定期発注方式で基在庫レベルまで補充する方策のシミュレーション',
+                        fields: [
+                            { name: 'mu', label: '需要の平均（個/日）', type: 'number', default: 100, required: true, help: '需要データを自動生成します' },
+                            { name: 'sigma', label: '需要の標準偏差', type: 'number', default: 15, required: true },
+                            { name: 'n_samples', label: 'サンプル数', type: 'number', default: 100, required: false },
+                            { name: 'n_periods', label: 'シミュレーション期間', type: 'number', default: 200, required: false },
+                            { name: 'base_stock_level', label: '基在庫レベルS（個）', type: 'number', default: 200, required: true },
+                            { name: 'lead_time', label: 'リードタイム（日）', type: 'number', default: 5, required: true },
+                            { name: 'capacity', label: '生産能力（個/日）', type: 'number', default: 1000, required: false, help: '無制限の場合は大きな値を設定' },
+                            { name: 'holding_cost', label: '在庫保管費用（円/個/日）', type: 'number', default: 1.0, required: true },
+                            { name: 'stockout_cost', label: '品切れコスト（円/個）', type: 'number', default: 100, required: true }
+                        ]
+                    },
+                    'base_stock_simulation_using_dist': {
+                        name: '分布ベース基在庫シミュレーション',
+                        description: '確率分布から需要を生成して基在庫方策をシミュレーション',
+                        fields: [
+                            { name: 'n_samples', label: 'サンプル数', type: 'number', default: 100, required: false },
+                            { name: 'n_periods', label: 'シミュレーション期間', type: 'number', default: 200, required: false },
+                            { name: 'dist_type', label: '需要分布タイプ', type: 'select', options: [
+                                { value: 'normal', label: '正規分布' },
+                                { value: 'gamma', label: 'ガンマ分布' },
+                                { value: 'poisson', label: 'ポアソン分布' },
+                                { value: 'uniform', label: '一様分布' },
+                                { value: 'exponential', label: '指数分布' },
+                                { value: 'lognormal', label: '対数正規分布' }
+                            ], default: 'normal', required: true },
+                            { name: 'dist_mu', label: '分布パラメータ: 平均 (mu)', type: 'number', default: 100, required: true },
+                            { name: 'dist_sigma', label: '分布パラメータ: 標準偏差 (sigma)', type: 'number', default: 15, required: true, help: '正規分布の場合' },
+                            { name: 'base_stock_level', label: '基在庫レベルS（個）', type: 'number', default: 200, required: false, help: '省略すると自動計算' },
+                            { name: 'lead_time', label: 'リードタイム（日）', type: 'number', default: 5, required: false },
+                            { name: 'capacity', label: '生産能力（個/日）', type: 'number', default: 1000, required: false },
+                            { name: 'holding_cost', label: '在庫保管費用（円/個/日）', type: 'number', default: 1.0, required: false },
+                            { name: 'backorder_cost', label: 'バックオーダーコスト（円/個）', type: 'number', default: 100, required: false }
+                        ]
+                    }
+                },
+
+                // Supply Chain Form Data
+                scForm: {
+                    numSamples: 50,
+                    periods: 200,
+                    numStages: 4,
+                    meanDemand: 120,
+                    stdDemand: 18,
+                    backorderCost: 100,
+                    fixedOrderCost: 1000,
+                    stages: [
+                        { leadTime: 3, reorderPoint: 250, baseStockLevel: 400, holdingCost: 0.5 },
+                        { leadTime: 2, reorderPoint: 200, baseStockLevel: 320, holdingCost: 1.0 },
+                        { leadTime: 2, reorderPoint: 180, baseStockLevel: 300, holdingCost: 2.0 },
+                        { leadTime: 1, reorderPoint: 150, baseStockLevel: 250, holdingCost: 5.0 }
+                    ]
+                },
 
                 async init() {
                     // サーバーから設定を取得
@@ -579,6 +1143,317 @@ ${JSON.stringify(funcResult, null, 2)}
                     });
 
                     return tempDiv.innerHTML;
+                },
+
+                // Supply Chain Form Methods
+                openSupplyChainForm() {
+                    this.showSupplyChainModal = true;
+                },
+
+                closeSupplyChainForm() {
+                    this.showSupplyChainModal = false;
+                },
+
+                updateStageData() {
+                    const currentStages = this.scForm.stages.length;
+                    const targetStages = this.scForm.numStages;
+
+                    if (targetStages > currentStages) {
+                        // Add new stages
+                        for (let i = currentStages; i < targetStages; i++) {
+                            this.scForm.stages.push({
+                                leadTime: 1,
+                                reorderPoint: 100,
+                                baseStockLevel: 200,
+                                holdingCost: 1.0
+                            });
+                        }
+                    } else if (targetStages < currentStages) {
+                        // Remove excess stages
+                        this.scForm.stages = this.scForm.stages.slice(0, targetStages);
+                    }
+                },
+
+                submitSupplyChainForm() {
+                    // Extract data from form
+                    const form = this.scForm;
+
+                    // Build network_data JSON structure
+                    const stages = form.stages.map((stage, idx) => ({
+                        name: `Stage${idx}`,
+                        h: stage.holdingCost,
+                        net_replenishment_time: stage.leadTime,
+                        initial_s: stage.reorderPoint,
+                        initial_S: stage.baseStockLevel
+                    }));
+
+                    // Build linear connections (Stage0 -> Stage1 -> Stage2 -> ...)
+                    const connections = [];
+                    for (let i = 0; i < form.numStages - 1; i++) {
+                        connections.push({
+                            child: `Stage${i}`,
+                            parent: `Stage${i + 1}`
+                        });
+                    }
+
+                    // Build the demand distribution
+                    const demandDist = {
+                        type: 'normal',
+                        mean: form.meanDemand,
+                        std: form.stdDemand
+                    };
+
+                    const networkData = {
+                        stages: stages,
+                        connections: connections,
+                        demand_dist: demandDist
+                    };
+
+                    // Create a simplified message that the LLM can parse
+                    const message = `${form.numStages}段階サプライチェーンの定期発注最適化をしてください。
+
+network_dataのJSON:
+\`\`\`json
+${JSON.stringify(networkData, null, 2)}
+\`\`\`
+
+パラメータ:
+- algorithm: "sgd"
+- max_iter: 100
+- n_samples: ${form.numSamples}
+- n_periods: ${form.periods}
+- backorder_cost: ${form.backorderCost}
+- fixed_order_cost: ${form.fixedOrderCost}
+- learning_rate: 0.1
+
+optimize_periodic_inventory関数を使用してください。最適化完了後、結果を可視化してください。`;
+
+                    // Set user input and submit
+                    this.userInput = message;
+                    this.closeSupplyChainForm();
+                    this.sendMessage();
+                },
+
+                // Guided Form Methods
+                openGuidedForm() {
+                    this.guidedForm = {
+                        step: 1,
+                        selectedCategory: null,
+                        selectedFunction: null,
+                        parameters: {}
+                    };
+                    this.showGuidedModal = true;
+                },
+
+                closeGuidedForm() {
+                    this.showGuidedModal = false;
+                },
+
+                selectCategory(category) {
+                    this.guidedForm.selectedCategory = category;
+                    this.guidedForm.step = 2;
+                },
+
+                selectFunction(func) {
+                    this.guidedForm.selectedFunction = func;
+                    this.guidedForm.step = 3;
+                    this.$nextTick(() => {
+                        this.renderDynamicForm(func.id);
+                    });
+                },
+
+                renderDynamicForm(functionId) {
+                    const template = this.functionTemplates[functionId];
+                    if (!template) return;
+
+                    const container = document.getElementById('dynamicFormFields');
+                    container.innerHTML = '';
+
+                    template.fields.forEach(field => {
+                        const fieldDiv = document.createElement('div');
+                        fieldDiv.className = 'form-group';
+
+                        // Label
+                        const label = document.createElement('label');
+                        label.className = 'form-label';
+                        label.textContent = field.label + (field.required ? ' *' : '');
+                        fieldDiv.appendChild(label);
+
+                        // Help text
+                        if (field.help) {
+                            const help = document.createElement('div');
+                            help.className = 'text-xs text-gray-500 mb-1';
+                            help.textContent = field.help;
+                            fieldDiv.appendChild(help);
+                        }
+
+                        // Input field
+                        let input;
+                        if (field.type === 'select') {
+                            input = document.createElement('select');
+                            input.className = 'form-input';
+                            field.options.forEach(opt => {
+                                const option = document.createElement('option');
+                                option.value = opt.value;
+                                option.textContent = opt.label;
+                                if (opt.value === field.default) option.selected = true;
+                                input.appendChild(option);
+                            });
+                        } else if (field.type === 'array') {
+                            input = document.createElement('textarea');
+                            input.className = 'form-input';
+                            input.rows = 3;
+                            input.placeholder = '例: 100, 105, 98, 110, 102';
+                            input.value = field.default || '';
+                        } else {
+                            input = document.createElement('input');
+                            input.type = field.type;
+                            input.className = 'form-input';
+                            input.value = field.default || '';
+                            if (field.min !== undefined) input.min = field.min;
+                            if (field.max !== undefined) input.max = field.max;
+                            if (field.type === 'number') input.step = 'any';
+                        }
+
+                        input.id = `field_${field.name}`;
+                        input.required = field.required;
+                        fieldDiv.appendChild(input);
+
+                        container.appendChild(fieldDiv);
+
+                        // Store default value
+                        this.guidedForm.parameters[field.name] = field.default;
+                    });
+                },
+
+                submitGuidedForm() {
+                    const template = this.functionTemplates[this.guidedForm.selectedFunction.id];
+                    if (!template) return;
+
+                    // Collect form values
+                    const params = {};
+                    template.fields.forEach(field => {
+                        const input = document.getElementById(`field_${field.name}`);
+                        if (input) {
+                            let value = input.value;
+                            if (field.type === 'number') {
+                                value = parseFloat(value);
+                            } else if (field.type === 'array') {
+                                // Parse comma-separated values or JSON array
+                                try {
+                                    value = JSON.parse('[' + value.replace(/[\[\]]/g, '') + ']');
+                                } catch {
+                                    value = value.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+                                }
+                            }
+                            params[field.name] = value;
+                        }
+                    });
+
+                    // Build message for LLM
+                    const message = this.buildMessageFromParams(this.guidedForm.selectedFunction.id, template, params);
+
+                    // Submit to chat
+                    this.userInput = message;
+                    this.closeGuidedForm();
+                    this.sendMessage();
+                },
+
+                buildMessageFromParams(functionId, template, params) {
+                    // Map function IDs to MCP tool names
+                    const toolMapping = {
+                        'simulate_qr': 'simulate_qr_policy',
+                        'simulate_ss': 'simulate_ss_policy',
+                        'simulate_base_stock': 'simulate_base_stock_policy',
+                        'base_stock_simulation_using_dist': 'base_stock_simulation_using_dist',
+                        'optimize_qr': 'optimize_qr_policy',
+                        'optimize_ss': 'optimize_ss_policy',
+                        'optimize_periodic': 'optimize_periodic_inventory',
+                        'optimize_safety_stock': 'optimize_safety_stock_allocation',
+                        'calculate_safety_stock': 'calculate_safety_stock',
+                        'forecast_demand': 'forecast_demand',
+                        'analyze_demand': 'analyze_demand_pattern',
+                        'find_best_distribution': 'find_best_distribution',
+                        'fit_histogram': 'fit_histogram_distribution',
+                        'calculate_eoq_incremental': 'calculate_eoq_incremental_discount_raw',
+                        'calculate_eoq_all_units': 'calculate_eoq_all_units_discount_raw',
+                        'calculate_wagner_whitin': 'calculate_wagner_whitin'
+                    };
+
+                    const toolName = toolMapping[functionId] || functionId;
+
+                    // Special handling for base_stock_simulation_using_dist
+                    if (functionId === 'base_stock_simulation_using_dist') {
+                        // Build the demand_dist object from separate fields
+                        const demandDist = {
+                            type: params.dist_type || 'normal',
+                            params: {
+                                mu: params.dist_mu,
+                                sigma: params.dist_sigma
+                            }
+                        };
+
+                        // Remove the individual distribution fields and add the constructed object
+                        const modifiedParams = { ...params };
+                        delete modifiedParams.dist_type;
+                        delete modifiedParams.dist_mu;
+                        delete modifiedParams.dist_sigma;
+                        modifiedParams.demand_dist = demandDist;
+                        params = modifiedParams;
+                    }
+
+                    let message = `${template.name}を実行してください。${toolName}関数を使用してください。\n\nパラメータ:\n`;
+
+                    Object.entries(params).forEach(([key, value]) => {
+                        const field = template.fields.find(f => f.name === key);
+                        if (field || key === 'demand_dist') {
+                            if (Array.isArray(value)) {
+                                message += `- ${key}: [${value.join(', ')}]\n`;
+                            } else if (typeof value === 'object' && value !== null) {
+                                message += `- ${key}: ${JSON.stringify(value)}\n`;
+                            } else if (typeof value === 'number') {
+                                message += `- ${key}: ${value}\n`;
+                            } else {
+                                message += `- ${key}: "${value}"\n`;
+                            }
+                        }
+                    });
+
+                    // Add result request
+                    message += `\n実行後、結果を日本語で分かりやすく説明してください。`;
+
+                    return message;
+                },
+
+                // Quick Form Methods
+                openQuickForm(type) {
+                    // Map quick form types to function IDs
+                    const mapping = {
+                        'eoq': 'calculate_eoq_incremental',
+                        'demand_forecast': 'forecast_demand',
+                        'safety_stock': 'calculate_safety_stock'
+                    };
+
+                    const functionId = mapping[type];
+                    if (!functionId) return;
+
+                    // Find the category and function
+                    for (const category of this.functionCategories) {
+                        const func = category.functions.find(f => f.id === functionId);
+                        if (func) {
+                            this.guidedForm = {
+                                step: 3,
+                                selectedCategory: category,
+                                selectedFunction: func,
+                                parameters: {}
+                            };
+                            this.showGuidedModal = true;
+                            this.$nextTick(() => {
+                                this.renderDynamicForm(functionId);
+                            });
+                            return;
+                        }
+                    }
                 }
             }
         }
