@@ -443,6 +443,12 @@
                     >
                         📊 Excelで安全在庫最適化
                     </button>
+                    <button
+                        @click="openTableMESSAModal()"
+                        class="px-3 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg text-xs font-medium transition-colors border border-teal-200"
+                    >
+                        📋 テーブルで安全在庫最適化
+                    </button>
                 </div>
             </div>
 
@@ -836,6 +842,165 @@
         </div>
     </div>
 
+    <!-- Table MESSA Modal -->
+    <div x-show="showTableMESSAModal" x-cloak class="modal-overlay" @click.self="closeTableMESSAModal()">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;" @click.away="closeTableMESSAModal()">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold text-gray-800">📋 テーブルで安全在庫最適化（MESSA）</h2>
+                <button @click="closeTableMESSAModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p class="text-sm text-gray-600 mb-6">
+                    品目データとBOMデータをテーブル形式で入力して、マルチエシュロンサプライチェーンの安全在庫配置を最適化します。
+                </p>
+
+                <!-- 品目データセクション -->
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-md font-semibold text-gray-800">品目データ</h3>
+                        <button
+                            @click="addItemRow()"
+                            class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+                        >
+                            + 行を追加
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-100 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-2 py-2 text-left">品目名*</th>
+                                    <th class="px-2 py-2 text-left">処理時間</th>
+                                    <th class="px-2 py-2 text-left">最大<br/>サービス時間</th>
+                                    <th class="px-2 py-2 text-left">平均需要*</th>
+                                    <th class="px-2 py-2 text-left">需要標準偏差*</th>
+                                    <th class="px-2 py-2 text-left">保管費用</th>
+                                    <th class="px-2 py-2 text-left">欠品費用</th>
+                                    <th class="px-2 py-2 text-left">固定費用</th>
+                                    <th class="px-2 py-2 text-center">削除</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(item, index) in tableItems" :key="index">
+                                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                        <td class="px-2 py-2">
+                                            <input type="text" x-model="item.name" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="品目A" />
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="number" x-model.number="item.process_time" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="0" step="1" />
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="number" x-model.number="item.max_service_time" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="0" step="1" />
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="number" x-model.number="item.avg_demand" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="0" step="0.1" placeholder="100" />
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="number" x-model.number="item.demand_std" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="0" step="0.1" placeholder="20" />
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="number" x-model.number="item.holding_cost" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="0" step="0.1" />
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="number" x-model.number="item.stockout_cost" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="0" step="1" />
+                                        </td>
+                                        <td class="px-2 py-2">
+                                            <input type="number" x-model.number="item.fixed_cost" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="0" step="1" />
+                                        </td>
+                                        <td class="px-2 py-2 text-center">
+                                            <button
+                                                @click="removeItemRow(index)"
+                                                :disabled="tableItems.length === 1"
+                                                :class="tableItems.length === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:text-red-800'"
+                                                class="text-sm"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">* は必須項目です</p>
+                </div>
+
+                <!-- BOMデータセクション -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-md font-semibold text-gray-800">BOM（部品展開表）データ</h3>
+                        <button
+                            @click="addBOMRow()"
+                            class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+                        >
+                            + 行を追加
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto border border-gray-300 rounded-lg">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-100 border-b border-gray-300">
+                                <tr>
+                                    <th class="px-3 py-2 text-left">子品目*</th>
+                                    <th class="px-3 py-2 text-left">親品目*</th>
+                                    <th class="px-3 py-2 text-left">数量</th>
+                                    <th class="px-3 py-2 text-center">削除</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(bom, index) in tableBOM" :key="index">
+                                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                        <td class="px-3 py-2">
+                                            <input type="text" x-model="bom.child" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="品目B" />
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <input type="text" x-model="bom.parent" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" placeholder="品目A" />
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            <input type="number" x-model.number="bom.quantity" class="w-full px-2 py-1 border border-gray-300 rounded text-sm" min="1" step="1" />
+                                        </td>
+                                        <td class="px-3 py-2 text-center">
+                                            <button
+                                                @click="removeBOMRow(index)"
+                                                :disabled="tableBOM.length === 1"
+                                                :class="tableBOM.length === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:text-red-800'"
+                                                class="text-sm"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">* は必須項目です</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    @click="closeTableMESSAModal()"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
+                >
+                    キャンセル
+                </button>
+                <button
+                    @click="submitTableMESSA()"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                    最適化を実行
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function chatApp() {
             return {
@@ -851,6 +1016,15 @@
                 showGuidedModal: false,
                 showParameterConfirmModal: false, // パラメータ確認モーダル
                 showExcelMESSAModal: false, // Excelアップロードモーダル
+                showTableMESSAModal: false, // テーブル入力モーダル
+
+                // Table Input Data
+                tableItems: [
+                    { name: '', process_time: 1, max_service_time: 0, avg_demand: '', demand_std: '', holding_cost: 1, stockout_cost: 100, fixed_cost: 1000 }
+                ],
+                tableBOM: [
+                    { child: '', parent: '', quantity: 1 }
+                ],
 
                 // Parameter extraction state
                 detectedTool: null,
@@ -1500,6 +1674,103 @@ ${JSON.stringify(funcResult, null, 2)}
                     } catch (error) {
                         console.error('Upload error:', error);
                         alert('❌ アップロードエラー: ' + error.message);
+                    }
+                },
+
+                // Table MESSA Form Methods
+                openTableMESSAModal() {
+                    this.showTableMESSAModal = true;
+                },
+
+                closeTableMESSAModal() {
+                    this.showTableMESSAModal = false;
+                },
+
+                addItemRow() {
+                    this.tableItems.push({
+                        name: '',
+                        process_time: 1,
+                        max_service_time: 0,
+                        avg_demand: '',
+                        demand_std: '',
+                        holding_cost: 1,
+                        stockout_cost: 100,
+                        fixed_cost: 1000
+                    });
+                },
+
+                removeItemRow(index) {
+                    if (this.tableItems.length > 1) {
+                        this.tableItems.splice(index, 1);
+                    }
+                },
+
+                addBOMRow() {
+                    this.tableBOM.push({
+                        child: '',
+                        parent: '',
+                        quantity: 1
+                    });
+                },
+
+                removeBOMRow(index) {
+                    if (this.tableBOM.length > 1) {
+                        this.tableBOM.splice(index, 1);
+                    }
+                },
+
+                async submitTableMESSA() {
+                    try {
+                        // Validate data
+                        for (let item of this.tableItems) {
+                            if (!item.name || item.avg_demand === '' || item.demand_std === '') {
+                                throw new Error('品目データに未入力の必須項目があります');
+                            }
+                        }
+
+                        for (let bom of this.tableBOM) {
+                            if (!bom.child || !bom.parent) {
+                                throw new Error('BOMデータに未入力の必須項目があります');
+                            }
+                        }
+
+                        // Prepare data
+                        const items_data = JSON.stringify(this.tableItems);
+                        const bom_data = JSON.stringify(this.tableBOM);
+
+                        // Call optimization API
+                        const response = await fetch('/api/tools/optimize_safety_stock', {
+                            method: 'POST',
+                            headers: this.authHeaders(),
+                            body: JSON.stringify({
+                                items_data: items_data,
+                                bom_data: bom_data
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || '最適化に失敗しました');
+                        }
+
+                        const result = await response.json();
+
+                        // Display results
+                        if (result.status === 'success') {
+                            let resultMessage = `✅ 最適化が完了しました！\n\n総コスト: ${result.total_cost.toFixed(2)}円\n\n`;
+                            resultMessage += '各拠点の最適在庫:\n';
+                            result.optimization_results.forEach(node => {
+                                resultMessage += `- ${node.node}: 安全在庫 ${node.safety_stock.toFixed(2)}, サービス時間 ${node.service_time.toFixed(2)}, リードタイム ${node.lead_time.toFixed(2)}\n`;
+                            });
+                            alert(resultMessage);
+                            this.closeTableMESSAModal();
+                        } else {
+                            throw new Error(result.message || '最適化に失敗しました');
+                        }
+
+                    } catch (error) {
+                        console.error('Table MESSA error:', error);
+                        alert('❌ エラー: ' + error.message);
                     }
                 },
 
