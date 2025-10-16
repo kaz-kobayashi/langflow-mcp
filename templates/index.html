@@ -1006,7 +1006,7 @@
                             { name: 'backorder_cost', label: 'バックオーダー費用（円/個）', type: 'number', default: 0, required: false, help: '品切れ時の費用（オプション、0の場合はバックオーダーなし）' }
                         ]
                     },
-                    'calculate_eoq_incremental_discount': {
+                    'calculate_eoq_incremental': {
                         name: 'EOQ（増分数量割引）',
                         description: '増分数量割引を考慮したEOQを計算します。発注量の各段階で価格が段階的に変わる場合に使用します',
                         fields: [
@@ -1019,7 +1019,7 @@
                             { name: 'quantity_breaks', label: '各価格帯の最小発注量', type: 'array', default: '[0, 100, 200]', required: true, help: '各価格帯の最小発注量をカンマ区切りで入力（例: 0, 100, 200）' }
                         ]
                     },
-                    'calculate_eoq_all_units_discount': {
+                    'calculate_eoq_all_units': {
                         name: 'EOQ（全単位数量割引）',
                         description: '全単位数量割引を考慮したEOQを計算します。発注量に応じて全体の価格が変わる場合に使用します',
                         fields: [
