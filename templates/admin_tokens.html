@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トークン管理 - 管理者</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="adminApp()" x-init="init()">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-6">
+                <h1 class="text-3xl font-bold">🔐 トークン管理</h1>
+                <p class="text-purple-100 mt-2">ユーザーアカウントとAPIトークンの発行・管理</p>
+            </div>
+        </header>
+
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-gray-500 text-sm">登録ユーザー数</p>
+                            <p class="text-2xl font-bold text-gray-800" x-text="users.length"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-green-100 rounded-full">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-gray-500 text-sm">トークン発行数</p>
+                            <p class="text-2xl font-bold text-gray-800" x-text="tokensIssued"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-purple-100 rounded-full">
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-gray-500 text-sm">トークン有効期限</p>
+                            <p class="text-2xl font-bold text-gray-800">7日間</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create User Form -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">✨ 新規ユーザー作成</h2>
+                <form @submit.prevent="createUser()" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">メールアドレス *</label>
+                            <input
+                                type="email"
+                                x-model="newUser.email"
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="user@example.com"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">ユーザー名 *</label>
+                            <input
+                                type="text"
+                                x-model="newUser.username"
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="username"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">パスワード *</label>
+                            <input
+                                type="text"
+                                x-model="newUser.password"
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                placeholder="password123"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        :disabled="isLoading"
+                        class="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                    >
+                        <span x-show="!isLoading">ユーザー作成 + トークン発行</span>
+                        <span x-show="isLoading">作成中...</span>
+                    </button>
+                </form>
+
+                <!-- Success Message -->
+                <div x-show="createdToken" x-cloak class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h3 class="font-semibold text-green-800 mb-2">✅ ユーザー作成成功！</h3>
+                    <p class="text-sm text-gray-700 mb-2">ユーザー: <span class="font-mono" x-text="createdUser"></span></p>
+                    <div class="bg-white p-3 rounded border border-green-300">
+                        <p class="text-xs text-gray-600 mb-1">🔑 JWTトークン:</p>
+                        <div class="flex items-center gap-2">
+                            <code class="flex-1 text-xs bg-gray-100 p-2 rounded overflow-x-auto" x-text="createdToken"></code>
+                            <button
+                                @click="copyToken(createdToken)"
+                                class="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                            >
+                                コピー
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-2">※このトークンは7日間有効です。ユーザーに安全に共有してください。</p>
+                </div>
+
+                <!-- Error Message -->
+                <div x-show="errorMessage" x-cloak class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h3 class="font-semibold text-red-800 mb-2">❌ エラー</h3>
+                    <p class="text-sm text-red-700" x-text="errorMessage"></p>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-800">👥 登録ユーザー一覧</h2>
+                    <button
+                        @click="loadUsers()"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                    >
+                        🔄 更新
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ユーザー名</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">メールアドレス</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">作成日時</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <template x-if="users.length === 0">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                        ユーザーが見つかりません
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-for="user in users" :key="user.id">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="user.id"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-purple-600 font-semibold text-sm" x-text="user.username.charAt(0).toUpperCase()"></span>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900" x-text="user.username"></span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" x-text="user.email"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(user.created_at)"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <button
+                                            @click="reissueToken(user)"
+                                            class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium transition-colors"
+                                        >
+                                            🔑 トークン再発行
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reissued Token Modal -->
+            <div x-show="reissuedToken" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" @click.self="reissuedToken = null">
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">✅ トークン再発行成功</h3>
+                        <button @click="reissuedToken = null" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-600">ユーザー:</p>
+                            <p class="font-mono font-semibold" x-text="reissuedUser"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-2">🔑 新しいJWTトークン:</p>
+                            <div class="flex items-center gap-2">
+                                <code class="flex-1 text-xs bg-gray-100 p-3 rounded overflow-x-auto" x-text="reissuedToken"></code>
+                                <button
+                                    @click="copyToken(reissuedToken)"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                                >
+                                    コピー
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600">※このトークンは7日間有効です。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function adminApp() {
+            return {
+                users: [],
+                newUser: {
+                    email: '',
+                    username: '',
+                    password: ''
+                },
+                createdToken: null,
+                createdUser: null,
+                reissuedToken: null,
+                reissuedUser: null,
+                errorMessage: null,
+                isLoading: false,
+                tokensIssued: 0,
+
+                async init() {
+                    await this.loadUsers();
+                },
+
+                async loadUsers() {
+                    try {
+                        const response = await fetch('/api/admin/users');
+                        if (!response.ok) throw new Error('Failed to load users');
+                        const data = await response.json();
+                        this.users = data.users;
+                        this.tokensIssued = data.tokens_issued || this.users.length;
+                    } catch (error) {
+                        console.error('Error loading users:', error);
+                        this.errorMessage = 'ユーザー一覧の取得に失敗しました';
+                    }
+                },
+
+                async createUser() {
+                    this.isLoading = true;
+                    this.errorMessage = null;
+                    this.createdToken = null;
+
+                    try {
+                        const response = await fetch('/api/admin/users', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.newUser)
+                        });
+
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.detail || 'Failed to create user');
+                        }
+
+                        const data = await response.json();
+                        this.createdToken = data.token;
+                        this.createdUser = `${this.newUser.username} (${this.newUser.email})`;
+                        this.tokensIssued++;
+
+                        // Reset form
+                        this.newUser = { email: '', username: '', password: '' };
+
+                        // Reload users list
+                        await this.loadUsers();
+
+                        // Auto-hide success message after 30 seconds
+                        setTimeout(() => { this.createdToken = null; }, 30000);
+
+                    } catch (error) {
+                        console.error('Error creating user:', error);
+                        this.errorMessage = error.message;
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                async reissueToken(user) {
+                    try {
+                        const response = await fetch(`/api/admin/users/${user.id}/reissue-token`, {
+                            method: 'POST'
+                        });
+
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.detail || 'Failed to reissue token');
+                        }
+
+                        const data = await response.json();
+                        this.reissuedToken = data.token;
+                        this.reissuedUser = `${user.username} (${user.email})`;
+                        this.tokensIssued++;
+
+                    } catch (error) {
+                        console.error('Error reissuing token:', error);
+                        alert('トークン再発行に失敗しました: ' + error.message);
+                    }
+                },
+
+                copyToken(token) {
+                    navigator.clipboard.writeText(token).then(() => {
+                        // Show temporary success message
+                        const originalText = event.target.textContent;
+                        event.target.textContent = '✓ コピー済み';
+                        event.target.classList.add('bg-green-600');
+                        setTimeout(() => {
+                            event.target.textContent = originalText;
+                            event.target.classList.remove('bg-green-600');
+                        }, 2000);
+                    });
+                },
+
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleString('ja-JP', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

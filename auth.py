@@ -44,10 +44,11 @@ def get_current_user(
     try:
         token = credentials.credentials
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        user_id_str: str = payload.get("sub")
+        if user_id_str is None:
             raise credentials_exception
-    except JWTError:
+        user_id = int(user_id_str)
+    except (JWTError, ValueError):
         raise credentials_exception
 
     user = db.query(User).filter(User.id == user_id).first()
@@ -69,10 +70,11 @@ def get_current_user_optional(
     try:
         token = credentials.credentials
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        user_id_str: str = payload.get("sub")
+        if user_id_str is None:
             return None
-    except JWTError:
+        user_id = int(user_id_str)
+    except (JWTError, ValueError):
         return None
 
     user = db.query(User).filter(User.id == user_id).first()
