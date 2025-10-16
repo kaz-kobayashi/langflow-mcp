@@ -865,6 +865,28 @@
                             ], default: 'exponential_smoothing', required: true }
                         ]
                     },
+                    'analyze_demand': {
+                        name: '需要パターン分析',
+                        description: '需要データの統計的分析を行い、平均、標準偏差、変動係数などを計算します。需要パターンの理解と在庫方策の選択に役立ちます',
+                        fields: [
+                            { name: 'demand', label: '需要データ', type: 'array', default: '[100, 105, 98, 110, 102, 95, 108, 103, 97, 112]', required: true, help: '需要データをカンマ区切りで入力（例: 10, 12, 8, 15, 11）' }
+                        ]
+                    },
+                    'find_best_distribution': {
+                        name: '最適分布フィッティング',
+                        description: '需要データに最適な確率分布を自動的に見つけてフィッティングします。正規分布、ガンマ分布、対数正規分布など複数の分布を試し、最も適合度の高いものを選択します',
+                        fields: [
+                            { name: 'demand', label: '需要データ', type: 'array', default: '[100, 105, 98, 110, 102, 95, 108, 103, 97, 112, 101, 99, 106, 104, 98]', required: true, help: '需要データをカンマ区切りで入力。データ数が多いほど正確にフィッティングできます' }
+                        ]
+                    },
+                    'fit_histogram': {
+                        name: 'ヒストグラム分布フィッティング',
+                        description: 'ヒストグラムを作成し、需要データの分布を可視化します。ビン数を調整して分布の詳細を把握できます',
+                        fields: [
+                            { name: 'demand_data', label: '需要データ', type: 'array', default: '[100, 105, 98, 110, 102, 95, 108, 103, 97, 112, 101, 99, 106, 104, 98]', required: true, help: '需要データをカンマ区切りで入力' },
+                            { name: 'nbins', label: 'ビン数', type: 'number', default: 50, required: false, help: 'ヒストグラムのビン数（デフォルト: 50）' }
+                        ]
+                    },
                     'calculate_eoq_incremental': {
                         name: 'EOQ計算（増分数量割引）',
                         description: '数量割引を考慮した経済的発注量を計算します',
