@@ -995,6 +995,43 @@
                             }
                         ]
                     },
+                    'calculate_eoq_raw': {
+                        name: '基本EOQ計算',
+                        description: '経済発注量（EOQ）を計算し、最適な発注量と総コストを算出します',
+                        fields: [
+                            { name: 'annual_demand', label: '年間需要量（個/年）', type: 'number', default: 15000, required: true, help: '年間の総需要量' },
+                            { name: 'order_cost', label: '発注固定費用（円/回）', type: 'number', default: 500, required: true, help: '1回の発注にかかる固定費用' },
+                            { name: 'holding_cost_rate', label: '在庫保管費率（年率）', type: 'number', default: 0.25, required: true, help: '年間の在庫保管費率（例: 0.25 = 25%）' },
+                            { name: 'unit_price', label: '単価（円/個）', type: 'number', default: 12, required: true, help: '商品の単価' },
+                            { name: 'backorder_cost', label: 'バックオーダー費用（円/個）', type: 'number', default: 0, required: false, help: '品切れ時の費用（オプション、0の場合はバックオーダーなし）' }
+                        ]
+                    },
+                    'calculate_eoq_incremental_discount': {
+                        name: 'EOQ（増分数量割引）',
+                        description: '増分数量割引を考慮したEOQを計算します。発注量の各段階で価格が段階的に変わる場合に使用します',
+                        fields: [
+                            { name: 'K', label: '発注固定費用（円/回）', type: 'number', default: 500, required: true, help: '1回の発注にかかる固定費用' },
+                            { name: 'd', label: '平均需要量（個/日）', type: 'number', default: 100, required: true, help: '1日あたりの平均需要量' },
+                            { name: 'h', label: '在庫保管費用（円/個/日）', type: 'number', default: 0.1, required: true, help: '1個を1日保管するコスト' },
+                            { name: 'b', label: '品切れ費用（円/個/日）', type: 'number', default: 10, required: true, help: '品切れ時の1個あたり1日の費用' },
+                            { name: 'r', label: '割引率', type: 'number', default: 0.2, required: true, help: '在庫保管費の計算に使用する割引率' },
+                            { name: 'unit_costs', label: '各価格帯の単価', type: 'array', default: '[12, 11, 10]', required: true, help: '各価格帯の単価をカンマ区切りで入力（例: 12, 11, 10）' },
+                            { name: 'quantity_breaks', label: '各価格帯の最小発注量', type: 'array', default: '[0, 100, 200]', required: true, help: '各価格帯の最小発注量をカンマ区切りで入力（例: 0, 100, 200）' }
+                        ]
+                    },
+                    'calculate_eoq_all_units_discount': {
+                        name: 'EOQ（全単位数量割引）',
+                        description: '全単位数量割引を考慮したEOQを計算します。発注量に応じて全体の価格が変わる場合に使用します',
+                        fields: [
+                            { name: 'K', label: '発注固定費用（円/回）', type: 'number', default: 500, required: true, help: '1回の発注にかかる固定費用' },
+                            { name: 'd', label: '平均需要量（個/日）', type: 'number', default: 100, required: true, help: '1日あたりの平均需要量' },
+                            { name: 'h', label: '在庫保管費用（円/個/日）', type: 'number', default: 0.1, required: true, help: '1個を1日保管するコスト' },
+                            { name: 'b', label: '品切れ費用（円/個/日）', type: 'number', default: 10, required: true, help: '品切れ時の1個あたり1日の費用' },
+                            { name: 'r', label: '割引率', type: 'number', default: 0.2, required: true, help: '在庫保管費の計算に使用する割引率' },
+                            { name: 'unit_costs', label: '各価格帯の単価', type: 'array', default: '[12, 11, 10]', required: true, help: '各価格帯の単価をカンマ区切りで入力（例: 12, 11, 10）' },
+                            { name: 'quantity_breaks', label: '各価格帯の最小発注量', type: 'array', default: '[0, 100, 200]', required: true, help: '各価格帯の最小発注量をカンマ区切りで入力（例: 0, 100, 200）' }
+                        ]
+                    },
                     'calculate_wagner_whitin': {
                         name: 'Wagner-Whitinアルゴリズム',
                         description: '動的ロットサイジング問題を解き、将来の需要が既知の場合に総コストを最小化する発注スケジュールを計算します',
