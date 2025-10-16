@@ -11,22 +11,27 @@ from inventory_client import InventoryOptimizationClient
 API_BASE_URL = os.getenv("INVENTORY_API_URL", "https://web-production-1ed39.up.railway.app")
 API_TOKEN = os.getenv("INVENTORY_API_TOKEN")  # 必須: JWTトークン
 
-if not API_TOKEN:
-    print("⚠️  警告: INVENTORY_API_TOKEN環境変数が設定されていません")
-    print("設定方法:")
-    print('  export INVENTORY_API_TOKEN="your-jwt-token-here"')
-    print()
-    print("トークンの取得方法:")
-    print(f"  curl -X POST {API_BASE_URL}/api/login \\")
-    print('    -H "Content-Type: application/json" \\')
-    print('    -d \'{"email":"user@example.com","password":"your-password"}\'')
-    print()
+# APIクライアントの初期化（遅延初期化）
+client = None
 
-# APIクライアントを初期化
-client = InventoryOptimizationClient(
-    base_url=API_BASE_URL,
-    token=API_TOKEN
-)
+def get_client():
+    """APIクライアントを取得（遅延初期化）"""
+    global client
+    if client is None:
+        if not API_TOKEN:
+            raise ValueError(
+                "INVENTORY_API_TOKEN環境変数が設定されていません。\n"
+                "設定方法: export INVENTORY_API_TOKEN='your-jwt-token-here'\n"
+                f"トークン取得: curl -X POST {API_BASE_URL}/api/login ..."
+            )
+        try:
+            client = InventoryOptimizationClient(
+                base_url=API_BASE_URL,
+                token=API_TOKEN
+            )
+        except Exception as e:
+            raise ValueError(f"APIクライアントの初期化に失敗: {str(e)}")
+    return client
 
 # MCPサーバーの初期化
 mcp = FastMCP("Remote Inventory Optimizer")
@@ -59,7 +64,7 @@ def calculate_eoq(
     Returns:
         dict: EOQ計算結果
     """
-    return client.calculate_eoq(
+    return get_client().calculate_eoq(
         annual_demand=annual_demand,
         order_cost=order_cost,
         holding_cost_rate=holding_cost_rate,
@@ -92,7 +97,7 @@ def calculate_eoq_with_discount(
     Returns:
         dict: EOQ計算結果
     """
-    return client.calculate_eoq_with_discount(
+    return get_client().calculate_eoq_with_discount(
         annual_demand=annual_demand,
         order_cost=order_cost,
         holding_cost_rate=holding_cost_rate,
@@ -125,7 +130,7 @@ def calculate_safety_stock(
     Returns:
         dict: 安全在庫計算結果
     """
-    return client.calculate_safety_stock(
+    return get_client().calculate_safety_stock(
         mu=mu,
         sigma=sigma,
         lead_time=lead_time,
@@ -164,7 +169,7 @@ def optimize_qr_policy(
     Returns:
         dict: 最適化結果
     """
-    return client.optimize_qr_policy(
+    return get_client().optimize_qr_policy(
         mu=mu,
         sigma=sigma,
         lead_time=lead_time,
@@ -207,7 +212,7 @@ def simulate_qr_policy(
     Returns:
         dict: シミュレーション結果
     """
-    return client.simulate_qr_policy(
+    return get_client().simulate_qr_policy(
         Q=Q,
         R=R,
         mu=mu,
@@ -252,7 +257,7 @@ def optimize_ss_policy(
     Returns:
         dict: 最適化結果
     """
-    return client.optimize_ss_policy(
+    return get_client().optimize_ss_policy(
         mu=mu,
         sigma=sigma,
         lead_time=lead_time,
@@ -289,7 +294,7 @@ def forecast_demand(
     Returns:
         dict: 予測結果
     """
-    return client.forecast_demand(
+    return get_client().forecast_demand(
         demand_history=demand_history,
         forecast_periods=forecast_periods,
         method=method,
@@ -313,7 +318,7 @@ def analyze_demand_pattern(demand: list) -> dict:
     Returns:
         dict: 分析結果
     """
-    return client.analyze_demand_pattern(demand=demand)
+    return get_client().analyze_demand_pattern(demand=demand)
 
 
 @mcp.tool()
@@ -327,7 +332,7 @@ def find_best_distribution(demand: list) -> dict:
     Returns:
         dict: フィッティング結果
     """
-    return client.find_best_distribution(demand=demand)
+    return get_client().find_best_distribution(demand=demand)
 
 
 # =============================================================
@@ -343,7 +348,7 @@ def list_available_tools() -> dict:
         dict: ツール情報のリスト
     """
     try:
-        tools = client.list_tools()
+        tools = get_client().list_tools()
         return {
             "status": "success",
             "total_tools": len(tools),
@@ -358,8 +363,4 @@ def list_available_tools() -> dict:
 
 if __name__ == "__main__":
     # MCPサーバー起動
-    print(f"🚀 Starting Remote Inventory Optimizer MCP Server")
-    print(f"📍 API URL: {API_BASE_URL}")
-    print(f"🔑 Token: {'✓ Set' if API_TOKEN else '✗ Not Set'}")
-    print()
     mcp.run()
