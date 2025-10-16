@@ -1614,9 +1614,15 @@ ${JSON.stringify(funcResult, null, 2)}
 
                 async downloadExcelTemplate() {
                     try {
+                        const token = localStorage.getItem('token');
+                        const headers = {};
+                        if (token && !this.skipAuth) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+
                         const response = await fetch('/api/download_messa_template', {
                             method: 'GET',
-                            headers: this.authHeaders()
+                            headers: headers
                         });
 
                         if (!response.ok) {
@@ -1648,9 +1654,16 @@ ${JSON.stringify(funcResult, null, 2)}
                     formData.append('file', file);
 
                     try {
+                        const token = localStorage.getItem('token');
+                        const headers = {};
+                        if (token && !this.skipAuth) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+                        // Don't set Content-Type for FormData - browser will set it with boundary
+
                         const response = await fetch('/api/upload_messa_excel', {
                             method: 'POST',
-                            headers: this.authHeaders(false), // Don't set Content-Type for FormData
+                            headers: headers,
                             body: formData
                         });
 
@@ -1739,9 +1752,17 @@ ${JSON.stringify(funcResult, null, 2)}
                         const bom_data = JSON.stringify(this.tableBOM);
 
                         // Call optimization API
+                        const token = localStorage.getItem('token');
+                        const headers = {
+                            'Content-Type': 'application/json'
+                        };
+                        if (token && !this.skipAuth) {
+                            headers['Authorization'] = `Bearer ${token}`;
+                        }
+
                         const response = await fetch('/api/tools/optimize_safety_stock', {
                             method: 'POST',
-                            headers: this.authHeaders(),
+                            headers: headers,
                             body: JSON.stringify({
                                 items_data: items_data,
                                 bom_data: bom_data
