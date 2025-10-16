@@ -18,7 +18,7 @@
 #### ステップ1: 新規登録
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/register \
+curl -X POST https://web-production-1ed39.up.railway.app/api/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "your-email@example.com",
@@ -51,7 +51,7 @@ chmod 600 ~/.inventory_api_token
 #### ステップ3: トークンを使用してAPIを呼び出す
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/tools/calculate_eoq_raw \
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/calculate_eoq_raw \
   -H "Authorization: Bearer $API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -67,7 +67,7 @@ curl -X POST https://your-railway-app.railway.app/api/tools/calculate_eoq_raw \
 すでにアカウントを持っている場合は、ログインしてトークンを取得できます。
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/login \
+curl -X POST https://web-production-1ed39.up.railway.app/api/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "your-email@example.com",
@@ -83,7 +83,7 @@ curl -X POST https://your-railway-app.railway.app/api/login \
 
 ```bash
 # inventory_client.py をダウンロード
-wget https://your-railway-app.railway.app/inventory_client.py
+wget https://web-production-1ed39.up.railway.app/inventory_client.py
 
 # または直接コピー
 # プロジェクトルートの inventory_client.py を使用
@@ -95,7 +95,7 @@ wget https://your-railway-app.railway.app/inventory_client.py
 from inventory_client import InventoryOptimizationClient
 
 # 新規登録
-client = InventoryOptimizationClient(base_url="https://your-railway-app.railway.app")
+client = InventoryOptimizationClient(base_url="https://web-production-1ed39.up.railway.app")
 token = client.register(
     email="your-email@example.com",
     username="your-username",
@@ -126,7 +126,7 @@ with open("my_api_token.txt") as f:
 
 # トークンを使ってクライアントを初期化
 client = InventoryOptimizationClient(
-    base_url="https://your-railway-app.railway.app",
+    base_url="https://web-production-1ed39.up.railway.app",
     token=token
 )
 
@@ -144,7 +144,7 @@ print(result)
 
 ### C. Webブラウザを使用（本番環境）
 
-1. https://your-railway-app.railway.app/ にアクセス
+1. https://web-production-1ed39.up.railway.app/ にアクセス
 2. 「新規登録」ボタンをクリック
 3. メールアドレス、ユーザー名、パスワードを入力
 4. 登録完了後、ブラウザの開発者ツール（F12）を開く
@@ -296,11 +296,11 @@ env:
 export TOKEN="your-jwt-token-here"
 
 # ツール一覧を取得
-curl -X GET https://your-railway-app.railway.app/api/tools \
+curl -X GET https://web-production-1ed39.up.railway.app/api/tools \
   -H "Authorization: Bearer $TOKEN"
 
 # EOQ計算
-curl -X POST https://your-railway-app.railway.app/api/tools/calculate_eoq_raw \
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/calculate_eoq_raw \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -317,7 +317,7 @@ curl -X POST https://your-railway-app.railway.app/api/tools/calculate_eoq_raw \
 import requests
 
 TOKEN = "your-jwt-token-here"
-BASE_URL = "https://your-railway-app.railway.app"
+BASE_URL = "https://web-production-1ed39.up.railway.app"
 
 headers = {
     "Authorization": f"Bearer {TOKEN}",
@@ -344,7 +344,7 @@ print(f"最適発注量: {result['optimal_order_quantity']}")
 
 ```javascript
 const TOKEN = "your-jwt-token-here";
-const BASE_URL = "https://your-railway-app.railway.app";
+const BASE_URL = "https://web-production-1ed39.up.railway.app";
 
 async function calculateEOQ() {
     const response = await fetch(`${BASE_URL}/api/tools/calculate_eoq_raw`, {

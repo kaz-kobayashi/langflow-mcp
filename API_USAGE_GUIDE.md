@@ -15,7 +15,7 @@
 #### ユーザー登録
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/register \
+curl -X POST https://web-production-1ed39.up.railway.app/api/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -35,7 +35,7 @@ curl -X POST https://your-railway-app.railway.app/api/register \
 #### ログイン
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/login \
+curl -X POST https://web-production-1ed39.up.railway.app/api/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -52,7 +52,7 @@ export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ### 3. 利用可能なツール一覧を取得
 
 ```bash
-curl -X GET https://your-railway-app.railway.app/api/tools \
+curl -X GET https://web-production-1ed39.up.railway.app/api/tools \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -79,7 +79,7 @@ curl -X GET https://your-railway-app.railway.app/api/tools \
 ### EOQ（経済発注量）計算
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/tools/calculate_eoq_raw \
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/calculate_eoq_raw \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -116,7 +116,7 @@ curl -X POST https://your-railway-app.railway.app/api/tools/calculate_eoq_raw \
 ### 安全在庫計算
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/tools/calculate_safety_stock \
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/calculate_safety_stock \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -160,7 +160,7 @@ curl -X POST https://your-railway-app.railway.app/api/tools/calculate_safety_sto
 ### (Q,R)方策の最適化
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/tools/optimize_qr_policy \
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_qr_policy \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -178,7 +178,7 @@ curl -X POST https://your-railway-app.railway.app/api/tools/optimize_qr_policy \
 ### 需要予測
 
 ```bash
-curl -X POST https://your-railway-app.railway.app/api/tools/forecast_demand \
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/forecast_demand \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -217,7 +217,7 @@ class InventoryOptimizationClient:
         クライアントを初期化
 
         Args:
-            base_url: APIのベースURL (例: "https://your-app.railway.app")
+            base_url: APIのベースURL (例: "https://web-production-1ed39.up.railway.app")
             email: ユーザーのメールアドレス（新規登録/ログイン用）
             password: パスワード（新規登録/ログイン用）
             token: 既存のJWTトークン（持っている場合）
@@ -339,14 +339,14 @@ from inventory_client import InventoryOptimizationClient
 
 # クライアントを初期化（自動ログイン）
 client = InventoryOptimizationClient(
-    base_url="https://your-railway-app.railway.app",
+    base_url="https://web-production-1ed39.up.railway.app",
     email="user@example.com",
     password="securepassword123"
 )
 
 # または、既存のトークンを使用
 # client = InventoryOptimizationClient(
-#     base_url="https://your-railway-app.railway.app",
+#     base_url="https://web-production-1ed39.up.railway.app",
 #     token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 # )
 
@@ -492,8 +492,8 @@ print(f"予測値: {forecast_result['forecast']}")
 
 自動生成されたAPIドキュメントは以下のURLで確認できます：
 
-- **Swagger UI**: https://your-railway-app.railway.app/docs
-- **ReDoc**: https://your-railway-app.railway.app/redoc
+- **Swagger UI**: https://web-production-1ed39.up.railway.app/docs
+- **ReDoc**: https://web-production-1ed39.up.railway.app/redoc
 
 ---
 
