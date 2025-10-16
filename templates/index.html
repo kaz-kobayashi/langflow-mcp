@@ -994,6 +994,16 @@
                                 help: 'サンプルデータを自動生成して最適化を実行します'
                             }
                         ]
+                    },
+                    'calculate_wagner_whitin': {
+                        name: 'Wagner-Whitinアルゴリズム',
+                        description: '動的ロットサイジング問題を解き、将来の需要が既知の場合に総コストを最小化する発注スケジュールを計算します',
+                        fields: [
+                            { name: 'demand', label: '各期の需要量', type: 'array', default: '[10, 20, 30, 15, 25]', required: true, help: '各期の需要量をカンマ区切りで入力（例: 10, 20, 30, 15）' },
+                            { name: 'fixed_cost', label: '固定発注費用（円/回）', type: 'number', default: 100, required: true, help: '発注ごとにかかる固定費用' },
+                            { name: 'holding_cost', label: '在庫保管費用（円/unit/期）', type: 'number', default: 1, required: true, help: '在庫1単位を1期間保管するコスト' },
+                            { name: 'variable_cost', label: '変動発注費用（円/unit）', type: 'number', default: 0, required: false, help: '発注量に応じて変わる費用（オプション）' }
+                        ]
                     }
                 },
 
