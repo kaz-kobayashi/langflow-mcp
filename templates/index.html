@@ -437,6 +437,12 @@
                     >
                         🛡️ 安全在庫計算
                     </button>
+                    <button
+                        @click="openExcelMESSAModal()"
+                        class="px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg text-xs font-medium transition-colors border border-orange-200"
+                    >
+                        📊 Excelで安全在庫最適化
+                    </button>
                 </div>
             </div>
 
@@ -759,6 +765,77 @@
         </div>
     </div>
 
+    <!-- Excel MESSA Modal -->
+    <div x-show="showExcelMESSAModal" x-cloak class="modal-overlay" @click.self="closeExcelMESSAModal()">
+        <div class="modal-content" style="max-width: 600px;" @click.away="closeExcelMESSAModal()">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold text-gray-800">📊 Excelで安全在庫最適化（MESSA）</h2>
+                <button @click="closeExcelMESSAModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p class="text-sm text-gray-600 mb-6">
+                    Excelファイルで品目データとBOMデータを入力して、マルチエシュロンサプライチェーンの安全在庫配置を最適化します。
+                </p>
+
+                <!-- Step 1: Download Template -->
+                <div class="mb-6">
+                    <h3 class="text-md font-semibold text-gray-800 mb-3">ステップ1: Excelテンプレートをダウンロード</h3>
+                    <button
+                        @click="downloadExcelTemplate()"
+                        class="w-full px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        テンプレートをダウンロード
+                    </button>
+                </div>
+
+                <!-- Step 2: Fill Data -->
+                <div class="mb-6">
+                    <h3 class="text-md font-semibold text-gray-800 mb-3">ステップ2: データを入力</h3>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                        <p class="font-medium mb-2">📝 入力内容：</p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>品目シート</strong>: 品目名、処理時間、平均需要、標準偏差、コストデータ</li>
+                            <li><strong>部品展開表シート</strong>: 親子関係、数量</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 3: Upload File -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold text-gray-800 mb-3">ステップ3: ファイルをアップロードして最適化実行</h3>
+                    <label class="block w-full">
+                        <input
+                            type="file"
+                            accept=".xlsx,.xls"
+                            @change="uploadExcelFile($event)"
+                            class="w-full px-4 py-3 border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-colors"
+                        />
+                    </label>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Excelファイル（.xlsx または .xls）を選択してください
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    @click="closeExcelMESSAModal()"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
+                >
+                    閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function chatApp() {
             return {
@@ -773,6 +850,7 @@
                 showSupplyChainModal: false,
                 showGuidedModal: false,
                 showParameterConfirmModal: false, // パラメータ確認モーダル
+                showExcelMESSAModal: false, // Excelアップロードモーダル
 
                 // Parameter extraction state
                 detectedTool: null,
@@ -1349,6 +1427,80 @@ ${JSON.stringify(funcResult, null, 2)}
 
                 closeSupplyChainForm() {
                     this.showSupplyChainModal = false;
+                },
+
+                // Excel MESSA Form Methods
+                openExcelMESSAModal() {
+                    this.showExcelMESSAModal = true;
+                },
+
+                closeExcelMESSAModal() {
+                    this.showExcelMESSAModal = false;
+                },
+
+                async downloadExcelTemplate() {
+                    try {
+                        const response = await fetch('/api/download_messa_template', {
+                            method: 'GET',
+                            headers: this.authHeaders()
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('テンプレートのダウンロードに失敗しました');
+                        }
+
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'messa_template.xlsx';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+
+                        alert('✅ Excelテンプレートをダウンロードしました');
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        alert('❌ ダウンロードエラー: ' + error.message);
+                    }
+                },
+
+                async uploadExcelFile(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    try {
+                        const response = await fetch('/api/upload_messa_excel', {
+                            method: 'POST',
+                            headers: this.authHeaders(false), // Don't set Content-Type for FormData
+                            body: formData
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail || '最適化に失敗しました');
+                        }
+
+                        const result = await response.json();
+
+                        // Display results
+                        let resultMessage = `✅ 最適化が完了しました！\n\n総コスト: ${result.total_cost.toFixed(2)}円\n\n`;
+                        resultMessage += '各拠点の最適在庫:\n';
+                        result.optimization_results.forEach(node => {
+                            resultMessage += `- ${node.node}: 安全在庫 ${node.safety_stock.toFixed(2)}, サービス時間 ${node.service_time.toFixed(2)}, リードタイム ${node.lead_time.toFixed(2)}\n`;
+                        });
+
+                        alert(resultMessage);
+                        this.closeExcelMESSAModal();
+
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('❌ アップロードエラー: ' + error.message);
+                    }
                 },
 
                 updateStageData() {

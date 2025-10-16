@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi import FastAPI, Request, Depends, HTTPException, status, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, Response
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import json
 import re
+from io import BytesIO
+from openpyxl import load_workbook
 
 from database import get_db, init_db, User, ChatHistory
 from auth import (
@@ -20,6 +22,7 @@ from auth import (
     get_current_user_optional
 )
 from mcp_tools import MCP_TOOLS_DEFINITION, execute_mcp_function, get_visualization_html
+from scmopt2.optinv import make_excel_messa, prepare_opt_for_messa, solve_SSA
 
 load_dotenv()
 
@@ -1166,6 +1169,125 @@ async def extract_parameters(
             "schema": schema,
             "suggestion": "スキーマを確認して、必須パラメータが全て含まれているか、値の範囲が正しいかをチェックしてください"
         }
+
+# ============================================================
+# MESSA Excel Template功能 (Download/Upload)
+# ============================================================
+
+@app.get("/api/download_messa_template")
+async def download_messa_template(
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    MESSAの Excelテンプレートをダウンロード
+
+    **認証**: オプション（ローカル環境では不要）
+
+    **使用方法**:
+    1. このエンドポイントからテンプレートをダウンロード
+    2. Excelで品目データとBOMデータを入力
+    3. /api/upload_messa_excel にアップロードして最適化実行
+
+    **テンプレート構造**:
+    - 品目シート: 品目名、処理時間、最大サービス時間、平均需要、需要標準偏差、在庫保管費用、品切れ費用、固定発注費用
+    - 部品展開表シート: 子品目、親品目、数量
+    """
+    try:
+        # Excelテンプレートを生成
+        wb = make_excel_messa()
+
+        # BytesIOに保存
+        excel_buffer = BytesIO()
+        wb.save(excel_buffer)
+        excel_buffer.seek(0)
+
+        # Excelファイルとしてダウンロード
+        headers = {
+            'Content-Disposition': 'attachment; filename="messa_template.xlsx"',
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+
+        return Response(
+            content=excel_buffer.getvalue(),
+            headers=headers,
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Excelテンプレート生成に失敗しました: {str(e)}"
+        )
+
+
+@app.post("/api/upload_messa_excel")
+async def upload_messa_excel(
+    file: UploadFile = File(...),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    MESSAのExcelファイルをアップロードして最適化を実行
+
+    **認証**: オプション（ローカル環境では不要）
+
+    **使用方法**:
+    1. /api/download_messa_template からテンプレートをダウンロード
+    2. Excelで品目データとBOMデータを入力
+    3. このエンドポイントにアップロード
+
+    **レスポンス例**:
+    ```json
+    {
+        "status": "success",
+        "optimization_results": [
+            {
+                "node": "製品A",
+                "safety_stock": 50.5,
+                "service_time": 3.0,
+                "lead_time": 1.0
+            }
+        ],
+        "total_cost": 12345.67
+    }
+    ```
+    """
+    try:
+        # アップロードされたファイルを読み込む
+        contents = await file.read()
+        excel_buffer = BytesIO(contents)
+
+        # Excelファイルを読み込む
+        wb = load_workbook(excel_buffer)
+
+        # ネットワークグラフを構築
+        G = prepare_opt_for_messa(wb)
+
+        # 最適化実行
+        best_sol = solve_SSA(G)
+
+        # 結果を整形
+        result_data = []
+        for idx, node in enumerate(G.nodes()):
+            result_data.append({
+                "node": node,
+                "safety_stock": float(best_sol["best_NRT"][idx]),
+                "service_time": float(best_sol["best_MaxLI"][idx]),
+                "lead_time": float(best_sol["best_MinLT"][idx])
+            })
+
+        return {
+            "status": "success",
+            "optimization_results": result_data,
+            "total_cost": float(best_sol.get("best_cost", 0)),
+            "message": "最適化が正常に完了しました"
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Excelファイルの処理または最適化に失敗しました: {str(e)}"
+        )
+
 
 # ============================================================
 # Health Check
