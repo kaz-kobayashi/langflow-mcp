@@ -1687,8 +1687,20 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
         }
 
     elif function_name == "optimize_safety_stock_allocation":
-        items = json.loads(arguments["items_data"])
-        bom = json.loads(arguments["bom_data"])
+        # items_dataとbom_dataは辞書またはJSON文字列として受け取る
+        items_data = arguments["items_data"]
+        bom_data = arguments["bom_data"]
+
+        # 既に辞書の場合はそのまま使用、文字列の場合はパース
+        if isinstance(items_data, str):
+            items = json.loads(items_data)
+        else:
+            items = items_data
+
+        if isinstance(bom_data, str):
+            bom = json.loads(bom_data)
+        else:
+            bom = bom_data
 
         # Excelワークブック作成
         wb = make_excel_messa()

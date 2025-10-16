@@ -461,14 +461,29 @@
                     </button>
                 </form>
 
-                <!-- Clear Chat Button -->
-                <button
-                    @click="clearChat()"
-                    class="mt-3 text-sm text-gray-500 hover:text-gray-700 underline"
-                    x-show="messages.length > 0"
-                >
-                    チャット履歴をクリア
-                </button>
+                <!-- Auto Detection Mode Toggle -->
+                <div class="mt-3 flex items-center justify-between">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                            type="checkbox"
+                            x-model="autoDetectMode"
+                            class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                        />
+                        <span class="text-gray-700">
+                            🎯 自動ツール検出モード
+                            <span class="text-xs text-gray-500">(ツール自動選択&パラメータ確認)</span>
+                        </span>
+                    </label>
+
+                    <!-- Clear Chat Button -->
+                    <button
+                        @click="clearChat()"
+                        class="text-sm text-gray-500 hover:text-gray-700 underline"
+                        x-show="messages.length > 0"
+                    >
+                        チャット履歴をクリア
+                    </button>
+                </div>
             </div>
         </main>
 
@@ -672,6 +687,78 @@
         </div>
     </div>
 
+    <!-- Parameter Confirmation Modal -->
+    <div x-show="showParameterConfirmModal" x-cloak class="modal-overlay" @click.self="closeParameterConfirmModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">🎯 パラメータ確認</h2>
+                    <div class="text-sm text-gray-500 mt-1">
+                        抽出されたパラメータを確認して実行してください
+                    </div>
+                </div>
+                <button @click="closeParameterConfirmModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Detected Tool -->
+                <div x-show="detectedTool" class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">🔧 検出されたツール</h3>
+                    <div class="text-lg font-bold text-indigo-700" x-text="detectedTool?.tool_name"></div>
+                    <div class="text-sm text-gray-600 mt-1" x-text="detectedTool?.description"></div>
+                    <div class="text-xs text-gray-500 mt-2">
+                        信頼度: <span x-text="detectedTool?.confidence ? (detectedTool.confidence * 100).toFixed(0) + '%' : 'N/A'"></span>
+                    </div>
+                </div>
+
+                <!-- Extracted Parameters -->
+                <div x-show="extractedParameters" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">📋 抽出されたパラメータ</h3>
+                    <div class="space-y-2">
+                        <template x-for="(value, key) in extractedParameters" :key="key">
+                            <div class="flex items-center gap-2 text-sm">
+                                <span class="font-medium text-gray-700 w-1/3" x-text="key + ':'"></span>
+                                <span class="text-gray-900 flex-1" x-text="formatParamValue(value)"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Error Display -->
+                <div x-show="extractionError" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <h3 class="text-sm font-semibold text-red-700 mb-2">❌ エラー</h3>
+                    <div class="text-sm text-red-600" x-text="extractionError"></div>
+                </div>
+
+                <!-- Original User Text -->
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">💬 元の入力</h3>
+                    <div class="text-sm text-gray-600" x-text="pendingUserMessage"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button
+                    @click="closeParameterConfirmModal()"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+                >
+                    キャンセル
+                </button>
+                <button
+                    x-show="!extractionError"
+                    @click="confirmAndExecute()"
+                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                >
+                    実行する
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function chatApp() {
             return {
@@ -680,10 +767,18 @@
                 isLoading: false,
                 modelName: 'qwen2.5:latest', // デフォルト値（ローカル開発用）
                 skipAuth: false, // 認証スキップフラグ
+                autoDetectMode: false, // 自動ツール検出モード
 
                 // Modal states
                 showSupplyChainModal: false,
                 showGuidedModal: false,
+                showParameterConfirmModal: false, // パラメータ確認モーダル
+
+                // Parameter extraction state
+                detectedTool: null,
+                extractedParameters: null,
+                extractionError: null,
+                pendingUserMessage: '', // 保留中のユーザーメッセージ
 
                 // Guided Form State
                 guidedForm: {
@@ -873,6 +968,32 @@
                             { name: 'holding_cost', label: '在庫保管費用（円/個/日）', type: 'number', default: 1.0, required: false },
                             { name: 'backorder_cost', label: 'バックオーダーコスト（円/個）', type: 'number', default: 100, required: false }
                         ]
+                    },
+                    'optimize_periodic': {
+                        name: '定期発注方策の最適化',
+                        description: 'サプライチェーンネットワーク全体の定期発注方策を最適化します',
+                        fields: [
+                            { name: 'note', label: '注意', type: 'info', default: 'この機能は複雑なため、「サプライチェーン最適化」ボタンをご利用ください', help: '「よく使う機能」の「🏭 サプライチェーン最適化」ボタンから、より詳細な設定が可能です。' }
+                        ]
+                    },
+                    'optimize_safety_stock': {
+                        name: '安全在庫配置の最適化（MESSA）',
+                        description: 'マルチエシュロンサプライチェーンネットワーク全体の安全在庫配置を最適化します',
+                        fields: [
+                            {
+                                name: 'complexity',
+                                label: 'サプライチェーンの複雑度',
+                                type: 'select',
+                                options: [
+                                    { value: 'simple', label: 'シンプル（3品目）' },
+                                    { value: 'standard', label: '標準（5品目）' },
+                                    { value: 'complex', label: '複雑（8品目）' }
+                                ],
+                                default: 'standard',
+                                required: true,
+                                help: 'サンプルデータを自動生成して最適化を実行します'
+                            }
+                        ]
                     }
                 },
 
@@ -927,6 +1048,13 @@
 
                     const userMessage = this.userInput.trim();
                     this.userInput = '';
+
+                    // Check if auto-detect mode is enabled
+                    if (this.autoDetectMode) {
+                        // Intercept and run detection/extraction workflow
+                        await this.detectToolAndExtractParams(userMessage);
+                        return;
+                    }
 
                     // Add user message
                     this.messages.push({
@@ -1289,7 +1417,30 @@ optimize_periodic_inventory関数を使用してください。最適化完了�
 
                         // Input field
                         let input;
-                        if (field.type === 'select') {
+                        if (field.type === 'info') {
+                            // Info field - display a message with a button to open supply chain form
+                            const infoBox = document.createElement('div');
+                            infoBox.className = 'bg-yellow-50 border border-yellow-200 rounded-lg p-4';
+
+                            const infoText = document.createElement('div');
+                            infoText.className = 'text-sm text-yellow-800 mb-3';
+                            infoText.textContent = field.default;
+                            infoBox.appendChild(infoText);
+
+                            const button = document.createElement('button');
+                            button.type = 'button';
+                            button.className = 'px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors';
+                            button.textContent = '🏭 サプライチェーン最適化を開く';
+                            button.onclick = () => {
+                                this.closeGuidedForm();
+                                this.openSupplyChainForm();
+                            };
+                            infoBox.appendChild(button);
+
+                            fieldDiv.appendChild(infoBox);
+                            container.appendChild(fieldDiv);
+                            return; // Skip normal input processing
+                        } else if (field.type === 'select') {
                             input = document.createElement('select');
                             input.className = 'form-input';
                             field.options.forEach(opt => {
@@ -1312,7 +1463,8 @@ optimize_periodic_inventory関数を使用してください。最適化完了�
                             input.value = field.default || '';
                             if (field.min !== undefined) input.min = field.min;
                             if (field.max !== undefined) input.max = field.max;
-                            if (field.type === 'number') input.step = 'any';
+                            // Respect field.step if defined, otherwise use 'any' for number inputs
+                            if (field.type === 'number') input.step = field.step !== undefined ? field.step : 'any';
                         }
 
                         input.id = `field_${field.name}`;
@@ -1382,6 +1534,21 @@ optimize_periodic_inventory関数を使用してください。最適化完了�
 
                     const toolName = toolMapping[functionId] || functionId;
 
+                    // Special handling for optimize_safety_stock - use generate_sample_data workflow
+                    if (functionId === 'optimize_safety_stock') {
+                        const complexity = params.complexity || 'standard';
+                        const message = `安全在庫配置の最適化を実行します。
+
+ステップ1: まず、generate_sample_data関数を実行してサンプルデータを生成してください。
+complexity: "${complexity}"
+
+ステップ2: generate_sample_dataから返されたitems_dataとbom_dataを使って、optimize_safety_stock_allocation関数を実行してください。
+
+ステップ3: 最適化結果を日本語で分かりやすく説明してください。各ノードの最適安全在庫、サービス時間、リードタイムを報告してください。`;
+
+                        return message;
+                    }
+
                     // Special handling for base_stock_simulation_using_dist
                     if (functionId === 'base_stock_simulation_using_dist') {
                         // Build the demand_dist object from separate fields
@@ -1402,8 +1569,10 @@ optimize_periodic_inventory関数を使用してください。最適化完了�
                         params = modifiedParams;
                     }
 
-                    let message = `${template.name}を実行してください。${toolName}関数を使用してください。\n\nパラメータ:\n`;
+                    let message = `${template.name}を実行してください。${toolName}関数を使用してください。\n\n`;
 
+                    // Add parameters in both readable format and JSON format for better LLM parsing
+                    message += `パラメータ:\n`;
                     Object.entries(params).forEach(([key, value]) => {
                         const field = template.fields.find(f => f.name === key);
                         if (field || key === 'demand_dist') {
@@ -1419,8 +1588,11 @@ optimize_periodic_inventory関数を使用してください。最適化完了�
                         }
                     });
 
+                    // Add JSON format for more reliable parsing
+                    message += `\nJSON形式:\n\`\`\`json\n${JSON.stringify(params, null, 2)}\n\`\`\`\n`;
+
                     // Add result request
-                    message += `\n実行後、結果を日本語で分かりやすく説明してください。`;
+                    message += `\n重要: 上記のパラメータをすべて含めて${toolName}関数を呼び出してください。実行後、結果を日本語で分かりやすく説明してください。`;
 
                     return message;
                 },
@@ -1453,6 +1625,294 @@ optimize_periodic_inventory関数を使用してください。最適化完了�
                             });
                             return;
                         }
+                    }
+                },
+
+                // Auto-Detection Methods
+                async detectToolAndExtractParams(userMessage) {
+                    this.isLoading = true;
+                    this.pendingUserMessage = userMessage;
+
+                    try {
+                        const token = localStorage.getItem('token');
+
+                        // Step 1: Detect tool
+                        const detectResponse = await fetch('/api/detect_tool', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ user_text: userMessage })
+                        });
+
+                        if (!detectResponse.ok) {
+                            throw new Error('Tool detection failed');
+                        }
+
+                        const detectResult = await detectResponse.json();
+
+                        // Extract the recommended tool from the detected_tools array
+                        const recommendedToolName = detectResult.recommended_tool;
+                        const recommendedTool = detectResult.detected_tools.find(
+                            tool => tool.tool_name === recommendedToolName
+                        );
+
+                        this.detectedTool = recommendedTool || detectResult.detected_tools[0];
+
+                        // Step 2: Extract parameters with detected tool
+                        const extractResponse = await fetch('/api/extract_parameters', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                user_text: userMessage,
+                                tool_name: this.detectedTool.tool_name
+                            })
+                        });
+
+                        if (!extractResponse.ok) {
+                            throw new Error('Parameter extraction failed');
+                        }
+
+                        const extractResult = await extractResponse.json();
+
+                        // Backend returns either 'success: true' or 'status: success'
+                        if (extractResult.success || extractResult.status === 'success') {
+                            this.extractedParameters = extractResult.parameters || extractResult.extracted_params;
+                            this.extractionError = null;
+                        } else {
+                            this.extractionError = extractResult.message || 'パラメータの抽出に失敗しました';
+                            this.extractedParameters = null;
+                        }
+
+                        // Show the confirmation modal
+                        this.showParameterConfirmModal = true;
+
+                    } catch (error) {
+                        console.error('Error in auto-detection:', error);
+                        this.extractionError = `エラーが発生しました: ${error.message}`;
+                        this.detectedTool = null;
+                        this.extractedParameters = null;
+                        this.showParameterConfirmModal = true;
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                closeParameterConfirmModal() {
+                    this.showParameterConfirmModal = false;
+                    this.detectedTool = null;
+                    this.extractedParameters = null;
+                    this.extractionError = null;
+                    this.pendingUserMessage = '';
+                },
+
+                async confirmAndExecute() {
+                    // Close the modal
+                    this.showParameterConfirmModal = false;
+
+                    // Build the message with confirmed parameters
+                    const toolName = this.detectedTool?.tool_name;
+                    const params = this.extractedParameters;
+                    const originalMessage = this.pendingUserMessage;
+
+                    // Create a structured message that includes both the original request and extracted parameters
+                    let message = `${originalMessage}\n\n--- 自動検出されたパラメータ ---\n`;
+                    message += `ツール: ${toolName}\n`;
+                    message += `パラメータ:\n`;
+
+                    // Format parameters
+                    Object.entries(params).forEach(([key, value]) => {
+                        if (Array.isArray(value)) {
+                            message += `- ${key}: [${value.join(', ')}]\n`;
+                        } else if (typeof value === 'object' && value !== null) {
+                            message += `- ${key}: ${JSON.stringify(value)}\n`;
+                        } else {
+                            message += `- ${key}: ${value}\n`;
+                        }
+                    });
+
+                    message += `\nJSON形式:\n\`\`\`json\n${JSON.stringify(params, null, 2)}\n\`\`\`\n`;
+                    message += `\n重要: ${toolName}関数を上記のパラメータで呼び出してください。`;
+
+                    // Clear the modal state
+                    this.detectedTool = null;
+                    this.extractedParameters = null;
+                    this.extractionError = null;
+                    this.pendingUserMessage = '';
+
+                    // Add user message and execute
+                    this.messages.push({
+                        role: 'user',
+                        content: message
+                    });
+
+                    this.isLoading = true;
+                    this.scrollToBottom();
+
+                    try {
+                        const token = localStorage.getItem('token');
+
+                        const response = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                messages: this.messages,
+                                model: this.modelName
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('API request failed');
+                        }
+
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let assistantMessage = '';
+
+                        // Add assistant message placeholder
+                        this.messages.push({
+                            role: 'assistant',
+                            content: ''
+                        });
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+
+                            const chunk = decoder.decode(value);
+                            const lines = chunk.split('\n');
+
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const data = line.slice(6);
+                                    if (data === '[DONE]') break;
+
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        if (parsed.content) {
+                                            assistantMessage += parsed.content;
+                                            this.messages[this.messages.length - 1].content = assistantMessage;
+                                            this.scrollToBottom();
+                                        } else if (parsed.function_call) {
+                                            // Function call結果を表示
+                                            const funcName = parsed.function_call.name;
+                                            const funcResult = parsed.function_call.result;
+
+                                            let funcDisplay = `\n\n🔧 **${funcName}を実行しました**\n\n`;
+
+                                            // Check if result contains visualization URL or ID
+                                            if (funcResult.visualization_url) {
+                                                const vizUrl = funcResult.visualization_url;
+                                                const message = funcResult.message || '可視化結果を表示';
+                                                funcDisplay += `📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
+                                            } else if (funcResult.visualization_id) {
+                                                const vizId = funcResult.visualization_id;
+                                                const vizUrl = `/api/visualization/${vizId}`;
+                                                const message = funcResult.message || '可視化結果を表示';
+                                                funcDisplay += `📊 ${message}\n🔗 [可視化を開く](${vizUrl})\n\n`;
+                                            }
+
+                                            // Display key results if available
+                                            if (funcResult.status === 'success') {
+                                                funcDisplay += `✅ **ステータス**: 成功\n\n`;
+
+                                                // Display important metrics
+                                                if (funcResult.message) {
+                                                    funcDisplay += `📝 **結果**: ${funcResult.message}\n\n`;
+                                                }
+
+                                                // Extract key metrics to display
+                                                const keyMetrics = [];
+
+                                                // EOQ results
+                                                if (funcResult.optimal_order_quantity !== undefined) keyMetrics.push(`📦 **最適発注量**: ${funcResult.optimal_order_quantity.toFixed(2)} units`);
+                                                if (funcResult.total_cost !== undefined) keyMetrics.push(`💰 **総コスト**: ${funcResult.total_cost.toFixed(2)} 円/年`);
+                                                if (funcResult.ordering_cost !== undefined) keyMetrics.push(`📝 発注コスト: ${funcResult.ordering_cost.toFixed(2)} 円/年`);
+                                                if (funcResult.holding_cost !== undefined) keyMetrics.push(`📦 在庫保管コスト: ${funcResult.holding_cost.toFixed(2)} 円/年`);
+                                                if (funcResult.purchase_cost !== undefined) keyMetrics.push(`💵 購入コスト: ${funcResult.purchase_cost.toFixed(2)} 円/年`);
+
+                                                // Optimization results
+                                                if (funcResult.best_cost !== undefined) keyMetrics.push(`💰 **総コスト**: ${funcResult.best_cost.toFixed(2)}`);
+                                                if (funcResult.average_cost !== undefined) keyMetrics.push(`📊 平均コスト: ${funcResult.average_cost.toFixed(2)}`);
+                                                if (funcResult.optimal_Q !== undefined) keyMetrics.push(`📦 **最適発注量**: ${funcResult.optimal_Q.toFixed(2)}`);
+                                                if (funcResult.iterations !== undefined) keyMetrics.push(`🔄 反復回数: ${funcResult.iterations}`);
+
+                                                // Forecast results
+                                                if (funcResult.forecast && Array.isArray(funcResult.forecast)) {
+                                                    const forecastSummary = funcResult.forecast.slice(0, 3).map(v => v.toFixed(1)).join(', ');
+                                                    keyMetrics.push(`📈 予測値: [${forecastSummary}, ...]`);
+                                                }
+
+                                                // Distribution fitting results
+                                                if (funcResult.best_distribution) {
+                                                    keyMetrics.push(`📊 **最適分布**: ${funcResult.best_distribution}`);
+                                                }
+
+                                                if (keyMetrics.length > 0) {
+                                                    funcDisplay += `**主な結果**:\n${keyMetrics.map(m => `${m}`).join('\n')}\n\n`;
+                                                }
+                                            } else if (funcResult.status === 'error') {
+                                                funcDisplay += `❌ **エラー**: ${funcResult.message}\n\n`;
+                                            }
+
+                                            // Add collapsible detailed JSON
+                                            const detailsId = `json-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                                            funcDisplay += `<details class="json-collapsible" id="${detailsId}">
+                                                <summary class="json-collapsible-header">
+                                                    <span>📋 詳細な結果を表示</span>
+                                                    <span class="json-toggle-icon">▼</span>
+                                                </summary>
+                                                <div class="json-collapsible-content">
+\`\`\`json
+${JSON.stringify(funcResult, null, 2)}
+\`\`\`
+                                                </div>
+                                            </details>\n\n`;
+
+                                            assistantMessage += funcDisplay;
+                                            this.messages[this.messages.length - 1].content = assistantMessage;
+                                            this.scrollToBottom();
+                                        } else if (parsed.error) {
+                                            this.messages[this.messages.length - 1].content = `エラー: ${parsed.error}`;
+                                        }
+                                    } catch (e) {
+                                        // Ignore parse errors
+                                    }
+                                }
+                            }
+                        }
+
+                        // Save to localStorage
+                        localStorage.setItem('chatMessages', JSON.stringify(this.messages));
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                        this.messages.push({
+                            role: 'assistant',
+                            content: 'エラーが発生しました。もう一度お試しください。'
+                        });
+                    } finally {
+                        this.isLoading = false;
+                        this.scrollToBottom();
+                    }
+                },
+
+                formatParamValue(value) {
+                    if (Array.isArray(value)) {
+                        return `[${value.join(', ')}]`;
+                    } else if (typeof value === 'object' && value !== null) {
+                        return JSON.stringify(value, null, 2);
+                    } else if (typeof value === 'number') {
+                        return value.toFixed(2);
+                    } else {
+                        return String(value);
                     }
                 }
             }

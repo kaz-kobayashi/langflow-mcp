@@ -2,13 +2,14 @@ from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, StreamingResponse
-from pydantic import BaseModel, EmailStr
-from typing import List, Optional
+from pydantic import BaseModel, EmailStr, Field, validator
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
+import re
 
 from database import get_db, init_db, User, ChatHistory
 from auth import (
@@ -66,6 +67,121 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+# ============================================================
+# Pydantic Parameter Models for LLM Extraction
+# ============================================================
+
+class SafetyStockParams(BaseModel):
+    """安全在庫計算のパラメータモデル"""
+    mu: float = Field(..., description="平均需要（個/日）", gt=0)
+    sigma: float = Field(..., description="需要の標準偏差", ge=0)
+    lead_time: int = Field(..., description="リードタイム（日）", gt=0, alias="LT")
+    service_level: Optional[float] = Field(None, description="サービスレベル（0-1）", ge=0, le=1)
+    stockout_cost: Optional[float] = Field(None, description="品切れコスト（円/個）", ge=0, alias="b")
+    holding_cost: Optional[float] = Field(None, description="在庫保管費用（円/個/日）", ge=0, alias="h")
+
+    class Config:
+        allow_population_by_field_name = True
+
+    @validator('stockout_cost', 'holding_cost', always=True)
+    def check_calculation_method(cls, v, values):
+        """service_level または (stockout_cost と holding_cost) のいずれかが必須"""
+        service_level = values.get('service_level')
+        stockout_cost = values.get('stockout_cost')
+        holding_cost = values.get('holding_cost')
+
+        # service_levelが指定されている場合はOK
+        if service_level is not None:
+            return v
+
+        # service_levelがない場合、stockout_costとholding_costが両方必要
+        if v is None and (stockout_cost is None or holding_cost is None):
+            raise ValueError("service_level または (stockout_cost と holding_cost) のいずれかを指定してください")
+
+        return v
+
+class EOQParams(BaseModel):
+    """EOQ計算のパラメータモデル"""
+    annual_demand: float = Field(..., description="年間需要（個/年）", gt=0, alias="D")
+    order_cost: float = Field(..., description="発注費用（円/回）", gt=0, alias="K")
+    holding_cost_rate: float = Field(..., description="在庫保管費率（年率）", gt=0, ge=0, le=1, alias="h")
+    unit_price: float = Field(..., description="単価（円/個）", gt=0, alias="c")
+
+    class Config:
+        allow_population_by_field_name = True
+
+class QRPolicyParams(BaseModel):
+    """(Q,R)方策最適化/シミュレーションのパラメータモデル"""
+    mu: float = Field(..., description="1日あたりの平均需要量（units/日）", gt=0)
+    sigma: float = Field(..., description="需要の標準偏差", ge=0)
+    lead_time: int = Field(..., description="リードタイム（日）", gt=0)
+    holding_cost: float = Field(..., description="在庫保管費用（円/unit/日）", gt=0)
+    stockout_cost: float = Field(..., description="品切れ費用（円/unit）", gt=0)
+    fixed_cost: float = Field(..., description="固定発注費用（円/回）", gt=0)
+    # シミュレーション用オプションパラメータ
+    Q: Optional[float] = Field(None, description="発注量（units）- シミュレーション時のみ必須", gt=0)
+    R: Optional[float] = Field(None, description="発注点（units）- シミュレーション時のみ必須", gt=0)
+    n_samples: Optional[int] = Field(10, description="シミュレーションサンプル数", gt=0)
+    n_periods: Optional[int] = Field(100, description="シミュレーション期間（日）", gt=0)
+
+    class Config:
+        allow_population_by_field_name = True
+
+class SSPolicyParams(BaseModel):
+    """(s,S)方策最適化/シミュレーションのパラメータモデル"""
+    mu: float = Field(..., description="1日あたりの平均需要量（units/日）", gt=0)
+    sigma: float = Field(..., description="需要の標準偏差", ge=0)
+    lead_time: int = Field(..., description="リードタイム（日）", gt=0)
+    holding_cost: float = Field(..., description="在庫保管費用（円/unit/日）", gt=0)
+    stockout_cost: float = Field(..., description="品切れ費用（円/unit）", gt=0)
+    fixed_cost: float = Field(..., description="固定発注費用（円/回）", gt=0)
+    # シミュレーション用オプションパラメータ
+    s: Optional[float] = Field(None, description="発注点（units）- シミュレーション時のみ必須", gt=0)
+    S: Optional[float] = Field(None, description="基在庫レベル（units）- シミュレーション時のみ必須", gt=0)
+    n_samples: Optional[int] = Field(10, description="シミュレーションサンプル数", gt=0)
+    n_periods: Optional[int] = Field(100, description="シミュレーション期間（日）", gt=0)
+
+    class Config:
+        allow_population_by_field_name = True
+
+class DemandForecastParams(BaseModel):
+    """需要予測のパラメータモデル"""
+    demand_history: List[float] = Field(..., description="過去の需要データ配列", min_items=2)
+    forecast_periods: Optional[int] = Field(7, description="予測する期間数", gt=0)
+    method: Optional[str] = Field("exponential_smoothing", description="予測手法: moving_average, exponential_smoothing, linear_trend")
+    confidence_level: Optional[float] = Field(0.95, description="信頼水準（0-1）", ge=0, le=1)
+    window: Optional[int] = Field(None, description="移動平均法の窓サイズ（moving_averageの場合のみ）", gt=0)
+    alpha: Optional[float] = Field(0.3, description="指数平滑法の平滑化パラメータ（0-1）", ge=0, le=1)
+    visualize: Optional[bool] = Field(False, description="予測結果を可視化するかどうか")
+
+    class Config:
+        allow_population_by_field_name = True
+
+    @validator('method')
+    def validate_method(cls, v):
+        """予測手法の検証"""
+        allowed_methods = ["moving_average", "exponential_smoothing", "linear_trend"]
+        if v not in allowed_methods:
+            raise ValueError(f"method must be one of {allowed_methods}, got '{v}'")
+        return v
+
+class DemandAnalysisParams(BaseModel):
+    """需要パターン分析のパラメータモデル"""
+    demand: List[float] = Field(..., description="需要データの配列", min_items=1)
+
+    class Config:
+        allow_population_by_field_name = True
+
+class WagnerWhitinParams(BaseModel):
+    """Wagner-Whitinアルゴリズムのパラメータモデル"""
+    demand: List[float] = Field(..., description="各期の需要量の配列", min_items=1)
+    fixed_cost: float = Field(..., description="固定発注費用（円/回）", gt=0)
+    holding_cost: float = Field(..., description="在庫保管費用（円/unit/期）", ge=0)
+    variable_cost: Optional[float] = Field(0, description="変動発注費用（円/unit）", ge=0)
+
+    class Config:
+        allow_population_by_field_name = True
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -678,6 +794,360 @@ async def admin_reissue_token(
         "token_type": "bearer",
         "expires_in_days": 7
     }
+
+# ============================================================
+# Automatic Tool Detection with LLM
+# ============================================================
+
+class ToolDetectionRequest(BaseModel):
+    user_text: str
+
+@app.post("/api/detect_tool")
+async def detect_tool(
+    request: ToolDetectionRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    ユーザーのテキスト入力から適切なツールを自動検出する
+
+    **認証**: オプション（ローカル環境では不要）
+
+    **使用例**:
+    ```bash
+    curl -X POST http://localhost:8000/api/detect_tool \
+      -H "Content-Type: application/json" \
+      -d '{"user_text": "平均需要100個で(Q,R)方策を最適化したい"}'
+    ```
+
+    **レスポンス例（成功）**:
+    ```json
+    {
+        "success": true,
+        "detected_tools": [
+            {
+                "tool_name": "optimize_qr_policy",
+                "confidence": 0.95,
+                "description": "(Q,R)方策の最適パラメータを計算します",
+                "required_params": ["mu", "sigma", "lead_time", "holding_cost", "stockout_cost", "fixed_cost"]
+            }
+        ],
+        "recommended_tool": "optimize_qr_policy"
+    }
+    ```
+    """
+
+    # 全ツールのリストと説明を取得
+    tools_summary = []
+    for tool in MCP_TOOLS_DEFINITION:
+        tool_info = {
+            "name": tool["function"]["name"],
+            "description": tool["function"]["description"],
+            "required_params": tool["function"]["parameters"].get("required", [])
+        }
+        tools_summary.append(tool_info)
+
+    # LLMにツール検出を依頼
+    detection_prompt = f"""
+以下のユーザー入力から、最も適切な在庫最適化ツールを検出してください。
+
+【利用可能なツール一覧】
+{json.dumps(tools_summary, indent=2, ensure_ascii=False)}
+
+【ユーザー入力】
+{request.user_text}
+
+【検出ルール】
+1. ユーザーの意図を理解し、最も適したツールを1-3個選択してください
+2. 各ツールに対して信頼度スコア（0-1）を付けてください
+3. キーワードマッチング例：
+   - "EOQ", "経済発注量", "発注量" → calculate_eoq_raw または calculate_eoq_*_discount_raw
+   - "安全在庫", "サービスレベル" → calculate_safety_stock
+   - "(Q,R)", "定量発注", "連続監視" → optimize_qr_policy または simulate_qr_policy
+   - "(s,S)", "不定量発注", "基在庫" → optimize_ss_policy または simulate_ss_policy
+   - "需要予測", "予測", "forecast" → forecast_demand
+   - "需要分析", "統計", "パターン" → analyze_demand_pattern
+   - "Wagner-Whitin", "動的ロットサイジング" → calculate_wagner_whitin
+   - "定期発注", "periodic review", "ネットワーク最適化" → optimize_periodic_inventory
+   - "最適化", "optimize" → 対応する最適化ツール（optimize_qr_policy, optimize_ss_policy など）
+   - "シミュレーション", "simulate" → 対応するシミュレーションツール（simulate_qr_policy, simulate_ss_policy など）
+
+【出力形式】
+以下のJSON形式で出力してください：
+```json
+{{
+  "detected_tools": [
+    {{
+      "tool_name": "ツール名",
+      "confidence": 0.95,
+      "reason": "このツールを選んだ理由"
+    }}
+  ],
+  "recommended_tool": "最も推奨されるツール名"
+}}
+```
+"""
+
+    try:
+        # OpenAI API呼び出し
+        response = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL_NAME", os.getenv("OPENAI_MODEL", "gpt-4o-mini")),
+            messages=[
+                {"role": "system", "content": "あなたは在庫最適化ツールの選択を支援する専門家です。ユーザーの入力から最適なツールを検出してください。"},
+                {"role": "user", "content": detection_prompt}
+            ],
+            temperature=0.0,
+            max_tokens=1024,
+        )
+
+        response_text = response.choices[0].message.content
+
+        # JSONを抽出
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            extracted_json = json_match.group(1)
+        else:
+            extracted_json = response_text.strip()
+
+        detection_result = json.loads(extracted_json)
+
+        # 検出されたツールの詳細情報を追加
+        detected_tools_with_details = []
+        for detected in detection_result.get("detected_tools", []):
+            tool_name = detected["tool_name"]
+
+            # ツール定義から詳細情報を取得
+            tool_def = next((t for t in MCP_TOOLS_DEFINITION if t["function"]["name"] == tool_name), None)
+            if tool_def:
+                detected_tools_with_details.append({
+                    "tool_name": tool_name,
+                    "confidence": detected.get("confidence", 0.5),
+                    "reason": detected.get("reason", ""),
+                    "description": tool_def["function"]["description"],
+                    "required_params": tool_def["function"]["parameters"].get("required", [])
+                })
+
+        return {
+            "success": True,
+            "detected_tools": detected_tools_with_details,
+            "recommended_tool": detection_result.get("recommended_tool"),
+            "user_text": request.user_text
+        }
+
+    except json.JSONDecodeError as e:
+        return {
+            "success": False,
+            "error": "LLMからのJSON抽出に失敗しました",
+            "details": str(e),
+            "llm_response": response_text
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": "ツール検出に失敗しました",
+            "details": str(e)
+        }
+
+# ============================================================
+# Parameter Extraction with LLM (Pydantic-based)
+# ============================================================
+
+class ParameterExtractionRequest(BaseModel):
+    tool_name: str
+    user_text: str
+
+@app.post("/api/extract_parameters")
+async def extract_parameters(
+    request: ParameterExtractionRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
+    """
+    ユーザーのテキスト入力からLLMを使ってパラメータを抽出し、
+    Pydanticモデルでバリデーションする
+
+    **認証**: オプション（ローカル環境では不要）
+
+    **使用例**:
+    ```bash
+    curl -X POST http://localhost:8000/api/extract_parameters \
+      -H "Content-Type: application/json" \
+      -d '{
+        "tool_name": "calculate_safety_stock",
+        "user_text": "平均需要100個/日、標準偏差20、リードタイム7日、サービスレベル95%の場合の安全在庫を計算してください"
+      }'
+    ```
+
+    **レスポンス例（成功）**:
+    ```json
+    {
+        "success": true,
+        "parameters": {
+            "mu": 100.0,
+            "sigma": 20.0,
+            "lead_time": 7,
+            "service_level": 0.95
+        },
+        "schema": {...}
+    }
+    ```
+
+    **レスポンス例（失敗）**:
+    ```json
+    {
+        "success": false,
+        "error": "パラメータのバリデーションに失敗しました",
+        "details": "service_level または (stockout_cost と holding_cost) のいずれかを指定してください",
+        "extracted_params": {...},
+        "schema": {...}
+    }
+    ```
+    """
+
+    # ツールに対応するPydanticモデルを取得
+    param_models: Dict[str, Any] = {
+        # EOQ
+        "calculate_eoq_raw": EOQParams,
+        # 安全在庫
+        "calculate_safety_stock": SafetyStockParams,
+        # (Q,R)方策
+        "optimize_qr_policy": QRPolicyParams,
+        "simulate_qr_policy": QRPolicyParams,
+        # (s,S)方策
+        "optimize_ss_policy": SSPolicyParams,
+        "simulate_ss_policy": SSPolicyParams,
+        # 需要予測
+        "forecast_demand": DemandForecastParams,
+        # 需要分析
+        "analyze_demand_pattern": DemandAnalysisParams,
+        # Wagner-Whitin
+        "calculate_wagner_whitin": WagnerWhitinParams,
+    }
+
+    if request.tool_name not in param_models:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tool '{request.tool_name}' does not support parameter extraction. Supported tools: {', '.join(param_models.keys())}"
+        )
+
+    model_class = param_models[request.tool_name]
+
+    # Pydanticモデルのスキーマを取得
+    schema = model_class.schema()
+
+    # LLMにパラメータ抽出を依頼
+    extraction_prompt = f"""
+以下のユーザー入力から、{request.tool_name} 関数に必要なパラメータを抽出してJSON形式で出力してください。
+
+【関数パラメータスキーマ】
+{json.dumps(schema, indent=2, ensure_ascii=False)}
+
+【ユーザー入力】
+{request.user_text}
+
+【重要な抽出ルール】
+1. 出力はJSON形式のみで、説明文は不要です
+2. スキーマに定義された型と制約に従ってください
+3. 数値の単位に注意：
+   - サービスレベルは0-1の範囲（例：95% → 0.95）
+   - パーセントが指定された場合は小数に変換してください
+4. aliasが定義されている場合は、どちらの名前でも受け付けます（例：lead_time または LT）
+5. 不足しているパラメータがある場合は、その旨をerrorフィールドに記載してください
+
+【出力形式】
+以下のJSON形式でのみ出力してください：
+```json
+{{
+  "パラメータ名": 値,
+  ...
+}}
+```
+
+エラーがある場合のみ、以下の形式：
+```json
+{{
+  "error": "エラーメッセージ"
+}}
+```
+"""
+
+    try:
+        # OpenAI API呼び出し（既存のclientインスタンスを使用）
+        response = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL_NAME", os.getenv("OPENAI_MODEL", "gpt-4o-mini")),
+            messages=[
+                {"role": "system", "content": "あなたはテキストからパラメータを抽出する専門家です。指示に従ってJSONのみを出力してください。"},
+                {"role": "user", "content": extraction_prompt}
+            ],
+            temperature=0.0,  # 一貫性のため低温度
+            max_tokens=1024,
+        )
+
+        response_text = response.choices[0].message.content
+
+        # LLMの出力からJSONを抽出
+        json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
+        if json_match:
+            extracted_json = json_match.group(1)
+        else:
+            # コードブロックがない場合、全体をJSONとして扱う
+            extracted_json = response_text.strip()
+
+        extracted_params = json.loads(extracted_json)
+
+    except json.JSONDecodeError as e:
+        return {
+            "success": False,
+            "error": "LLMからのJSON抽出に失敗しました",
+            "details": str(e),
+            "llm_response": response_text,
+            "schema": schema
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": "LLM呼び出しに失敗しました",
+            "details": str(e),
+            "schema": schema
+        }
+
+    # エラーフィールドがある場合、抽出失敗として扱う
+    if "error" in extracted_params:
+        return {
+            "success": False,
+            "error": "パラメータの抽出に失敗しました",
+            "details": extracted_params["error"],
+            "schema": schema
+        }
+
+    # Pydanticモデルでバリデーション
+    try:
+        validated_model = model_class(**extracted_params)
+        # by_aliasを使用してエイリアス名でシリアライズ
+        validated_params = validated_model.dict(by_alias=True)
+
+        return {
+            "success": True,
+            "parameters": validated_params,
+            "extracted_params": extracted_params,  # 抽出前のパラメータも参考情報として返す
+            "schema": schema,
+            "message": "パラメータの抽出とバリデーションに成功しました"
+        }
+
+    except Exception as e:
+        # バリデーションエラー詳細を返す
+        error_details = str(e)
+
+        # Pydantic V1 ValidationErrorの場合
+        if hasattr(e, 'errors'):
+            error_details = json.dumps(e.errors(), ensure_ascii=False, indent=2)
+
+        return {
+            "success": False,
+            "error": "パラメータのバリデーションに失敗しました",
+            "details": error_details,
+            "extracted_params": extracted_params,
+            "schema": schema,
+            "suggestion": "スキーマを確認して、必須パラメータが全て含まれているか、値の範囲が正しいかをチェックしてください"
+        }
 
 # ============================================================
 # Health Check
