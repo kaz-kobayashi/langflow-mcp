@@ -77,24 +77,38 @@ def make_excel_messa():
     ws.cell(1,8).comment = Comment("発注1回あたりの固定費用", "logopt")
     
     
-    #データチェック
-    dv = DataValidation(type="decimal", allow_blank=False)
-    ws.add_data_validation(dv)
-    dv.add('B2:H1048576')  
-    
-    
-    ws = wb.create_sheet(title="部品展開表")
-    ws.append(["子品目（ID）","親品目(ID)","必要量(units)"])
-    
-    ws.cell(1,1).comment = Comment("上流（調達側）の在庫地点を子品目として入力", "logopt")
-    ws.cell(1,2).comment = Comment("下流（顧客側）の在庫地点を親品目として入力", "logopt")
-    ws.cell(1,3).comment = Comment("親品目を1単位製造するために必要な子品目の数", "logopt")
+    # サンプルデータを追加（3段階サプライチェーン）
+    # 製品A（最終製品） - 顧客需要あり
+    ws.append(["製品A", 1, 3, 100, 20, 5.0, 100, 1000])
+    # 部品B（中間品） - Aの構成部品
+    ws.append(["部品B", 2, 0, None, None, 2.0, 50, 800])
+    # 原材料C（原材料） - Bの構成部品
+    ws.append(["原材料C", 1, 0, None, None, 1.0, 30, 500])
 
     #データチェック
     dv = DataValidation(type="decimal", allow_blank=False)
     ws.add_data_validation(dv)
-    dv.add('C2:C1048576') 
-    
+    dv.add('B2:H1048576')
+
+
+    ws = wb.create_sheet(title="部品展開表")
+    ws.append(["子品目（ID）","親品目(ID)","必要量(units)"])
+
+    ws.cell(1,1).comment = Comment("上流（調達側）の在庫地点を子品目として入力", "logopt")
+    ws.cell(1,2).comment = Comment("下流（顧客側）の在庫地点を親品目として入力", "logopt")
+    ws.cell(1,3).comment = Comment("親品目を1単位製造するために必要な子品目の数", "logopt")
+
+    # サンプルBOMデータを追加
+    # 部品B → 製品A（製品A 1個作るのに部品B 2個必要）
+    ws.append(["部品B", "製品A", 2])
+    # 原材料C → 部品B（部品B 1個作るのに原材料C 1個必要）
+    ws.append(["原材料C", "部品B", 1])
+
+    #データチェック
+    dv = DataValidation(type="decimal", allow_blank=False)
+    ws.add_data_validation(dv)
+    dv.add('C2:C1048576')
+
     return wb
 
 # %% ../nbs/03inventory.ipynb 17
