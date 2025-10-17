@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Chain 06
+
+This XML file contains the data to Chain 06 that appeared in the paper 
+"Real-World Multi-Echelon Supply Chains Used for Inventory Optimization" by Sean P. Willems 
+published in Manufacturing & Service Operations Management.
+
+The data described in this paper are publicly available at the journal's web site http://www.msom.org
+The data are open to all researchers as long as the researcher is willing to cite the published M&SOM paper as the source.
+
+-->
+<chain company="06" companyIdentifier="Company Identifier" sicCode="SIC Code" sicDescription="SIC Description">
+	<stages>
+		<stage stageName="Dist_0001"
+			stageCost="0.25"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="760.23"
+			stDevDemand="3.01"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="9"
+			stDevStageTime="2"
+			xPos="496"
+			yPos="32" />
+		<stage stageName="Dist_0002"
+			stageCost="0.05"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="291.05"
+			stDevDemand="2.92"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="2"
+			stDevStageTime="1"
+			xPos="496"
+			yPos="96" />
+		<stage stageName="Dist_0003"
+			stageCost="0.35"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="196.78"
+			stDevDemand="2.5"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="14"
+			stDevStageTime="3"
+			xPos="496"
+			yPos="160" />
+		<stage stageName="Dist_0004"
+			stageCost="0.25"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="126.53"
+			stDevDemand="3.09"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="9"
+			stDevStageTime="2"
+			xPos="496"
+			yPos="224" />
+		<stage stageName="Dist_0005"
+			stageCost="0.05"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="40.12"
+			stDevDemand="2.81"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="2"
+			stDevStageTime="1"
+			xPos="496"
+			yPos="288" />
+		<stage stageName="Dist_0006"
+			stageCost="0.35"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="191.48"
+			stDevDemand="2.57"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="14"
+			stDevStageTime="3"
+			xPos="496"
+			yPos="352" />
+		<stage stageName="Dist_0007"
+			stageCost="0.25"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="1708.98"
+			stDevDemand="3.15"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="9"
+			stDevStageTime="2"
+			xPos="496"
+			yPos="416" />
+		<stage stageName="Dist_0008"
+			stageCost="0.05"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="857.28"
+			stDevDemand="2.83"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="2"
+			stDevStageTime="1"
+			xPos="496"
+			yPos="480" />
+		<stage stageName="Dist_0009"
+			stageCost="0.35"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="156.35"
+			stDevDemand="2.63"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="14"
+			stDevStageTime="3"
+			xPos="496"
+			yPos="544" />
+		<stage stageName="Dist_0010"
+			stageCost="0.25"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="1600.58"
+			stDevDemand="3.14"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="9"
+			stDevStageTime="2"
+			xPos="496"
+			yPos="608" />
+		<stage stageName="Dist_0011"
+			stageCost="0.05"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="1001.53"
+			stDevDemand="2.91"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="2"
+			stDevStageTime="1"
+			xPos="496"
+			yPos="688" />
+		<stage stageName="Dist_0012"
+			stageCost="0.35"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="881.83"
+			stDevDemand="2.5"
+			maxServiceTime="0"
+			serviceLevel="0.96"
+			stageTime="14"
+			stDevStageTime="3"
+			xPos="496"
+			yPos="768" />
+		<stage stageName="Manuf_0001"
+			stageCost="0.25"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="53"
+			xPos="80"
+			yPos="96" />
+		<stage stageName="Manuf_0002"
+			stageCost="0.85"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="60"
+			xPos="80"
+			yPos="192" />
+		<stage stageName="Manuf_0003"
+			stageCost="0.15"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="53"
+			xPos="80"
+			yPos="288" />
+		<stage stageName="Manuf_0004"
+			stageCost="0.83"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="53"
+			xPos="80"
+			yPos="480" />
+		<stage stageName="Manuf_0005"
+			stageCost="0.91"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="60"
+			xPos="80"
+			yPos="576" />
+		<stage stageName="Manuf_0006"
+			stageCost="0.86"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="53"
+			xPos="80"
+			yPos="688" />
+		<stage stageName="Manuf_0007"
+			stageCost="1.21"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="20"
+			stDevStageTime="5"
+			xPos="352"
+			yPos="96" />
+		<stage stageName="Manuf_0008"
+			stageCost="1.43"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="20"
+			stDevStageTime="5"
+			xPos="352"
+			yPos="288" />
+		<stage stageName="Manuf_0009"
+			stageCost="1.11"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="18"
+			stDevStageTime="4"
+			xPos="352"
+			yPos="480" />
+		<stage stageName="Manuf_0010"
+			stageCost="1.16"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="18"
+			stDevStageTime="4"
+			xPos="352"
+			yPos="688" />
+		<stage stageName="Trans_0001"
+			stageCost="0.1"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="208"
+			yPos="96" />
+		<stage stageName="Trans_0002"
+			stageCost="0.05"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="208"
+			yPos="192" />
+		<stage stageName="Trans_0003"
+			stageCost="0.1"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="208"
+			yPos="288" />
+		<stage stageName="Trans_0004"
+			stageCost="0.1"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="208"
+			yPos="480" />
+		<stage stageName="Trans_0005"
+			stageCost="0.05"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="208"
+			yPos="576" />
+		<stage stageName="Trans_0006"
+			stageCost="0.1"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="208"
+			yPos="688" />
+	</stages>
+	<arcs>
+			<arc from="Manuf_0001" to="Trans_0001" />
+			<arc from="Manuf_0002" to="Trans_0002" />
+			<arc from="Manuf_0003" to="Trans_0003" />
+			<arc from="Manuf_0004" to="Trans_0004" />
+			<arc from="Manuf_0005" to="Trans_0005" />
+			<arc from="Manuf_0006" to="Trans_0006" />
+			<arc from="Manuf_0007" to="Dist_0001" />
+			<arc from="Manuf_0007" to="Dist_0002" />
+			<arc from="Manuf_0007" to="Dist_0003" />
+			<arc from="Manuf_0008" to="Dist_0004" />
+			<arc from="Manuf_0008" to="Dist_0005" />
+			<arc from="Manuf_0008" to="Dist_0006" />
+			<arc from="Manuf_0009" to="Dist_0007" />
+			<arc from="Manuf_0009" to="Dist_0008" />
+			<arc from="Manuf_0009" to="Dist_0009" />
+			<arc from="Manuf_0010" to="Dist_0010" />
+			<arc from="Manuf_0010" to="Dist_0011" />
+			<arc from="Manuf_0010" to="Dist_0012" />
+			<arc from="Trans_0001" to="Manuf_0007" />
+			<arc from="Trans_0001" to="Manuf_0009" />
+			<arc from="Trans_0001" to="Manuf_0010" />
+			<arc from="Trans_0002" to="Manuf_0007" />
+			<arc from="Trans_0002" to="Manuf_0008" />
+			<arc from="Trans_0003" to="Manuf_0008" />
+			<arc from="Trans_0004" to="Manuf_0009" />
+			<arc from="Trans_0005" to="Manuf_0009" />
+			<arc from="Trans_0005" to="Manuf_0010" />
+			<arc from="Trans_0006" to="Manuf_0010" />
+	</arcs>
+</chain>

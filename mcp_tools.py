@@ -5238,7 +5238,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             seed = arguments.get("seed", 1)
 
             # ベンチマークBOMファイルのパスを構築
-            bom_file = f"./nbs/data/bom/{benchmark_id}.xml"
+            bom_file = f"./data/bom/{benchmark_id}.xml"
 
             # BOMを読み込み
             BOM, pos = read_willems(file_name=bom_file)
@@ -5321,7 +5321,7 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             seed = arguments.get("seed", 1)
 
             # BOMファイルを読み込み
-            bom_file = f"./nbs/data/bom/{benchmark_id}.xml"
+            bom_file = f"./data/bom/{benchmark_id}.xml"
             BOM, pos = read_willems(file_name=bom_file)
 
             # SCRMデータを生成
@@ -5491,10 +5491,12 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                 }
 
             # HTMLを生成
-            html_content = pio.to_html(fig, include_plotlyjs='cdn')
+            import plotly.io as pio_local
+            html_content = pio_local.to_html(fig, include_plotlyjs='cdn')
 
             # UUIDでviz_idを生成
-            viz_id = str(uuid.uuid4())
+            import uuid as uuid_local
+            viz_id = str(uuid_local.uuid4())
 
             # キャッシュに保存（user_idがある場合）
             if user_id is not None:
@@ -5630,10 +5632,12 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             fig = draw_scrm(ProdGraph, survival_time, Pipeline, UB, pos3)
 
             # HTMLを生成
-            html_content = pio.to_html(fig, include_plotlyjs='cdn')
+            import plotly.io as pio_local
+            html_content = pio_local.to_html(fig, include_plotlyjs='cdn')
 
             # UUIDでviz_idを生成
-            viz_id = str(uuid.uuid4())
+            import uuid as uuid_local
+            viz_id = str(uuid_local.uuid4())
 
             # キャッシュに保存（user_idがある場合）
             if user_id is not None:

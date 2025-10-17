@@ -1,0 +1,6100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Chain 30
+
+This XML file contains the data to Chain 30 that appeared in the paper 
+"Real-World Multi-Echelon Supply Chains Used for Inventory Optimization" by Sean P. Willems 
+published in Manufacturing & Service Operations Management.
+
+The data described in this paper are publicly available at the journal's web site http://www.msom.org
+The data are open to all researchers as long as the researcher is willing to cite the published M&SOM paper as the source.
+
+-->
+<chain company="30" companyIdentifier="Company Identifier" sicCode="SIC Code" sicDescription="SIC Description">
+	<stages>
+		<stage stageName="Dist_0001"
+			stageCost="1.31"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="112" />
+		<stage stageName="Dist_0002"
+			stageCost="1.18"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="368" />
+		<stage stageName="Dist_0003"
+			stageCost="1.88"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="704" />
+		<stage stageName="Dist_0004"
+			stageCost="1.61"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="1104" />
+		<stage stageName="Dist_0005"
+			stageCost="1.93"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="1488" />
+		<stage stageName="Dist_0006"
+			stageCost="1.89"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="1920" />
+		<stage stageName="Dist_0007"
+			stageCost="1.84"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="2208" />
+		<stage stageName="Dist_0008"
+			stageCost="1.91"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="2560" />
+		<stage stageName="Dist_0009"
+			stageCost="1.57"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="3008" />
+		<stage stageName="Dist_0010"
+			stageCost="1.44"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="3424" />
+		<stage stageName="Dist_0011"
+			stageCost="1.21"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="3824" />
+		<stage stageName="Dist_0012"
+			stageCost="1.67"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="4256" />
+		<stage stageName="Dist_0013"
+			stageCost="1.66"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="4672" />
+		<stage stageName="Dist_0014"
+			stageCost="1.38"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="5056" />
+		<stage stageName="Dist_0015"
+			stageCost="1.86"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="37.15"
+			stDevStageTime="13.37"
+			xPos="304"
+			yPos="5392" />
+		<stage stageName="Dist_0016"
+			stageCost="1.64"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="5696" />
+		<stage stageName="Dist_0017"
+			stageCost="1.48"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="6032" />
+		<stage stageName="Dist_0018"
+			stageCost="1.49"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="6368" />
+		<stage stageName="Dist_0019"
+			stageCost="1.16"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="6592" />
+		<stage stageName="Dist_0020"
+			stageCost="1.57"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="6768" />
+		<stage stageName="Dist_0021"
+			stageCost="1.37"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="7104" />
+		<stage stageName="Dist_0022"
+			stageCost="1.56"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="7488" />
+		<stage stageName="Dist_0023"
+			stageCost="1.18"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="7664" />
+		<stage stageName="Dist_0024"
+			stageCost="12.62"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="40.03"
+			stDevStageTime="24.45"
+			xPos="304"
+			yPos="7888" />
+		<stage stageName="Dist_0025"
+			stageCost="1.38"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="52.16"
+			stDevStageTime="26.31"
+			xPos="304"
+			yPos="8112" />
+		<stage stageName="Dist_0026"
+			stageCost="2.02"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="30.77"
+			xPos="304"
+			yPos="8368" />
+		<stage stageName="Dist_0027"
+			stageCost="1.66"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="8672" />
+		<stage stageName="Dist_0028"
+			stageCost="1.41"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="8896" />
+		<stage stageName="Dist_0029"
+			stageCost="1.64"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="9040" />
+		<stage stageName="Dist_0030"
+			stageCost="1.84"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="9168" />
+		<stage stageName="Dist_0031"
+			stageCost="1.89"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="9360" />
+		<stage stageName="Dist_0032"
+			stageCost="1.33"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="9680" />
+		<stage stageName="Dist_0033"
+			stageCost="1.45"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="9952" />
+		<stage stageName="Dist_0034"
+			stageCost="1.36"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10032" />
+		<stage stageName="Dist_0035"
+			stageCost="1.13"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="7"
+			xPos="304"
+			yPos="10176" />
+		<stage stageName="Dist_0036"
+			stageCost="1.45"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="10320" />
+		<stage stageName="Dist_0037"
+			stageCost="1.1"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10400" />
+		<stage stageName="Dist_0038"
+			stageCost="1.04"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="10448" />
+		<stage stageName="Dist_0039"
+			stageCost="1.31"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10496" />
+		<stage stageName="Dist_0040"
+			stageCost="1.25"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10544" />
+		<stage stageName="Dist_0041"
+			stageCost="1.88"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="39.92"
+			stDevStageTime="15.5"
+			xPos="304"
+			yPos="10592" />
+		<stage stageName="Dist_0042"
+			stageCost="1.54"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="37.94"
+			stDevStageTime="17.26"
+			xPos="304"
+			yPos="10640" />
+		<stage stageName="Dist_0043"
+			stageCost="10"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10688" />
+		<stage stageName="Dist_0044"
+			stageCost="1.09"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10736" />
+		<stage stageName="Dist_0045"
+			stageCost="1.12"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="5"
+			xPos="304"
+			yPos="10784" />
+		<stage stageName="Dist_0046"
+			stageCost="1.61"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="33.95"
+			stDevStageTime="9.7"
+			xPos="304"
+			yPos="10832" />
+		<stage stageName="Dist_0047"
+			stageCost="1.98"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10880" />
+		<stage stageName="Dist_0048"
+			stageCost="1.28"
+			relDepth="3"
+			stageClassification="Dist"
+			stageTime="6"
+			xPos="304"
+			yPos="10928" />
+		<stage stageName="Manuf_0001"
+			stageCost="1.94"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="16" />
+		<stage stageName="Manuf_0002"
+			stageCost="1.12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="64" />
+		<stage stageName="Manuf_0003"
+			stageCost="1.11"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="112" />
+		<stage stageName="Manuf_0004"
+			stageCost="1.39"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="160" />
+		<stage stageName="Manuf_0005"
+			stageCost="1.53"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="256" />
+		<stage stageName="Manuf_0006"
+			stageCost="1.21"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="304" />
+		<stage stageName="Manuf_0007"
+			stageCost="1.35"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="352" />
+		<stage stageName="Manuf_0008"
+			stageCost="1.84"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="400" />
+		<stage stageName="Manuf_0009"
+			stageCost="1.63"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="448" />
+		<stage stageName="Manuf_0010"
+			stageCost="1.18"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="544" />
+		<stage stageName="Manuf_0011"
+			stageCost="1.29"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="592" />
+		<stage stageName="Manuf_0012"
+			stageCost="1.63"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="640" />
+		<stage stageName="Manuf_0013"
+			stageCost="1.07"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="688" />
+		<stage stageName="Manuf_0014"
+			stageCost="1.42"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="736" />
+		<stage stageName="Manuf_0015"
+			stageCost="1.65"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="784" />
+		<stage stageName="Manuf_0016"
+			stageCost="1.14"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="832" />
+		<stage stageName="Manuf_0017"
+			stageCost="2.01"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="928" />
+		<stage stageName="Manuf_0018"
+			stageCost="1.03"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="976" />
+		<stage stageName="Manuf_0019"
+			stageCost="1.15"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1024" />
+		<stage stageName="Manuf_0020"
+			stageCost="1.39"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="1072" />
+		<stage stageName="Manuf_0021"
+			stageCost="1.92"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="1120" />
+		<stage stageName="Manuf_0022"
+			stageCost="1.52"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1168" />
+		<stage stageName="Manuf_0023"
+			stageCost="1.87"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="1216" />
+		<stage stageName="Manuf_0024"
+			stageCost="1.25"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1312" />
+		<stage stageName="Manuf_0025"
+			stageCost="2.01"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="1360" />
+		<stage stageName="Manuf_0026"
+			stageCost="1.29"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="1408" />
+		<stage stageName="Manuf_0027"
+			stageCost="1.18"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="1456" />
+		<stage stageName="Manuf_0028"
+			stageCost="1.38"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1504" />
+		<stage stageName="Manuf_0029"
+			stageCost="1.08"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1552" />
+		<stage stageName="Manuf_0030"
+			stageCost="2"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1600" />
+		<stage stageName="Manuf_0031"
+			stageCost="1.46"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="1696" />
+		<stage stageName="Manuf_0032"
+			stageCost="1.64"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1744" />
+		<stage stageName="Manuf_0033"
+			stageCost="1.61"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="1792" />
+		<stage stageName="Manuf_0034"
+			stageCost="1.99"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1840" />
+		<stage stageName="Manuf_0035"
+			stageCost="1.03"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1888" />
+		<stage stageName="Manuf_0036"
+			stageCost="1.86"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1936" />
+		<stage stageName="Manuf_0037"
+			stageCost="1.71"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="1984" />
+		<stage stageName="Manuf_0038"
+			stageCost="1.89"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2080" />
+		<stage stageName="Manuf_0039"
+			stageCost="1.72"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="2128" />
+		<stage stageName="Manuf_0040"
+			stageCost="1.48"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="2176" />
+		<stage stageName="Manuf_0041"
+			stageCost="1.33"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2224" />
+		<stage stageName="Manuf_0042"
+			stageCost="1.17"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2272" />
+		<stage stageName="Manuf_0043"
+			stageCost="1.61"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="2368" />
+		<stage stageName="Manuf_0044"
+			stageCost="1.58"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2416" />
+		<stage stageName="Manuf_0045"
+			stageCost="1.77"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2464" />
+		<stage stageName="Manuf_0046"
+			stageCost="1.88"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="2512" />
+		<stage stageName="Manuf_0047"
+			stageCost="1.21"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2560" />
+		<stage stageName="Manuf_0048"
+			stageCost="1.54"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="2608" />
+		<stage stageName="Manuf_0049"
+			stageCost="1.59"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="2656" />
+		<stage stageName="Manuf_0050"
+			stageCost="1.17"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="2704" />
+		<stage stageName="Manuf_0051"
+			stageCost="1.03"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2816" />
+		<stage stageName="Manuf_0052"
+			stageCost="1.89"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="2864" />
+		<stage stageName="Manuf_0053"
+			stageCost="1.47"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="2912" />
+		<stage stageName="Manuf_0054"
+			stageCost="1.75"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="2960" />
+		<stage stageName="Manuf_0055"
+			stageCost="1.89"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="3008" />
+		<stage stageName="Manuf_0056"
+			stageCost="1.85"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="3056" />
+		<stage stageName="Manuf_0057"
+			stageCost="1.82"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="3104" />
+		<stage stageName="Manuf_0058"
+			stageCost="1.08"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3152" />
+		<stage stageName="Manuf_0059"
+			stageCost="1.9"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3248" />
+		<stage stageName="Manuf_0060"
+			stageCost="1.2"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3296" />
+		<stage stageName="Manuf_0061"
+			stageCost="1.65"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3344" />
+		<stage stageName="Manuf_0062"
+			stageCost="1.07"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3392" />
+		<stage stageName="Manuf_0063"
+			stageCost="1.9"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3440" />
+		<stage stageName="Manuf_0064"
+			stageCost="1.25"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3488" />
+		<stage stageName="Manuf_0065"
+			stageCost="2.01"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3536" />
+		<stage stageName="Manuf_0066"
+			stageCost="2.02"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3632" />
+		<stage stageName="Manuf_0067"
+			stageCost="1.97"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3680" />
+		<stage stageName="Manuf_0068"
+			stageCost="1.18"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3728" />
+		<stage stageName="Manuf_0069"
+			stageCost="1.61"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="3776" />
+		<stage stageName="Manuf_0070"
+			stageCost="1.96"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="3824" />
+		<stage stageName="Manuf_0071"
+			stageCost="1.76"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="3872" />
+		<stage stageName="Manuf_0072"
+			stageCost="1.21"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="3920" />
+		<stage stageName="Manuf_0073"
+			stageCost="1.31"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="3968" />
+		<stage stageName="Manuf_0074"
+			stageCost="1.09"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4064" />
+		<stage stageName="Manuf_0075"
+			stageCost="1.81"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4112" />
+		<stage stageName="Manuf_0076"
+			stageCost="1.39"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="4160" />
+		<stage stageName="Manuf_0077"
+			stageCost="1.87"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4208" />
+		<stage stageName="Manuf_0078"
+			stageCost="1.04"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4256" />
+		<stage stageName="Manuf_0079"
+			stageCost="1.02"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4304" />
+		<stage stageName="Manuf_0080"
+			stageCost="1.77"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="4352" />
+		<stage stageName="Manuf_0081"
+			stageCost="1.97"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="4400" />
+		<stage stageName="Manuf_0082"
+			stageCost="1.41"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="4496" />
+		<stage stageName="Manuf_0083"
+			stageCost="1.61"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="4544" />
+		<stage stageName="Manuf_0084"
+			stageCost="1.17"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="4592" />
+		<stage stageName="Manuf_0085"
+			stageCost="1.53"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="4640" />
+		<stage stageName="Manuf_0086"
+			stageCost="1.15"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="4688" />
+		<stage stageName="Manuf_0087"
+			stageCost="1.67"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4736" />
+		<stage stageName="Manuf_0088"
+			stageCost="1.47"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4784" />
+		<stage stageName="Manuf_0089"
+			stageCost="1.04"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="4880" />
+		<stage stageName="Manuf_0090"
+			stageCost="1.55"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="4928" />
+		<stage stageName="Manuf_0091"
+			stageCost="1.15"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="4976" />
+		<stage stageName="Manuf_0092"
+			stageCost="1.18"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="5024" />
+		<stage stageName="Manuf_0093"
+			stageCost="1.72"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="5072" />
+		<stage stageName="Manuf_0094"
+			stageCost="1.42"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5120" />
+		<stage stageName="Manuf_0095"
+			stageCost="1.57"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5168" />
+		<stage stageName="Manuf_0096"
+			stageCost="1.12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="5264" />
+		<stage stageName="Manuf_0097"
+			stageCost="1.94"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5312" />
+		<stage stageName="Manuf_0098"
+			stageCost="1.83"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="5360" />
+		<stage stageName="Manuf_0099"
+			stageCost="1.92"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5408" />
+		<stage stageName="Manuf_0100"
+			stageCost="1.34"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5456" />
+		<stage stageName="Manuf_0101"
+			stageCost="1.83"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5552" />
+		<stage stageName="Manuf_0102"
+			stageCost="1.54"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5600" />
+		<stage stageName="Manuf_0103"
+			stageCost="1.6"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5648" />
+		<stage stageName="Manuf_0104"
+			stageCost="1.4"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="5696" />
+		<stage stageName="Manuf_0105"
+			stageCost="1.58"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5744" />
+		<stage stageName="Manuf_0106"
+			stageCost="1.03"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="5792" />
+		<stage stageName="Manuf_0107"
+			stageCost="1.03"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5888" />
+		<stage stageName="Manuf_0108"
+			stageCost="1.54"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="5936" />
+		<stage stageName="Manuf_0109"
+			stageCost="1.65"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="5984" />
+		<stage stageName="Manuf_0110"
+			stageCost="1.88"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6032" />
+		<stage stageName="Manuf_0111"
+			stageCost="1.05"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="6080" />
+		<stage stageName="Manuf_0112"
+			stageCost="1.26"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="6128" />
+		<stage stageName="Manuf_0113"
+			stageCost="1.38"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6224" />
+		<stage stageName="Manuf_0114"
+			stageCost="1.93"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="6272" />
+		<stage stageName="Manuf_0115"
+			stageCost="1.93"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6320" />
+		<stage stageName="Manuf_0116"
+			stageCost="1.51"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6368" />
+		<stage stageName="Manuf_0117"
+			stageCost="1.11"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6416" />
+		<stage stageName="Manuf_0118"
+			stageCost="1.63"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6464" />
+		<stage stageName="Manuf_0119"
+			stageCost="1.95"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6608" />
+		<stage stageName="Manuf_0120"
+			stageCost="1.12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="6752" />
+		<stage stageName="Manuf_0121"
+			stageCost="1.26"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6880" />
+		<stage stageName="Manuf_0122"
+			stageCost="1.3"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="6928" />
+		<stage stageName="Manuf_0123"
+			stageCost="1.6"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="6976" />
+		<stage stageName="Manuf_0124"
+			stageCost="2.03"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="7024" />
+		<stage stageName="Manuf_0125"
+			stageCost="1.13"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7072" />
+		<stage stageName="Manuf_0126"
+			stageCost="2.02"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="7120" />
+		<stage stageName="Manuf_0127"
+			stageCost="1.71"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7168" />
+		<stage stageName="Manuf_0128"
+			stageCost="1.49"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="7216" />
+		<stage stageName="Manuf_0129"
+			stageCost="1.83"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7264" />
+		<stage stageName="Manuf_0130"
+			stageCost="1.09"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7376" />
+		<stage stageName="Manuf_0131"
+			stageCost="1.37"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7424" />
+		<stage stageName="Manuf_0132"
+			stageCost="1.04"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="7472" />
+		<stage stageName="Manuf_0133"
+			stageCost="2"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="7520" />
+		<stage stageName="Manuf_0134"
+			stageCost="1.56"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7616" />
+		<stage stageName="Manuf_0135"
+			stageCost="1.45"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="7712" />
+		<stage stageName="Manuf_0136"
+			stageCost="1.96"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7760" />
+		<stage stageName="Manuf_0137"
+			stageCost="1.86"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7808" />
+		<stage stageName="Manuf_0138"
+			stageCost="1.29"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="7904" />
+		<stage stageName="Manuf_0139"
+			stageCost="1.88"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="7856" />
+		<stage stageName="Manuf_0140"
+			stageCost="1.59"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="7952" />
+		<stage stageName="Manuf_0141"
+			stageCost="1.72"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="8032" />
+		<stage stageName="Manuf_0142"
+			stageCost="1.23"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="8192" />
+		<stage stageName="Manuf_0143"
+			stageCost="1.46"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="8240" />
+		<stage stageName="Manuf_0144"
+			stageCost="1.25"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="8288" />
+		<stage stageName="Manuf_0145"
+			stageCost="1.31"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="8336" />
+		<stage stageName="Manuf_0146"
+			stageCost="1.24"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="8384" />
+		<stage stageName="Manuf_0147"
+			stageCost="1.12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="8432" />
+		<stage stageName="Manuf_0148"
+			stageCost="1.62"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="8480" />
+		<stage stageName="Manuf_0149"
+			stageCost="1.89"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="8576" />
+		<stage stageName="Manuf_0150"
+			stageCost="1.64"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="8624" />
+		<stage stageName="Manuf_0151"
+			stageCost="1.57"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="8672" />
+		<stage stageName="Manuf_0152"
+			stageCost="1.56"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="8752" />
+		<stage stageName="Manuf_0153"
+			stageCost="1.36"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="8864" />
+		<stage stageName="Manuf_0154"
+			stageCost="1.42"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="8912" />
+		<stage stageName="Manuf_0155"
+			stageCost="1.09"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9008" />
+		<stage stageName="Manuf_0156"
+			stageCost="1.51"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9104" />
+		<stage stageName="Manuf_0157"
+			stageCost="1.43"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="9152" />
+		<stage stageName="Manuf_0158"
+			stageCost="1.33"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9200" />
+		<stage stageName="Manuf_0159"
+			stageCost="1.77"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9296" />
+		<stage stageName="Manuf_0160"
+			stageCost="1.39"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9344" />
+		<stage stageName="Manuf_0161"
+			stageCost="1.75"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9392" />
+		<stage stageName="Manuf_0162"
+			stageCost="1.27"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="9488" />
+		<stage stageName="Manuf_0163"
+			stageCost="1.62"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="9536" />
+		<stage stageName="Manuf_0164"
+			stageCost="1.61"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9584" />
+		<stage stageName="Manuf_0165"
+			stageCost="1.87"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="9632" />
+		<stage stageName="Manuf_0166"
+			stageCost="2.01"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9680" />
+		<stage stageName="Manuf_0167"
+			stageCost="1.98"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="9728" />
+		<stage stageName="Manuf_0168"
+			stageCost="1.74"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="9776" />
+		<stage stageName="Manuf_0169"
+			stageCost="1.14"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="9872" />
+		<stage stageName="Manuf_0170"
+			stageCost="1.19"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="10016" />
+		<stage stageName="Manuf_0171"
+			stageCost="1.83"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="10112" />
+		<stage stageName="Manuf_0172"
+			stageCost="1.14"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="5"
+			xPos="752"
+			yPos="10160" />
+		<stage stageName="Manuf_0173"
+			stageCost="2.04"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="10256" />
+		<stage stageName="Manuf_0174"
+			stageCost="1.17"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="4"
+			xPos="752"
+			yPos="10400" />
+		<stage stageName="Manuf_0175"
+			stageCost="1.42"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="6"
+			xPos="752"
+			yPos="10448" />
+		<stage stageName="Part_0001"
+			stageCost="1.56"
+			relDepth="4"
+			stageClassification="Part"
+			stageTime="5"
+			xPos="80"
+			yPos="5392" />
+		<stage stageName="Retail_0001"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="8.1"
+			stDevDemand="28.9"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="208" />
+		<stage stageName="Retail_0002"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="127"
+			stDevDemand="479.57"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="496" />
+		<stage stageName="Retail_0003"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="380"
+			stDevDemand="949.8"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="880" />
+		<stage stageName="Retail_0004"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="127"
+			stDevDemand="409.18"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="1264" />
+		<stage stageName="Retail_0005"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="226"
+			stDevDemand="754.16"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="1648" />
+		<stage stageName="Retail_0006"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="90"
+			stDevDemand="333.38"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="2032" />
+		<stage stageName="Retail_0007"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="8"
+			stDevDemand="25.97"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="2320" />
+		<stage stageName="Retail_0008"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="247"
+			stDevDemand="726.05"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="2752" />
+		<stage stageName="Retail_0009"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="156"
+			stDevDemand="436.31"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="3200" />
+		<stage stageName="Retail_0010"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="143"
+			stDevDemand="559.54"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="3584" />
+		<stage stageName="Retail_0011"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="189"
+			stDevDemand="836.56"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="4016" />
+		<stage stageName="Retail_0012"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="112"
+			stDevDemand="558.48"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="4448" />
+		<stage stageName="Retail_0013"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="203"
+			stDevDemand="918.45"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="4832" />
+		<stage stageName="Retail_0014"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="171"
+			stDevDemand="547.59"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="5216" />
+		<stage stageName="Retail_0015"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="235"
+			stDevDemand="957.28"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="5504" />
+		<stage stageName="Retail_0016"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="9.74"
+			stDevDemand="25.47"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="5840" />
+		<stage stageName="Retail_0017"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="109"
+			stDevDemand="271.57"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="6176" />
+		<stage stageName="Retail_0018"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="6.84"
+			stDevDemand="10.58"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="6512" />
+		<stage stageName="Retail_0019"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="5.76"
+			stDevDemand="8.4"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="6624" />
+		<stage stageName="Retail_0020"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="18.98"
+			stDevDemand="35.99"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="6832" />
+		<stage stageName="Retail_0021"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="223"
+			stDevDemand="580.96"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="7312" />
+		<stage stageName="Retail_0022"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="156.21"
+			stDevDemand="445.69"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="7616" />
+		<stage stageName="Retail_0023"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="12.07"
+			stDevDemand="35.72"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="8048" />
+		<stage stageName="Retail_0024"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="9.22"
+			stDevDemand="20.57"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="8144" />
+		<stage stageName="Retail_0025"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="105"
+			stDevDemand="336.52"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="8528" />
+		<stage stageName="Retail_0026"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="6.46"
+			stDevDemand="9.82"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="8768" />
+		<stage stageName="Retail_0027"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="10.41"
+			stDevDemand="32.39"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="8960" />
+		<stage stageName="Retail_0028"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="173.08"
+			stDevDemand="462.21"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="9056" />
+		<stage stageName="Retail_0029"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="12.32"
+			stDevDemand="40.37"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="9248" />
+		<stage stageName="Retail_0030"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="73"
+			stDevDemand="457.38"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="9440" />
+		<stage stageName="Retail_0031"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="179"
+			stDevDemand="594.64"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="9872" />
+		<stage stageName="Retail_0032"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="9"
+			stDevDemand="54.21"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="9968" />
+		<stage stageName="Retail_0033"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="83.44"
+			stDevDemand="246.97"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10064" />
+		<stage stageName="Retail_0034"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="143.32"
+			stDevDemand="322.04"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10256" />
+		<stage stageName="Retail_0035"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="26.73"
+			stDevDemand="87.46"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10352" />
+		<stage stageName="Retail_0036"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="27.88"
+			stDevDemand="68.35"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10496" />
+		<stage stageName="Retail_0037"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="23.61"
+			stDevDemand="82.26"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10544" />
+		<stage stageName="Retail_0038"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="3545"
+			stDevDemand="16119.94"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10592" />
+		<stage stageName="Retail_0039"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="127.14"
+			stDevDemand="433.76"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10640" />
+		<stage stageName="Retail_0040"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="5765"
+			stDevDemand="16044.06"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10688" />
+		<stage stageName="Retail_0041"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="43.27"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10736" />
+		<stage stageName="Retail_0042"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="8"
+			stDevDemand="39.26"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10784" />
+		<stage stageName="Retail_0043"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="13"
+			stDevDemand="122.1"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10832" />
+		<stage stageName="Retail_0044"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="43.29"
+			stDevDemand="154.58"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10880" />
+		<stage stageName="Retail_0045"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Retail"
+			avgDemand="7.67"
+			stDevDemand="19.11"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="528"
+			yPos="10928" />
+		<stage stageName="Retail_0046"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="173.31"
+			stDevDemand="625.33"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="16" />
+		<stage stageName="Retail_0047"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="57.72"
+			stDevDemand="238.67"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="64" />
+		<stage stageName="Retail_0048"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8.24"
+			stDevDemand="24.63"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="112" />
+		<stage stageName="Retail_0049"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7.87"
+			stDevDemand="24.44"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="160" />
+		<stage stageName="Retail_0050"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="19"
+			stDevDemand="80.88"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="256" />
+		<stage stageName="Retail_0051"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="40"
+			stDevDemand="102.94"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="304" />
+		<stage stageName="Retail_0052"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="33"
+			stDevDemand="179.55"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="352" />
+		<stage stageName="Retail_0053"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="33"
+			stDevDemand="135.71"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="400" />
+		<stage stageName="Retail_0054"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="11"
+			stDevDemand="57.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="448" />
+		<stage stageName="Retail_0055"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="26.32"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="544" />
+		<stage stageName="Retail_0056"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="87"
+			stDevDemand="246.85"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="592" />
+		<stage stageName="Retail_0057"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8"
+			stDevDemand="36.75"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="640" />
+		<stage stageName="Retail_0058"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="42"
+			stDevDemand="144.79"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="688" />
+		<stage stageName="Retail_0059"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="23"
+			stDevDemand="89.68"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="736" />
+		<stage stageName="Retail_0060"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="36"
+			stDevDemand="226.69"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="784" />
+		<stage stageName="Retail_0061"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="45"
+			stDevDemand="116.92"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="832" />
+		<stage stageName="Retail_0062"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="6"
+			stDevDemand="30.44"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="928" />
+		<stage stageName="Retail_0063"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="23"
+			stDevDemand="87.81"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="976" />
+		<stage stageName="Retail_0064"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="13"
+			stDevDemand="58.01"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1024" />
+		<stage stageName="Retail_0065"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="20"
+			stDevDemand="120.37"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1072" />
+		<stage stageName="Retail_0066"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="11"
+			stDevDemand="90.14"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1120" />
+		<stage stageName="Retail_0067"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="41"
+			stDevDemand="117.98"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1168" />
+		<stage stageName="Retail_0068"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="20"
+			stDevDemand="70.63"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1216" />
+		<stage stageName="Retail_0069"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="40"
+			stDevDemand="160.17"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1312" />
+		<stage stageName="Retail_0070"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8"
+			stDevDemand="37.55"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1360" />
+		<stage stageName="Retail_0071"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12"
+			stDevDemand="62.29"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1408" />
+		<stage stageName="Retail_0072"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12"
+			stDevDemand="59.3"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1456" />
+		<stage stageName="Retail_0073"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="20"
+			stDevDemand="92.45"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1504" />
+		<stage stageName="Retail_0074"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="22.67"
+			stDevDemand="220.2"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1552" />
+		<stage stageName="Retail_0075"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="19"
+			stDevDemand="75.13"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1600" />
+		<stage stageName="Retail_0076"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="63"
+			stDevDemand="224.91"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1696" />
+		<stage stageName="Retail_0077"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="16"
+			stDevDemand="43.34"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1744" />
+		<stage stageName="Retail_0078"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="38"
+			stDevDemand="161.11"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1792" />
+		<stage stageName="Retail_0079"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="13"
+			stDevDemand="85.44"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1840" />
+		<stage stageName="Retail_0080"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="9"
+			stDevDemand="39.56"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1888" />
+		<stage stageName="Retail_0081"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="31"
+			stDevDemand="87.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1936" />
+		<stage stageName="Retail_0082"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="17"
+			stDevDemand="62.88"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="1984" />
+		<stage stageName="Retail_0083"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="9.51"
+			stDevDemand="28.32"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2080" />
+		<stage stageName="Retail_0084"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.07"
+			stDevDemand="5.85"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2128" />
+		<stage stageName="Retail_0085"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.02"
+			stDevDemand="5.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2176" />
+		<stage stageName="Retail_0086"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="17.99"
+			stDevDemand="29.52"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2224" />
+		<stage stageName="Retail_0087"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.07"
+			stDevDemand="5.85"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2272" />
+		<stage stageName="Retail_0088"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="147"
+			stDevDemand="280.19"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2368" />
+		<stage stageName="Retail_0089"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="28"
+			stDevDemand="96.39"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2416" />
+		<stage stageName="Retail_0090"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="111"
+			stDevDemand="327.05"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2464" />
+		<stage stageName="Retail_0091"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="22"
+			stDevDemand="99.57"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2512" />
+		<stage stageName="Retail_0092"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="81"
+			stDevDemand="275.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2560" />
+		<stage stageName="Retail_0093"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="38"
+			stDevDemand="110.52"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2608" />
+		<stage stageName="Retail_0094"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="15"
+			stDevDemand="63.21"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2656" />
+		<stage stageName="Retail_0095"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="51"
+			stDevDemand="145.89"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2704" />
+		<stage stageName="Retail_0096"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="59"
+			stDevDemand="120.53"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2816" />
+		<stage stageName="Retail_0097"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="71"
+			stDevDemand="162.95"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2864" />
+		<stage stageName="Retail_0098"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="31.75"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2912" />
+		<stage stageName="Retail_0099"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="19"
+			stDevDemand="57.85"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="2960" />
+		<stage stageName="Retail_0100"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="19"
+			stDevDemand="74.95"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3008" />
+		<stage stageName="Retail_0101"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="9"
+			stDevDemand="57.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3056" />
+		<stage stageName="Retail_0102"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="79"
+			stDevDemand="233.42"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3104" />
+		<stage stageName="Retail_0103"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="24"
+			stDevDemand="77.9"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3152" />
+		<stage stageName="Retail_0104"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="14"
+			stDevDemand="53.39"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3248" />
+		<stage stageName="Retail_0105"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="19"
+			stDevDemand="92.59"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3296" />
+		<stage stageName="Retail_0106"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="57"
+			stDevDemand="119.7"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3344" />
+		<stage stageName="Retail_0107"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="44"
+			stDevDemand="109.94"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3392" />
+		<stage stageName="Retail_0108"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="53"
+			stDevDemand="150"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3440" />
+		<stage stageName="Retail_0109"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="35"
+			stDevDemand="96.52"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3488" />
+		<stage stageName="Retail_0110"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12"
+			stDevDemand="113.13"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3536" />
+		<stage stageName="Retail_0111"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="6"
+			stDevDemand="25.24"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3632" />
+		<stage stageName="Retail_0112"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="71"
+			stDevDemand="175.02"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3680" />
+		<stage stageName="Retail_0113"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="44"
+			stDevDemand="234.02"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3728" />
+		<stage stageName="Retail_0114"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="75"
+			stDevDemand="197.93"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3776" />
+		<stage stageName="Retail_0115"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="39"
+			stDevDemand="116.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3824" />
+		<stage stageName="Retail_0116"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="30"
+			stDevDemand="98.28"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3872" />
+		<stage stageName="Retail_0117"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="18"
+			stDevDemand="98.85"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3920" />
+		<stage stageName="Retail_0118"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="50"
+			stDevDemand="147.2"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="3968" />
+		<stage stageName="Retail_0119"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12"
+			stDevDemand="51.94"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4064" />
+		<stage stageName="Retail_0120"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="34"
+			stDevDemand="81.71"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4112" />
+		<stage stageName="Retail_0121"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="25"
+			stDevDemand="81.46"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4160" />
+		<stage stageName="Retail_0122"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="66"
+			stDevDemand="124.04"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4208" />
+		<stage stageName="Retail_0123"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="35"
+			stDevDemand="108.98"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4256" />
+		<stage stageName="Retail_0124"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="48"
+			stDevDemand="118.33"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4304" />
+		<stage stageName="Retail_0125"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="13"
+			stDevDemand="83.27"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4352" />
+		<stage stageName="Retail_0126"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12"
+			stDevDemand="55.2"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4400" />
+		<stage stageName="Retail_0127"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="27"
+			stDevDemand="164.92"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4496" />
+		<stage stageName="Retail_0128"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="54"
+			stDevDemand="145.4"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4544" />
+		<stage stageName="Retail_0129"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="26"
+			stDevDemand="88.9"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4592" />
+		<stage stageName="Retail_0130"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="10"
+			stDevDemand="38.35"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4640" />
+		<stage stageName="Retail_0131"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="16"
+			stDevDemand="100.5"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4688" />
+		<stage stageName="Retail_0132"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="26.32"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4736" />
+		<stage stageName="Retail_0133"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="39"
+			stDevDemand="99.87"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4784" />
+		<stage stageName="Retail_0134"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="10"
+			stDevDemand="31.68"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4880" />
+		<stage stageName="Retail_0135"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="27"
+			stDevDemand="106.93"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4928" />
+		<stage stageName="Retail_0136"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="15"
+			stDevDemand="61.84"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="4976" />
+		<stage stageName="Retail_0137"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="61"
+			stDevDemand="222.99"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5024" />
+		<stage stageName="Retail_0138"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="49"
+			stDevDemand="128.04"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5072" />
+		<stage stageName="Retail_0139"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="58"
+			stDevDemand="315.43"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5120" />
+		<stage stageName="Retail_0140"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="30.98"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5168" />
+		<stage stageName="Retail_0141"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="29"
+			stDevDemand="96.13"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5264" />
+		<stage stageName="Retail_0142"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12"
+			stDevDemand="90.08"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5312" />
+		<stage stageName="Retail_0143"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="56"
+			stDevDemand="165.48"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5360" />
+		<stage stageName="Retail_0144"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5"
+			stDevDemand="27.08"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5408" />
+		<stage stageName="Retail_0145"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="69"
+			stDevDemand="332.37"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5456" />
+		<stage stageName="Retail_0146"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.85"
+			stDevDemand="9.8"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5552" />
+		<stage stageName="Retail_0147"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.02"
+			stDevDemand="5.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5600" />
+		<stage stageName="Retail_0148"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.03"
+			stDevDemand="5.37"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5648" />
+		<stage stageName="Retail_0149"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="9.17"
+			stDevDemand="20.88"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5696" />
+		<stage stageName="Retail_0150"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.14"
+			stDevDemand="6.52"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5744" />
+		<stage stageName="Retail_0151"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12.64"
+			stDevDemand="44.87"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5792" />
+		<stage stageName="Retail_0152"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="18"
+			stDevDemand="67.22"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5888" />
+		<stage stageName="Retail_0153"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="26"
+			stDevDemand="143.39"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5936" />
+		<stage stageName="Retail_0154"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="72"
+			stDevDemand="217.48"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="5984" />
+		<stage stageName="Retail_0155"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="23"
+			stDevDemand="85.62"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6032" />
+		<stage stageName="Retail_0156"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="32"
+			stDevDemand="127.36"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6080" />
+		<stage stageName="Retail_0157"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="16"
+			stDevDemand="104.34"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6128" />
+		<stage stageName="Retail_0158"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.12"
+			stDevDemand="6.14"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6224" />
+		<stage stageName="Retail_0159"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.5"
+			stDevDemand="7.51"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6272" />
+		<stage stageName="Retail_0160"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.11"
+			stDevDemand="5.92"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6320" />
+		<stage stageName="Retail_0161"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.02"
+			stDevDemand="5.32"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6368" />
+		<stage stageName="Retail_0162"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.21"
+			stDevDemand="6.66"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6416" />
+		<stage stageName="Retail_0163"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.08"
+			stDevDemand="6.26"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6464" />
+		<stage stageName="Retail_0164"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.05"
+			stDevDemand="5.46"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6608" />
+		<stage stageName="Retail_0165"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.08"
+			stDevDemand="5.62"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6752" />
+		<stage stageName="Retail_0166"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="36"
+			stDevDemand="123.63"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6880" />
+		<stage stageName="Retail_0167"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="17"
+			stDevDemand="128.37"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6928" />
+		<stage stageName="Retail_0168"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="36"
+			stDevDemand="110.5"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="6976" />
+		<stage stageName="Retail_0169"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="38.81"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7024" />
+		<stage stageName="Retail_0170"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="53"
+			stDevDemand="158.94"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7072" />
+		<stage stageName="Retail_0171"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="43"
+			stDevDemand="180.09"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7120" />
+		<stage stageName="Retail_0172"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="23"
+			stDevDemand="232.74"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7168" />
+		<stage stageName="Retail_0173"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="6"
+			stDevDemand="21.43"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7216" />
+		<stage stageName="Retail_0174"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="17"
+			stDevDemand="87.67"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7264" />
+		<stage stageName="Retail_0175"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.8"
+			stDevDemand="11.29"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7376" />
+		<stage stageName="Retail_0176"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="26.78"
+			stDevDemand="91.07"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7424" />
+		<stage stageName="Retail_0177"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.31"
+			stDevDemand="8.57"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7472" />
+		<stage stageName="Retail_0178"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.46"
+			stDevDemand="9.48"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7520" />
+		<stage stageName="Retail_0179"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="21.84"
+			stDevDemand="99.75"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7616" />
+		<stage stageName="Retail_0180"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.19"
+			stDevDemand="6.54"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7712" />
+		<stage stageName="Retail_0181"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8.42"
+			stDevDemand="25.22"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7760" />
+		<stage stageName="Retail_0182"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.22"
+			stDevDemand="5.78"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7808" />
+		<stage stageName="Retail_0183"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7.01"
+			stDevDemand="8.1"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7856" />
+		<stage stageName="Retail_0184"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.06"
+			stDevDemand="5.41"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7904" />
+		<stage stageName="Retail_0185"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.29"
+			stDevDemand="5.9"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="7952" />
+		<stage stageName="Retail_0186"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="9.16"
+			stDevDemand="16.25"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8032" />
+		<stage stageName="Retail_0187"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="58"
+			stDevDemand="186.78"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8192" />
+		<stage stageName="Retail_0188"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="21"
+			stDevDemand="67.04"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8240" />
+		<stage stageName="Retail_0189"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="12"
+			stDevDemand="56.66"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8288" />
+		<stage stageName="Retail_0190"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="38"
+			stDevDemand="103.75"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8336" />
+		<stage stageName="Retail_0191"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="27"
+			stDevDemand="167.98"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8384" />
+		<stage stageName="Retail_0192"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="10"
+			stDevDemand="33.13"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8432" />
+		<stage stageName="Retail_0193"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="18"
+			stDevDemand="61.43"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8480" />
+		<stage stageName="Retail_0194"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.37"
+			stDevDemand="6.88"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8576" />
+		<stage stageName="Retail_0195"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.37"
+			stDevDemand="7.24"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8624" />
+		<stage stageName="Retail_0196"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.28"
+			stDevDemand="6.61"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8672" />
+		<stage stageName="Retail_0197"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7.1"
+			stDevDemand="35.62"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8752" />
+		<stage stageName="Retail_0198"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="6.82"
+			stDevDemand="9.72"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8864" />
+		<stage stageName="Retail_0199"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="6.59"
+			stDevDemand="8.89"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="8912" />
+		<stage stageName="Retail_0200"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="373.64"
+			stDevDemand="1183.08"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9008" />
+		<stage stageName="Retail_0201"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.48"
+			stDevDemand="8.57"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9104" />
+		<stage stageName="Retail_0202"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.02"
+			stDevDemand="5.32"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9152" />
+		<stage stageName="Retail_0203"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8.4"
+			stDevDemand="27.3"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9200" />
+		<stage stageName="Retail_0204"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5"
+			stDevDemand="19.95"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9296" />
+		<stage stageName="Retail_0205"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="245"
+			stDevDemand="1662.62"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9344" />
+		<stage stageName="Retail_0206"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="22"
+			stDevDemand="94.58"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9392" />
+		<stage stageName="Retail_0207"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="31.1"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9488" />
+		<stage stageName="Retail_0208"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="7"
+			stDevDemand="27.72"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9536" />
+		<stage stageName="Retail_0209"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="34"
+			stDevDemand="109.02"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9584" />
+		<stage stageName="Retail_0210"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="48"
+			stDevDemand="134.79"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9632" />
+		<stage stageName="Retail_0211"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="43"
+			stDevDemand="145.53"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9680" />
+		<stage stageName="Retail_0212"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="50"
+			stDevDemand="119.68"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9728" />
+		<stage stageName="Retail_0213"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="10"
+			stDevDemand="32.16"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9776" />
+		<stage stageName="Retail_0214"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="17.32"
+			stDevDemand="75.53"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="9872" />
+		<stage stageName="Retail_0215"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8.84"
+			stDevDemand="65.72"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="10016" />
+		<stage stageName="Retail_0216"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8.12"
+			stDevDemand="33.37"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="10112" />
+		<stage stageName="Retail_0217"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="41.4"
+			stDevDemand="101.22"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="10160" />
+		<stage stageName="Retail_0218"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="29.92"
+			stDevDemand="116.11"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="10256" />
+		<stage stageName="Retail_0219"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="6.43"
+			stDevDemand="14.49"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="10400" />
+		<stage stageName="Retail_0220"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="5.05"
+			stDevDemand="5.54"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="0"
+			xPos="976"
+			yPos="10448" />
+		<stage stageName="Trans_0001"
+			stageCost="1.17"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.32"
+			stDevStageTime="3.82"
+			xPos="528"
+			yPos="16" />
+		<stage stageName="Trans_0002"
+			stageCost="1.63"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.68"
+			stDevStageTime="4.21"
+			xPos="528"
+			yPos="64" />
+		<stage stageName="Trans_0003"
+			stageCost="1.54"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.91"
+			stDevStageTime="4.26"
+			xPos="528"
+			yPos="112" />
+		<stage stageName="Trans_0004"
+			stageCost="1.16"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.41"
+			stDevStageTime="5.57"
+			xPos="528"
+			yPos="160" />
+		<stage stageName="Trans_0005"
+			stageCost="1.57"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.01"
+			stDevStageTime="5.3"
+			xPos="528"
+			yPos="256" />
+		<stage stageName="Trans_0006"
+			stageCost="1.86"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.55"
+			stDevStageTime="5.61"
+			xPos="528"
+			yPos="304" />
+		<stage stageName="Trans_0007"
+			stageCost="1.32"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.34"
+			stDevStageTime="4.08"
+			xPos="528"
+			yPos="352" />
+		<stage stageName="Trans_0008"
+			stageCost="1.47"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.35"
+			stDevStageTime="5.25"
+			xPos="528"
+			yPos="400" />
+		<stage stageName="Trans_0009"
+			stageCost="1.37"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.05"
+			stDevStageTime="4.16"
+			xPos="528"
+			yPos="448" />
+		<stage stageName="Trans_0010"
+			stageCost="1.56"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.31"
+			stDevStageTime="4.55"
+			xPos="528"
+			yPos="544" />
+		<stage stageName="Trans_0011"
+			stageCost="1.25"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.25"
+			stDevStageTime="4.8"
+			xPos="528"
+			yPos="592" />
+		<stage stageName="Trans_0012"
+			stageCost="1.32"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.51"
+			stDevStageTime="4.61"
+			xPos="528"
+			yPos="640" />
+		<stage stageName="Trans_0013"
+			stageCost="1.21"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.84"
+			stDevStageTime="4.57"
+			xPos="528"
+			yPos="688" />
+		<stage stageName="Trans_0014"
+			stageCost="1.66"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.31"
+			stDevStageTime="5.38"
+			xPos="528"
+			yPos="736" />
+		<stage stageName="Trans_0015"
+			stageCost="1.48"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8"
+			stDevStageTime="4.68"
+			xPos="528"
+			yPos="784" />
+		<stage stageName="Trans_0016"
+			stageCost="1.44"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.36"
+			stDevStageTime="4.18"
+			xPos="528"
+			yPos="832" />
+		<stage stageName="Trans_0017"
+			stageCost="1.56"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.66"
+			stDevStageTime="5.14"
+			xPos="528"
+			yPos="928" />
+		<stage stageName="Trans_0018"
+			stageCost="1.32"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.77"
+			stDevStageTime="5.31"
+			xPos="528"
+			yPos="976" />
+		<stage stageName="Trans_0019"
+			stageCost="1.64"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.88"
+			stDevStageTime="4.86"
+			xPos="528"
+			yPos="1024" />
+		<stage stageName="Trans_0020"
+			stageCost="1.51"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.22"
+			stDevStageTime="4.83"
+			xPos="528"
+			yPos="1072" />
+		<stage stageName="Trans_0021"
+			stageCost="1.22"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.47"
+			stDevStageTime="5.19"
+			xPos="528"
+			yPos="1120" />
+		<stage stageName="Trans_0022"
+			stageCost="1.48"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.54"
+			stDevStageTime="5.13"
+			xPos="528"
+			yPos="1168" />
+		<stage stageName="Trans_0023"
+			stageCost="1.38"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="13.4"
+			stDevStageTime="5.68"
+			xPos="528"
+			yPos="1216" />
+		<stage stageName="Trans_0024"
+			stageCost="1.81"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.69"
+			stDevStageTime="5.37"
+			xPos="528"
+			yPos="1312" />
+		<stage stageName="Trans_0025"
+			stageCost="1.5"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.35"
+			stDevStageTime="4.87"
+			xPos="528"
+			yPos="1360" />
+		<stage stageName="Trans_0026"
+			stageCost="1.85"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="12.88"
+			stDevStageTime="4.66"
+			xPos="528"
+			yPos="1408" />
+		<stage stageName="Trans_0027"
+			stageCost="1.76"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="5.69"
+			stDevStageTime="4.44"
+			xPos="528"
+			yPos="1456" />
+		<stage stageName="Trans_0028"
+			stageCost="1.13"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="12.63"
+			stDevStageTime="4.23"
+			xPos="528"
+			yPos="1504" />
+		<stage stageName="Trans_0029"
+			stageCost="1.77"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.98"
+			stDevStageTime="5.28"
+			xPos="528"
+			yPos="1552" />
+		<stage stageName="Trans_0030"
+			stageCost="1.49"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.86"
+			stDevStageTime="5.88"
+			xPos="528"
+			yPos="1600" />
+		<stage stageName="Trans_0031"
+			stageCost="1.96"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.96"
+			stDevStageTime="4.98"
+			xPos="528"
+			yPos="1696" />
+		<stage stageName="Trans_0032"
+			stageCost="1.94"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.6"
+			stDevStageTime="5.67"
+			xPos="528"
+			yPos="1744" />
+		<stage stageName="Trans_0033"
+			stageCost="1.69"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.86"
+			stDevStageTime="5.53"
+			xPos="528"
+			yPos="1792" />
+		<stage stageName="Trans_0034"
+			stageCost="1.99"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.17"
+			stDevStageTime="4.22"
+			xPos="528"
+			yPos="1840" />
+		<stage stageName="Trans_0035"
+			stageCost="1.85"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.64"
+			stDevStageTime="4.92"
+			xPos="528"
+			yPos="1888" />
+		<stage stageName="Trans_0036"
+			stageCost="1.84"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.18"
+			stDevStageTime="5.87"
+			xPos="528"
+			yPos="1936" />
+		<stage stageName="Trans_0037"
+			stageCost="1.66"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.54"
+			stDevStageTime="5.12"
+			xPos="528"
+			yPos="1984" />
+		<stage stageName="Trans_0038"
+			stageCost="1.12"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.72"
+			stDevStageTime="4.68"
+			xPos="528"
+			yPos="2080" />
+		<stage stageName="Trans_0039"
+			stageCost="1.8"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="5.61"
+			stDevStageTime="4.46"
+			xPos="528"
+			yPos="2128" />
+		<stage stageName="Trans_0040"
+			stageCost="1.65"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.01"
+			stDevStageTime="3.91"
+			xPos="528"
+			yPos="2176" />
+		<stage stageName="Trans_0041"
+			stageCost="1.12"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.57"
+			stDevStageTime="4.69"
+			xPos="528"
+			yPos="2224" />
+		<stage stageName="Trans_0042"
+			stageCost="1.7"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.82"
+			stDevStageTime="6.82"
+			xPos="528"
+			yPos="2272" />
+		<stage stageName="Trans_0043"
+			stageCost="1.42"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.41"
+			stDevStageTime="5.45"
+			xPos="528"
+			yPos="2368" />
+		<stage stageName="Trans_0044"
+			stageCost="1.48"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.72"
+			stDevStageTime="4.95"
+			xPos="528"
+			yPos="2416" />
+		<stage stageName="Trans_0045"
+			stageCost="1.22"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.68"
+			stDevStageTime="4.53"
+			xPos="528"
+			yPos="2464" />
+		<stage stageName="Trans_0046"
+			stageCost="1.33"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.85"
+			stDevStageTime="4.81"
+			xPos="528"
+			yPos="2512" />
+		<stage stageName="Trans_0047"
+			stageCost="1.99"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.33"
+			stDevStageTime="4.8"
+			xPos="528"
+			yPos="2560" />
+		<stage stageName="Trans_0048"
+			stageCost="1.96"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.15"
+			stDevStageTime="4.62"
+			xPos="528"
+			yPos="2608" />
+		<stage stageName="Trans_0049"
+			stageCost="2.01"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.83"
+			stDevStageTime="4.34"
+			xPos="528"
+			yPos="2656" />
+		<stage stageName="Trans_0050"
+			stageCost="2.01"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.71"
+			stDevStageTime="4.84"
+			xPos="528"
+			yPos="2704" />
+		<stage stageName="Trans_0051"
+			stageCost="1.7"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.06"
+			stDevStageTime="3.65"
+			xPos="528"
+			yPos="2816" />
+		<stage stageName="Trans_0052"
+			stageCost="1.53"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.68"
+			stDevStageTime="4.3"
+			xPos="528"
+			yPos="2864" />
+		<stage stageName="Trans_0053"
+			stageCost="2"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.17"
+			stDevStageTime="4.31"
+			xPos="528"
+			yPos="2912" />
+		<stage stageName="Trans_0054"
+			stageCost="1.78"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.4"
+			stDevStageTime="4.86"
+			xPos="528"
+			yPos="2960" />
+		<stage stageName="Trans_0055"
+			stageCost="1.58"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.3"
+			stDevStageTime="5.03"
+			xPos="528"
+			yPos="3008" />
+		<stage stageName="Trans_0056"
+			stageCost="1.51"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.57"
+			stDevStageTime="4.33"
+			xPos="528"
+			yPos="3056" />
+		<stage stageName="Trans_0057"
+			stageCost="1.6"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.05"
+			stDevStageTime="5.52"
+			xPos="528"
+			yPos="3104" />
+		<stage stageName="Trans_0058"
+			stageCost="1.56"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.87"
+			stDevStageTime="5.11"
+			xPos="528"
+			yPos="3152" />
+		<stage stageName="Trans_0059"
+			stageCost="1.71"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="13.49"
+			stDevStageTime="4.36"
+			xPos="528"
+			yPos="3248" />
+		<stage stageName="Trans_0060"
+			stageCost="1.03"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.2"
+			stDevStageTime="4.68"
+			xPos="528"
+			yPos="3296" />
+		<stage stageName="Trans_0061"
+			stageCost="1.12"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.47"
+			stDevStageTime="5.31"
+			xPos="528"
+			yPos="3344" />
+		<stage stageName="Trans_0062"
+			stageCost="1.52"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.32"
+			stDevStageTime="5.42"
+			xPos="528"
+			yPos="3392" />
+		<stage stageName="Trans_0063"
+			stageCost="1.13"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.49"
+			stDevStageTime="5.69"
+			xPos="528"
+			yPos="3440" />
+		<stage stageName="Trans_0064"
+			stageCost="1.31"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.37"
+			stDevStageTime="4.63"
+			xPos="528"
+			yPos="3488" />
+		<stage stageName="Trans_0065"
+			stageCost="1.06"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.98"
+			stDevStageTime="4.91"
+			xPos="528"
+			yPos="3536" />
+		<stage stageName="Trans_0066"
+			stageCost="1.51"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.77"
+			stDevStageTime="5.12"
+			xPos="528"
+			yPos="3632" />
+		<stage stageName="Trans_0067"
+			stageCost="1.6"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.16"
+			stDevStageTime="4.72"
+			xPos="528"
+			yPos="3680" />
+		<stage stageName="Trans_0068"
+			stageCost="1.56"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.68"
+			stDevStageTime="4.36"
+			xPos="528"
+			yPos="3728" />
+		<stage stageName="Trans_0069"
+			stageCost="1.89"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.95"
+			stDevStageTime="4.41"
+			xPos="528"
+			yPos="3776" />
+		<stage stageName="Trans_0070"
+			stageCost="1.05"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.09"
+			stDevStageTime="4.55"
+			xPos="528"
+			yPos="3824" />
+		<stage stageName="Trans_0071"
+			stageCost="1.51"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.24"
+			stDevStageTime="4.98"
+			xPos="528"
+			yPos="3872" />
+		<stage stageName="Trans_0072"
+			stageCost="1.98"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.45"
+			stDevStageTime="4.96"
+			xPos="528"
+			yPos="3920" />
+		<stage stageName="Trans_0073"
+			stageCost="1.18"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.55"
+			stDevStageTime="5.46"
+			xPos="528"
+			yPos="3968" />
+		<stage stageName="Trans_0074"
+			stageCost="1.06"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.5"
+			stDevStageTime="4.16"
+			xPos="528"
+			yPos="4064" />
+		<stage stageName="Trans_0075"
+			stageCost="1.9"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.02"
+			stDevStageTime="5.83"
+			xPos="528"
+			yPos="4112" />
+		<stage stageName="Trans_0076"
+			stageCost="1.64"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.33"
+			stDevStageTime="5"
+			xPos="528"
+			yPos="4160" />
+		<stage stageName="Trans_0077"
+			stageCost="1.91"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.9"
+			stDevStageTime="4.21"
+			xPos="528"
+			yPos="4208" />
+		<stage stageName="Trans_0078"
+			stageCost="1.23"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.49"
+			stDevStageTime="4.7"
+			xPos="528"
+			yPos="4256" />
+		<stage stageName="Trans_0079"
+			stageCost="1.91"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.95"
+			stDevStageTime="4.27"
+			xPos="528"
+			yPos="4304" />
+		<stage stageName="Trans_0080"
+			stageCost="1.73"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.42"
+			stDevStageTime="4.18"
+			xPos="528"
+			yPos="4352" />
+		<stage stageName="Trans_0081"
+			stageCost="1.55"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="12.9"
+			stDevStageTime="4.96"
+			xPos="528"
+			yPos="4400" />
+		<stage stageName="Trans_0082"
+			stageCost="2"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.95"
+			stDevStageTime="5.81"
+			xPos="528"
+			yPos="4496" />
+		<stage stageName="Trans_0083"
+			stageCost="1.6"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="15.75"
+			stDevStageTime="4.79"
+			xPos="528"
+			yPos="4544" />
+		<stage stageName="Trans_0084"
+			stageCost="1.82"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.95"
+			stDevStageTime="5.39"
+			xPos="528"
+			yPos="4592" />
+		<stage stageName="Trans_0085"
+			stageCost="1.79"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.06"
+			stDevStageTime="4.87"
+			xPos="528"
+			yPos="4640" />
+		<stage stageName="Trans_0086"
+			stageCost="1.54"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.44"
+			stDevStageTime="4.87"
+			xPos="528"
+			yPos="4688" />
+		<stage stageName="Trans_0087"
+			stageCost="1.65"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.04"
+			stDevStageTime="4.21"
+			xPos="528"
+			yPos="4736" />
+		<stage stageName="Trans_0088"
+			stageCost="1.74"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.25"
+			stDevStageTime="5.16"
+			xPos="528"
+			yPos="4784" />
+		<stage stageName="Trans_0089"
+			stageCost="1.75"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.52"
+			stDevStageTime="4.4"
+			xPos="528"
+			yPos="4880" />
+		<stage stageName="Trans_0090"
+			stageCost="1.7"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.69"
+			stDevStageTime="4.63"
+			xPos="528"
+			yPos="4928" />
+		<stage stageName="Trans_0091"
+			stageCost="1.17"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.28"
+			stDevStageTime="4.57"
+			xPos="528"
+			yPos="4976" />
+		<stage stageName="Trans_0092"
+			stageCost="1.57"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.43"
+			stDevStageTime="5.07"
+			xPos="528"
+			yPos="5024" />
+		<stage stageName="Trans_0093"
+			stageCost="2.03"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.71"
+			stDevStageTime="5.46"
+			xPos="528"
+			yPos="5072" />
+		<stage stageName="Trans_0094"
+			stageCost="1.89"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.08"
+			stDevStageTime="5.52"
+			xPos="528"
+			yPos="5120" />
+		<stage stageName="Trans_0095"
+			stageCost="1.58"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.99"
+			stDevStageTime="5.68"
+			xPos="528"
+			yPos="5168" />
+		<stage stageName="Trans_0096"
+			stageCost="1.05"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.99"
+			stDevStageTime="5.1"
+			xPos="528"
+			yPos="5264" />
+		<stage stageName="Trans_0097"
+			stageCost="1.81"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.31"
+			stDevStageTime="4.42"
+			xPos="528"
+			yPos="5312" />
+		<stage stageName="Trans_0098"
+			stageCost="1.99"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.94"
+			stDevStageTime="4.33"
+			xPos="528"
+			yPos="5360" />
+		<stage stageName="Trans_0099"
+			stageCost="1.75"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.64"
+			stDevStageTime="4.6"
+			xPos="528"
+			yPos="5408" />
+		<stage stageName="Trans_0100"
+			stageCost="1.05"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.49"
+			stDevStageTime="4.27"
+			xPos="528"
+			yPos="5456" />
+		<stage stageName="Trans_0101"
+			stageCost="1.61"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.74"
+			stDevStageTime="3.87"
+			xPos="528"
+			yPos="5552" />
+		<stage stageName="Trans_0102"
+			stageCost="1.45"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.18"
+			stDevStageTime="4.04"
+			xPos="528"
+			yPos="5600" />
+		<stage stageName="Trans_0103"
+			stageCost="2.24"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.91"
+			stDevStageTime="6.17"
+			xPos="528"
+			yPos="5648" />
+		<stage stageName="Trans_0104"
+			stageCost="1.39"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.93"
+			stDevStageTime="5.06"
+			xPos="528"
+			yPos="5696" />
+		<stage stageName="Trans_0105"
+			stageCost="1.8"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.1"
+			stDevStageTime="4.08"
+			xPos="528"
+			yPos="5744" />
+		<stage stageName="Trans_0106"
+			stageCost="1.87"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.22"
+			stDevStageTime="4.15"
+			xPos="528"
+			yPos="5792" />
+		<stage stageName="Trans_0107"
+			stageCost="1.94"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="13.34"
+			stDevStageTime="4.58"
+			xPos="528"
+			yPos="5888" />
+		<stage stageName="Trans_0108"
+			stageCost="1.88"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.31"
+			stDevStageTime="5.04"
+			xPos="528"
+			yPos="5936" />
+		<stage stageName="Trans_0109"
+			stageCost="1.93"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.67"
+			stDevStageTime="4.96"
+			xPos="528"
+			yPos="5984" />
+		<stage stageName="Trans_0110"
+			stageCost="1.3"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.65"
+			stDevStageTime="4.35"
+			xPos="528"
+			yPos="6032" />
+		<stage stageName="Trans_0111"
+			stageCost="1.54"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.96"
+			stDevStageTime="4.18"
+			xPos="528"
+			yPos="6080" />
+		<stage stageName="Trans_0112"
+			stageCost="1.86"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.67"
+			stDevStageTime="5.19"
+			xPos="528"
+			yPos="6128" />
+		<stage stageName="Trans_0113"
+			stageCost="1.8"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.99"
+			stDevStageTime="5.47"
+			xPos="528"
+			yPos="6224" />
+		<stage stageName="Trans_0114"
+			stageCost="1.93"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.43"
+			stDevStageTime="4.13"
+			xPos="528"
+			yPos="6272" />
+		<stage stageName="Trans_0115"
+			stageCost="2.35"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.99"
+			stDevStageTime="4.3"
+			xPos="528"
+			yPos="6320" />
+		<stage stageName="Trans_0116"
+			stageCost="1.63"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.2"
+			stDevStageTime="4.16"
+			xPos="528"
+			yPos="6368" />
+		<stage stageName="Trans_0117"
+			stageCost="1.41"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.53"
+			stDevStageTime="5.24"
+			xPos="528"
+			yPos="6416" />
+		<stage stageName="Trans_0118"
+			stageCost="1.89"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.39"
+			stDevStageTime="4.26"
+			xPos="528"
+			yPos="6464" />
+		<stage stageName="Trans_0119"
+			stageCost="1.79"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.02"
+			stDevStageTime="4.47"
+			xPos="528"
+			yPos="6576" />
+		<stage stageName="Trans_0120"
+			stageCost="1.48"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.09"
+			stDevStageTime="4.42"
+			xPos="528"
+			yPos="6688" />
+		<stage stageName="Trans_0121"
+			stageCost="1.57"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.94"
+			stDevStageTime="4.6"
+			xPos="528"
+			yPos="6736" />
+		<stage stageName="Trans_0122"
+			stageCost="1.33"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.64"
+			stDevStageTime="4.46"
+			xPos="528"
+			yPos="6784" />
+		<stage stageName="Trans_0123"
+			stageCost="1.2"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.16"
+			stDevStageTime="4.6"
+			xPos="528"
+			yPos="6880" />
+		<stage stageName="Trans_0124"
+			stageCost="1.13"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.38"
+			stDevStageTime="4.3"
+			xPos="528"
+			yPos="6928" />
+		<stage stageName="Trans_0125"
+			stageCost="1.05"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.33"
+			stDevStageTime="5.59"
+			xPos="528"
+			yPos="6976" />
+		<stage stageName="Trans_0126"
+			stageCost="1.54"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.15"
+			stDevStageTime="4.47"
+			xPos="528"
+			yPos="7024" />
+		<stage stageName="Trans_0127"
+			stageCost="1.47"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="15.29"
+			stDevStageTime="5.15"
+			xPos="528"
+			yPos="7072" />
+		<stage stageName="Trans_0128"
+			stageCost="1.62"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="11.25"
+			stDevStageTime="4.65"
+			xPos="528"
+			yPos="7120" />
+		<stage stageName="Trans_0129"
+			stageCost="1.48"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.71"
+			stDevStageTime="4.7"
+			xPos="528"
+			yPos="7168" />
+		<stage stageName="Trans_0130"
+			stageCost="1.79"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.59"
+			stDevStageTime="5.18"
+			xPos="528"
+			yPos="7216" />
+		<stage stageName="Trans_0131"
+			stageCost="1.71"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.77"
+			stDevStageTime="4.06"
+			xPos="528"
+			yPos="7264" />
+		<stage stageName="Trans_0132"
+			stageCost="1.28"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="5.73"
+			stDevStageTime="5.01"
+			xPos="528"
+			yPos="7376" />
+		<stage stageName="Trans_0133"
+			stageCost="1.81"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.87"
+			stDevStageTime="5.54"
+			xPos="528"
+			yPos="7424" />
+		<stage stageName="Trans_0134"
+			stageCost="1.83"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.89"
+			stDevStageTime="5.14"
+			xPos="528"
+			yPos="7472" />
+		<stage stageName="Trans_0135"
+			stageCost="1.39"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.13"
+			stDevStageTime="5.55"
+			xPos="528"
+			yPos="7520" />
+		<stage stageName="Trans_0136"
+			stageCost="2.02"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.36"
+			stDevStageTime="4.74"
+			xPos="528"
+			yPos="7568" />
+		<stage stageName="Trans_0137"
+			stageCost="1.53"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.84"
+			stDevStageTime="4.79"
+			xPos="528"
+			yPos="7664" />
+		<stage stageName="Trans_0138"
+			stageCost="1.29"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.84"
+			stDevStageTime="5.38"
+			xPos="528"
+			yPos="7712" />
+		<stage stageName="Trans_0139"
+			stageCost="1.36"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.96"
+			stDevStageTime="4.05"
+			xPos="528"
+			yPos="7760" />
+		<stage stageName="Trans_0140"
+			stageCost="1.93"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.48"
+			stDevStageTime="5.43"
+			xPos="528"
+			yPos="7808" />
+		<stage stageName="Trans_0141"
+			stageCost="1.06"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.47"
+			stDevStageTime="4.69"
+			xPos="528"
+			yPos="7856" />
+		<stage stageName="Trans_0142"
+			stageCost="1.65"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.81"
+			stDevStageTime="4.73"
+			xPos="528"
+			yPos="7904" />
+		<stage stageName="Trans_0143"
+			stageCost="1.13"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.32"
+			stDevStageTime="5.11"
+			xPos="528"
+			yPos="7952" />
+		<stage stageName="Trans_0144"
+			stageCost="1.93"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.01"
+			stDevStageTime="5.43"
+			xPos="528"
+			yPos="8000" />
+		<stage stageName="Trans_0145"
+			stageCost="1.33"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.89"
+			stDevStageTime="5.09"
+			xPos="528"
+			yPos="8096" />
+		<stage stageName="Trans_0146"
+			stageCost="1.03"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.68"
+			stDevStageTime="4.62"
+			xPos="528"
+			yPos="8192" />
+		<stage stageName="Trans_0147"
+			stageCost="1.08"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.93"
+			stDevStageTime="4.69"
+			xPos="528"
+			yPos="8240" />
+		<stage stageName="Trans_0148"
+			stageCost="1.65"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="13.11"
+			stDevStageTime="4.66"
+			xPos="528"
+			yPos="8288" />
+		<stage stageName="Trans_0149"
+			stageCost="1.34"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.59"
+			stDevStageTime="4.5"
+			xPos="528"
+			yPos="8336" />
+		<stage stageName="Trans_0150"
+			stageCost="1.64"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.5"
+			stDevStageTime="4.6"
+			xPos="528"
+			yPos="8384" />
+		<stage stageName="Trans_0151"
+			stageCost="1.21"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.6"
+			stDevStageTime="4.34"
+			xPos="528"
+			yPos="8432" />
+		<stage stageName="Trans_0152"
+			stageCost="1.72"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.57"
+			stDevStageTime="5.06"
+			xPos="528"
+			yPos="8480" />
+		<stage stageName="Trans_0153"
+			stageCost="1.17"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.36"
+			stDevStageTime="3.84"
+			xPos="528"
+			yPos="8576" />
+		<stage stageName="Trans_0154"
+			stageCost="1.33"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.58"
+			stDevStageTime="4.92"
+			xPos="528"
+			yPos="8624" />
+		<stage stageName="Trans_0155"
+			stageCost="1.41"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.96"
+			stDevStageTime="5.77"
+			xPos="528"
+			yPos="8672" />
+		<stage stageName="Trans_0156"
+			stageCost="1.73"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.6"
+			stDevStageTime="5.81"
+			xPos="528"
+			yPos="8720" />
+		<stage stageName="Trans_0157"
+			stageCost="1.73"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.08"
+			stDevStageTime="4.31"
+			xPos="528"
+			yPos="8816" />
+		<stage stageName="Trans_0158"
+			stageCost="1.64"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.61"
+			stDevStageTime="5.08"
+			xPos="528"
+			yPos="8864" />
+		<stage stageName="Trans_0159"
+			stageCost="2.02"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.22"
+			stDevStageTime="5.32"
+			xPos="528"
+			yPos="8912" />
+		<stage stageName="Trans_0160"
+			stageCost="1.41"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.07"
+			stDevStageTime="4.94"
+			xPos="528"
+			yPos="9008" />
+		<stage stageName="Trans_0161"
+			stageCost="1.4"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.02"
+			stDevStageTime="6.02"
+			xPos="528"
+			yPos="9104" />
+		<stage stageName="Trans_0162"
+			stageCost="2.09"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.46"
+			stDevStageTime="4.7"
+			xPos="528"
+			yPos="9152" />
+		<stage stageName="Trans_0163"
+			stageCost="1.42"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.36"
+			stDevStageTime="5.26"
+			xPos="528"
+			yPos="9200" />
+		<stage stageName="Trans_0164"
+			stageCost="1.29"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.93"
+			stDevStageTime="5.52"
+			xPos="528"
+			yPos="9296" />
+		<stage stageName="Trans_0165"
+			stageCost="1.57"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.39"
+			stDevStageTime="5.84"
+			xPos="528"
+			yPos="9344" />
+		<stage stageName="Trans_0166"
+			stageCost="1.77"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.3"
+			stDevStageTime="4.02"
+			xPos="528"
+			yPos="9392" />
+		<stage stageName="Trans_0167"
+			stageCost="1.15"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.98"
+			stDevStageTime="4.18"
+			xPos="528"
+			yPos="9488" />
+		<stage stageName="Trans_0168"
+			stageCost="1.96"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.22"
+			stDevStageTime="5.01"
+			xPos="528"
+			yPos="9536" />
+		<stage stageName="Trans_0169"
+			stageCost="1.23"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.77"
+			stDevStageTime="5.45"
+			xPos="528"
+			yPos="9584" />
+		<stage stageName="Trans_0170"
+			stageCost="1.49"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="12.42"
+			stDevStageTime="6.79"
+			xPos="528"
+			yPos="9632" />
+		<stage stageName="Trans_0171"
+			stageCost="1.27"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9.25"
+			stDevStageTime="4.8"
+			xPos="528"
+			yPos="9680" />
+		<stage stageName="Trans_0172"
+			stageCost="1.13"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="13.05"
+			stDevStageTime="4.64"
+			xPos="528"
+			yPos="9728" />
+		<stage stageName="Trans_0173"
+			stageCost="1.96"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.38"
+			stDevStageTime="5.06"
+			xPos="528"
+			yPos="9776" />
+		<stage stageName="Trans_0174"
+			stageCost="1.63"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="10.33"
+			stDevStageTime="3.92"
+			xPos="528"
+			yPos="9824" />
+		<stage stageName="Trans_0175"
+			stageCost="1.9"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="6.55"
+			stDevStageTime="4.45"
+			xPos="528"
+			yPos="9920" />
+		<stage stageName="Trans_0176"
+			stageCost="1.59"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.4"
+			stDevStageTime="5.54"
+			xPos="528"
+			yPos="10016" />
+		<stage stageName="Trans_0177"
+			stageCost="1.12"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.15"
+			stDevStageTime="5.26"
+			xPos="528"
+			yPos="10112" />
+		<stage stageName="Trans_0178"
+			stageCost="1.75"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9"
+			stDevStageTime="4.44"
+			xPos="528"
+			yPos="10160" />
+		<stage stageName="Trans_0179"
+			stageCost="1.55"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="9"
+			stDevStageTime="5.6"
+			xPos="528"
+			yPos="10208" />
+		<stage stageName="Trans_0180"
+			stageCost="1.17"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.11"
+			stDevStageTime="4.26"
+			xPos="528"
+			yPos="10304" />
+		<stage stageName="Trans_0181"
+			stageCost="1.89"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="7.51"
+			stDevStageTime="4.33"
+			xPos="528"
+			yPos="10400" />
+		<stage stageName="Trans_0182"
+			stageCost="1.11"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="8.31"
+			stDevStageTime="4.26"
+			xPos="528"
+			yPos="10448" />
+	</stages>
+	<arcs>
+			<arc from="Dist_0001" to="Retail_0001" />
+			<arc from="Dist_0001" to="Trans_0001" />
+			<arc from="Dist_0001" to="Trans_0002" />
+			<arc from="Dist_0001" to="Trans_0003" />
+			<arc from="Dist_0001" to="Trans_0004" />
+			<arc from="Dist_0002" to="Retail_0002" />
+			<arc from="Dist_0002" to="Trans_0005" />
+			<arc from="Dist_0002" to="Trans_0006" />
+			<arc from="Dist_0002" to="Trans_0007" />
+			<arc from="Dist_0002" to="Trans_0008" />
+			<arc from="Dist_0002" to="Trans_0009" />
+			<arc from="Dist_0003" to="Retail_0003" />
+			<arc from="Dist_0003" to="Trans_0010" />
+			<arc from="Dist_0003" to="Trans_0011" />
+			<arc from="Dist_0003" to="Trans_0012" />
+			<arc from="Dist_0003" to="Trans_0013" />
+			<arc from="Dist_0003" to="Trans_0014" />
+			<arc from="Dist_0003" to="Trans_0015" />
+			<arc from="Dist_0003" to="Trans_0016" />
+			<arc from="Dist_0004" to="Retail_0004" />
+			<arc from="Dist_0004" to="Trans_0017" />
+			<arc from="Dist_0004" to="Trans_0018" />
+			<arc from="Dist_0004" to="Trans_0019" />
+			<arc from="Dist_0004" to="Trans_0020" />
+			<arc from="Dist_0004" to="Trans_0021" />
+			<arc from="Dist_0004" to="Trans_0022" />
+			<arc from="Dist_0004" to="Trans_0023" />
+			<arc from="Dist_0005" to="Retail_0005" />
+			<arc from="Dist_0005" to="Trans_0024" />
+			<arc from="Dist_0005" to="Trans_0025" />
+			<arc from="Dist_0005" to="Trans_0026" />
+			<arc from="Dist_0005" to="Trans_0027" />
+			<arc from="Dist_0005" to="Trans_0028" />
+			<arc from="Dist_0005" to="Trans_0029" />
+			<arc from="Dist_0005" to="Trans_0030" />
+			<arc from="Dist_0006" to="Retail_0006" />
+			<arc from="Dist_0006" to="Trans_0031" />
+			<arc from="Dist_0006" to="Trans_0032" />
+			<arc from="Dist_0006" to="Trans_0033" />
+			<arc from="Dist_0006" to="Trans_0034" />
+			<arc from="Dist_0006" to="Trans_0035" />
+			<arc from="Dist_0006" to="Trans_0036" />
+			<arc from="Dist_0006" to="Trans_0037" />
+			<arc from="Dist_0007" to="Retail_0007" />
+			<arc from="Dist_0007" to="Trans_0038" />
+			<arc from="Dist_0007" to="Trans_0039" />
+			<arc from="Dist_0007" to="Trans_0040" />
+			<arc from="Dist_0007" to="Trans_0041" />
+			<arc from="Dist_0007" to="Trans_0042" />
+			<arc from="Dist_0008" to="Retail_0008" />
+			<arc from="Dist_0008" to="Trans_0043" />
+			<arc from="Dist_0008" to="Trans_0044" />
+			<arc from="Dist_0008" to="Trans_0045" />
+			<arc from="Dist_0008" to="Trans_0046" />
+			<arc from="Dist_0008" to="Trans_0047" />
+			<arc from="Dist_0008" to="Trans_0048" />
+			<arc from="Dist_0008" to="Trans_0049" />
+			<arc from="Dist_0008" to="Trans_0050" />
+			<arc from="Dist_0009" to="Retail_0009" />
+			<arc from="Dist_0009" to="Trans_0051" />
+			<arc from="Dist_0009" to="Trans_0052" />
+			<arc from="Dist_0009" to="Trans_0053" />
+			<arc from="Dist_0009" to="Trans_0054" />
+			<arc from="Dist_0009" to="Trans_0055" />
+			<arc from="Dist_0009" to="Trans_0056" />
+			<arc from="Dist_0009" to="Trans_0057" />
+			<arc from="Dist_0009" to="Trans_0058" />
+			<arc from="Dist_0010" to="Retail_0010" />
+			<arc from="Dist_0010" to="Trans_0059" />
+			<arc from="Dist_0010" to="Trans_0060" />
+			<arc from="Dist_0010" to="Trans_0061" />
+			<arc from="Dist_0010" to="Trans_0062" />
+			<arc from="Dist_0010" to="Trans_0063" />
+			<arc from="Dist_0010" to="Trans_0064" />
+			<arc from="Dist_0010" to="Trans_0065" />
+			<arc from="Dist_0011" to="Retail_0011" />
+			<arc from="Dist_0011" to="Trans_0066" />
+			<arc from="Dist_0011" to="Trans_0067" />
+			<arc from="Dist_0011" to="Trans_0068" />
+			<arc from="Dist_0011" to="Trans_0069" />
+			<arc from="Dist_0011" to="Trans_0070" />
+			<arc from="Dist_0011" to="Trans_0071" />
+			<arc from="Dist_0011" to="Trans_0072" />
+			<arc from="Dist_0011" to="Trans_0073" />
+			<arc from="Dist_0012" to="Retail_0012" />
+			<arc from="Dist_0012" to="Trans_0074" />
+			<arc from="Dist_0012" to="Trans_0075" />
+			<arc from="Dist_0012" to="Trans_0076" />
+			<arc from="Dist_0012" to="Trans_0077" />
+			<arc from="Dist_0012" to="Trans_0078" />
+			<arc from="Dist_0012" to="Trans_0079" />
+			<arc from="Dist_0012" to="Trans_0080" />
+			<arc from="Dist_0012" to="Trans_0081" />
+			<arc from="Dist_0013" to="Retail_0013" />
+			<arc from="Dist_0013" to="Trans_0082" />
+			<arc from="Dist_0013" to="Trans_0083" />
+			<arc from="Dist_0013" to="Trans_0084" />
+			<arc from="Dist_0013" to="Trans_0085" />
+			<arc from="Dist_0013" to="Trans_0086" />
+			<arc from="Dist_0013" to="Trans_0087" />
+			<arc from="Dist_0013" to="Trans_0088" />
+			<arc from="Dist_0014" to="Retail_0014" />
+			<arc from="Dist_0014" to="Trans_0089" />
+			<arc from="Dist_0014" to="Trans_0090" />
+			<arc from="Dist_0014" to="Trans_0091" />
+			<arc from="Dist_0014" to="Trans_0092" />
+			<arc from="Dist_0014" to="Trans_0093" />
+			<arc from="Dist_0014" to="Trans_0094" />
+			<arc from="Dist_0014" to="Trans_0095" />
+			<arc from="Dist_0015" to="Retail_0015" />
+			<arc from="Dist_0015" to="Trans_0096" />
+			<arc from="Dist_0015" to="Trans_0097" />
+			<arc from="Dist_0015" to="Trans_0098" />
+			<arc from="Dist_0015" to="Trans_0099" />
+			<arc from="Dist_0015" to="Trans_0100" />
+			<arc from="Dist_0016" to="Retail_0016" />
+			<arc from="Dist_0016" to="Trans_0101" />
+			<arc from="Dist_0016" to="Trans_0102" />
+			<arc from="Dist_0016" to="Trans_0103" />
+			<arc from="Dist_0016" to="Trans_0104" />
+			<arc from="Dist_0016" to="Trans_0105" />
+			<arc from="Dist_0016" to="Trans_0106" />
+			<arc from="Dist_0017" to="Retail_0017" />
+			<arc from="Dist_0017" to="Trans_0107" />
+			<arc from="Dist_0017" to="Trans_0108" />
+			<arc from="Dist_0017" to="Trans_0109" />
+			<arc from="Dist_0017" to="Trans_0110" />
+			<arc from="Dist_0017" to="Trans_0111" />
+			<arc from="Dist_0017" to="Trans_0112" />
+			<arc from="Dist_0018" to="Retail_0018" />
+			<arc from="Dist_0018" to="Trans_0113" />
+			<arc from="Dist_0018" to="Trans_0114" />
+			<arc from="Dist_0018" to="Trans_0115" />
+			<arc from="Dist_0018" to="Trans_0116" />
+			<arc from="Dist_0018" to="Trans_0117" />
+			<arc from="Dist_0018" to="Trans_0118" />
+			<arc from="Dist_0019" to="Retail_0019" />
+			<arc from="Dist_0019" to="Trans_0119" />
+			<arc from="Dist_0019" to="Trans_0121" />
+			<arc from="Dist_0020" to="Retail_0020" />
+			<arc from="Dist_0020" to="Trans_0120" />
+			<arc from="Dist_0020" to="Trans_0122" />
+			<arc from="Dist_0021" to="Retail_0021" />
+			<arc from="Dist_0021" to="Trans_0123" />
+			<arc from="Dist_0021" to="Trans_0124" />
+			<arc from="Dist_0021" to="Trans_0125" />
+			<arc from="Dist_0021" to="Trans_0126" />
+			<arc from="Dist_0021" to="Trans_0127" />
+			<arc from="Dist_0021" to="Trans_0128" />
+			<arc from="Dist_0021" to="Trans_0129" />
+			<arc from="Dist_0021" to="Trans_0130" />
+			<arc from="Dist_0021" to="Trans_0131" />
+			<arc from="Dist_0022" to="Retail_0022" />
+			<arc from="Dist_0022" to="Trans_0132" />
+			<arc from="Dist_0022" to="Trans_0133" />
+			<arc from="Dist_0022" to="Trans_0134" />
+			<arc from="Dist_0022" to="Trans_0135" />
+			<arc from="Dist_0022" to="Trans_0136" />
+			<arc from="Dist_0023" to="Trans_0137" />
+			<arc from="Dist_0024" to="Retail_0023" />
+			<arc from="Dist_0024" to="Trans_0138" />
+			<arc from="Dist_0024" to="Trans_0139" />
+			<arc from="Dist_0024" to="Trans_0140" />
+			<arc from="Dist_0024" to="Trans_0141" />
+			<arc from="Dist_0024" to="Trans_0142" />
+			<arc from="Dist_0024" to="Trans_0143" />
+			<arc from="Dist_0024" to="Trans_0144" />
+			<arc from="Dist_0025" to="Retail_0024" />
+			<arc from="Dist_0025" to="Trans_0145" />
+			<arc from="Dist_0026" to="Retail_0025" />
+			<arc from="Dist_0026" to="Trans_0146" />
+			<arc from="Dist_0026" to="Trans_0147" />
+			<arc from="Dist_0026" to="Trans_0148" />
+			<arc from="Dist_0026" to="Trans_0149" />
+			<arc from="Dist_0026" to="Trans_0150" />
+			<arc from="Dist_0026" to="Trans_0151" />
+			<arc from="Dist_0026" to="Trans_0152" />
+			<arc from="Dist_0027" to="Retail_0026" />
+			<arc from="Dist_0027" to="Trans_0153" />
+			<arc from="Dist_0027" to="Trans_0154" />
+			<arc from="Dist_0027" to="Trans_0155" />
+			<arc from="Dist_0027" to="Trans_0156" />
+			<arc from="Dist_0028" to="Retail_0027" />
+			<arc from="Dist_0028" to="Trans_0157" />
+			<arc from="Dist_0028" to="Trans_0158" />
+			<arc from="Dist_0028" to="Trans_0159" />
+			<arc from="Dist_0029" to="Retail_0028" />
+			<arc from="Dist_0029" to="Trans_0160" />
+			<arc from="Dist_0030" to="Retail_0029" />
+			<arc from="Dist_0030" to="Trans_0161" />
+			<arc from="Dist_0030" to="Trans_0162" />
+			<arc from="Dist_0030" to="Trans_0163" />
+			<arc from="Dist_0031" to="Retail_0030" />
+			<arc from="Dist_0031" to="Trans_0164" />
+			<arc from="Dist_0031" to="Trans_0165" />
+			<arc from="Dist_0031" to="Trans_0166" />
+			<arc from="Dist_0032" to="Retail_0031" />
+			<arc from="Dist_0032" to="Trans_0167" />
+			<arc from="Dist_0032" to="Trans_0168" />
+			<arc from="Dist_0032" to="Trans_0169" />
+			<arc from="Dist_0032" to="Trans_0170" />
+			<arc from="Dist_0032" to="Trans_0171" />
+			<arc from="Dist_0032" to="Trans_0172" />
+			<arc from="Dist_0032" to="Trans_0173" />
+			<arc from="Dist_0032" to="Trans_0174" />
+			<arc from="Dist_0033" to="Retail_0032" />
+			<arc from="Dist_0033" to="Trans_0175" />
+			<arc from="Dist_0034" to="Retail_0033" />
+			<arc from="Dist_0034" to="Trans_0176" />
+			<arc from="Dist_0035" to="Retail_0034" />
+			<arc from="Dist_0035" to="Trans_0177" />
+			<arc from="Dist_0035" to="Trans_0178" />
+			<arc from="Dist_0035" to="Trans_0179" />
+			<arc from="Dist_0036" to="Retail_0035" />
+			<arc from="Dist_0036" to="Trans_0180" />
+			<arc from="Dist_0037" to="Trans_0181" />
+			<arc from="Dist_0038" to="Trans_0182" />
+			<arc from="Dist_0039" to="Retail_0036" />
+			<arc from="Dist_0040" to="Retail_0037" />
+			<arc from="Dist_0041" to="Retail_0038" />
+			<arc from="Dist_0042" to="Retail_0039" />
+			<arc from="Dist_0043" to="Retail_0040" />
+			<arc from="Dist_0044" to="Retail_0041" />
+			<arc from="Dist_0045" to="Retail_0042" />
+			<arc from="Dist_0046" to="Retail_0043" />
+			<arc from="Dist_0047" to="Retail_0044" />
+			<arc from="Dist_0048" to="Retail_0045" />
+			<arc from="Manuf_0001" to="Retail_0046" />
+			<arc from="Manuf_0002" to="Retail_0047" />
+			<arc from="Manuf_0003" to="Retail_0048" />
+			<arc from="Manuf_0004" to="Retail_0049" />
+			<arc from="Manuf_0005" to="Retail_0050" />
+			<arc from="Manuf_0006" to="Retail_0051" />
+			<arc from="Manuf_0007" to="Retail_0052" />
+			<arc from="Manuf_0008" to="Retail_0053" />
+			<arc from="Manuf_0009" to="Retail_0054" />
+			<arc from="Manuf_0010" to="Retail_0055" />
+			<arc from="Manuf_0011" to="Retail_0056" />
+			<arc from="Manuf_0012" to="Retail_0057" />
+			<arc from="Manuf_0013" to="Retail_0058" />
+			<arc from="Manuf_0014" to="Retail_0059" />
+			<arc from="Manuf_0015" to="Retail_0060" />
+			<arc from="Manuf_0016" to="Retail_0061" />
+			<arc from="Manuf_0017" to="Retail_0062" />
+			<arc from="Manuf_0018" to="Retail_0063" />
+			<arc from="Manuf_0019" to="Retail_0064" />
+			<arc from="Manuf_0020" to="Retail_0065" />
+			<arc from="Manuf_0021" to="Retail_0066" />
+			<arc from="Manuf_0022" to="Retail_0067" />
+			<arc from="Manuf_0023" to="Retail_0068" />
+			<arc from="Manuf_0024" to="Retail_0069" />
+			<arc from="Manuf_0025" to="Retail_0070" />
+			<arc from="Manuf_0026" to="Retail_0071" />
+			<arc from="Manuf_0027" to="Retail_0072" />
+			<arc from="Manuf_0028" to="Retail_0073" />
+			<arc from="Manuf_0029" to="Retail_0074" />
+			<arc from="Manuf_0030" to="Retail_0075" />
+			<arc from="Manuf_0031" to="Retail_0076" />
+			<arc from="Manuf_0032" to="Retail_0077" />
+			<arc from="Manuf_0033" to="Retail_0078" />
+			<arc from="Manuf_0034" to="Retail_0079" />
+			<arc from="Manuf_0035" to="Retail_0080" />
+			<arc from="Manuf_0036" to="Retail_0081" />
+			<arc from="Manuf_0037" to="Retail_0082" />
+			<arc from="Manuf_0038" to="Retail_0083" />
+			<arc from="Manuf_0039" to="Retail_0084" />
+			<arc from="Manuf_0040" to="Retail_0085" />
+			<arc from="Manuf_0041" to="Retail_0086" />
+			<arc from="Manuf_0042" to="Retail_0087" />
+			<arc from="Manuf_0043" to="Retail_0088" />
+			<arc from="Manuf_0044" to="Retail_0089" />
+			<arc from="Manuf_0045" to="Retail_0090" />
+			<arc from="Manuf_0046" to="Retail_0091" />
+			<arc from="Manuf_0047" to="Retail_0092" />
+			<arc from="Manuf_0048" to="Retail_0093" />
+			<arc from="Manuf_0049" to="Retail_0094" />
+			<arc from="Manuf_0050" to="Retail_0095" />
+			<arc from="Manuf_0051" to="Retail_0096" />
+			<arc from="Manuf_0052" to="Retail_0097" />
+			<arc from="Manuf_0053" to="Retail_0098" />
+			<arc from="Manuf_0054" to="Retail_0099" />
+			<arc from="Manuf_0055" to="Retail_0100" />
+			<arc from="Manuf_0056" to="Retail_0101" />
+			<arc from="Manuf_0057" to="Retail_0102" />
+			<arc from="Manuf_0058" to="Retail_0103" />
+			<arc from="Manuf_0059" to="Retail_0104" />
+			<arc from="Manuf_0060" to="Retail_0105" />
+			<arc from="Manuf_0061" to="Retail_0106" />
+			<arc from="Manuf_0062" to="Retail_0107" />
+			<arc from="Manuf_0063" to="Retail_0108" />
+			<arc from="Manuf_0064" to="Retail_0109" />
+			<arc from="Manuf_0065" to="Retail_0110" />
+			<arc from="Manuf_0066" to="Retail_0111" />
+			<arc from="Manuf_0067" to="Retail_0112" />
+			<arc from="Manuf_0068" to="Retail_0113" />
+			<arc from="Manuf_0069" to="Retail_0114" />
+			<arc from="Manuf_0070" to="Retail_0115" />
+			<arc from="Manuf_0071" to="Retail_0116" />
+			<arc from="Manuf_0072" to="Retail_0117" />
+			<arc from="Manuf_0073" to="Retail_0118" />
+			<arc from="Manuf_0074" to="Retail_0119" />
+			<arc from="Manuf_0075" to="Retail_0120" />
+			<arc from="Manuf_0076" to="Retail_0121" />
+			<arc from="Manuf_0077" to="Retail_0122" />
+			<arc from="Manuf_0078" to="Retail_0123" />
+			<arc from="Manuf_0079" to="Retail_0124" />
+			<arc from="Manuf_0080" to="Retail_0125" />
+			<arc from="Manuf_0081" to="Retail_0126" />
+			<arc from="Manuf_0082" to="Retail_0127" />
+			<arc from="Manuf_0083" to="Retail_0128" />
+			<arc from="Manuf_0084" to="Retail_0129" />
+			<arc from="Manuf_0085" to="Retail_0130" />
+			<arc from="Manuf_0086" to="Retail_0131" />
+			<arc from="Manuf_0087" to="Retail_0132" />
+			<arc from="Manuf_0088" to="Retail_0133" />
+			<arc from="Manuf_0089" to="Retail_0134" />
+			<arc from="Manuf_0090" to="Retail_0135" />
+			<arc from="Manuf_0091" to="Retail_0136" />
+			<arc from="Manuf_0092" to="Retail_0137" />
+			<arc from="Manuf_0093" to="Retail_0138" />
+			<arc from="Manuf_0094" to="Retail_0139" />
+			<arc from="Manuf_0095" to="Retail_0140" />
+			<arc from="Manuf_0096" to="Retail_0141" />
+			<arc from="Manuf_0097" to="Retail_0142" />
+			<arc from="Manuf_0098" to="Retail_0143" />
+			<arc from="Manuf_0099" to="Retail_0144" />
+			<arc from="Manuf_0100" to="Retail_0145" />
+			<arc from="Manuf_0101" to="Retail_0146" />
+			<arc from="Manuf_0102" to="Retail_0147" />
+			<arc from="Manuf_0103" to="Retail_0148" />
+			<arc from="Manuf_0104" to="Retail_0149" />
+			<arc from="Manuf_0105" to="Retail_0150" />
+			<arc from="Manuf_0106" to="Retail_0151" />
+			<arc from="Manuf_0107" to="Retail_0152" />
+			<arc from="Manuf_0108" to="Retail_0153" />
+			<arc from="Manuf_0109" to="Retail_0154" />
+			<arc from="Manuf_0110" to="Retail_0155" />
+			<arc from="Manuf_0111" to="Retail_0156" />
+			<arc from="Manuf_0112" to="Retail_0157" />
+			<arc from="Manuf_0113" to="Retail_0158" />
+			<arc from="Manuf_0114" to="Retail_0159" />
+			<arc from="Manuf_0115" to="Retail_0160" />
+			<arc from="Manuf_0116" to="Retail_0161" />
+			<arc from="Manuf_0117" to="Retail_0162" />
+			<arc from="Manuf_0118" to="Retail_0163" />
+			<arc from="Manuf_0119" to="Retail_0164" />
+			<arc from="Manuf_0120" to="Retail_0165" />
+			<arc from="Manuf_0121" to="Retail_0166" />
+			<arc from="Manuf_0122" to="Retail_0167" />
+			<arc from="Manuf_0123" to="Retail_0168" />
+			<arc from="Manuf_0124" to="Retail_0169" />
+			<arc from="Manuf_0125" to="Retail_0170" />
+			<arc from="Manuf_0126" to="Retail_0171" />
+			<arc from="Manuf_0127" to="Retail_0172" />
+			<arc from="Manuf_0128" to="Retail_0173" />
+			<arc from="Manuf_0129" to="Retail_0174" />
+			<arc from="Manuf_0130" to="Retail_0175" />
+			<arc from="Manuf_0131" to="Retail_0176" />
+			<arc from="Manuf_0132" to="Retail_0177" />
+			<arc from="Manuf_0133" to="Retail_0178" />
+			<arc from="Manuf_0134" to="Retail_0179" />
+			<arc from="Manuf_0135" to="Retail_0180" />
+			<arc from="Manuf_0136" to="Retail_0181" />
+			<arc from="Manuf_0137" to="Retail_0182" />
+			<arc from="Manuf_0138" to="Retail_0184" />
+			<arc from="Manuf_0139" to="Retail_0183" />
+			<arc from="Manuf_0140" to="Retail_0185" />
+			<arc from="Manuf_0141" to="Retail_0186" />
+			<arc from="Manuf_0142" to="Retail_0187" />
+			<arc from="Manuf_0143" to="Retail_0188" />
+			<arc from="Manuf_0144" to="Retail_0189" />
+			<arc from="Manuf_0145" to="Retail_0190" />
+			<arc from="Manuf_0146" to="Retail_0191" />
+			<arc from="Manuf_0147" to="Retail_0192" />
+			<arc from="Manuf_0148" to="Retail_0193" />
+			<arc from="Manuf_0149" to="Retail_0194" />
+			<arc from="Manuf_0150" to="Retail_0195" />
+			<arc from="Manuf_0151" to="Retail_0196" />
+			<arc from="Manuf_0152" to="Retail_0197" />
+			<arc from="Manuf_0153" to="Retail_0198" />
+			<arc from="Manuf_0154" to="Retail_0199" />
+			<arc from="Manuf_0155" to="Retail_0200" />
+			<arc from="Manuf_0156" to="Retail_0201" />
+			<arc from="Manuf_0157" to="Retail_0202" />
+			<arc from="Manuf_0158" to="Retail_0203" />
+			<arc from="Manuf_0159" to="Retail_0204" />
+			<arc from="Manuf_0160" to="Retail_0205" />
+			<arc from="Manuf_0161" to="Retail_0206" />
+			<arc from="Manuf_0162" to="Retail_0207" />
+			<arc from="Manuf_0163" to="Retail_0208" />
+			<arc from="Manuf_0164" to="Retail_0209" />
+			<arc from="Manuf_0165" to="Retail_0210" />
+			<arc from="Manuf_0166" to="Retail_0211" />
+			<arc from="Manuf_0167" to="Retail_0212" />
+			<arc from="Manuf_0168" to="Retail_0213" />
+			<arc from="Manuf_0169" to="Retail_0214" />
+			<arc from="Manuf_0170" to="Retail_0215" />
+			<arc from="Manuf_0171" to="Retail_0216" />
+			<arc from="Manuf_0172" to="Retail_0217" />
+			<arc from="Manuf_0173" to="Retail_0218" />
+			<arc from="Manuf_0174" to="Retail_0219" />
+			<arc from="Manuf_0175" to="Retail_0220" />
+			<arc from="Part_0001" to="Dist_0001" />
+			<arc from="Part_0001" to="Dist_0002" />
+			<arc from="Part_0001" to="Dist_0003" />
+			<arc from="Part_0001" to="Dist_0004" />
+			<arc from="Part_0001" to="Dist_0005" />
+			<arc from="Part_0001" to="Dist_0006" />
+			<arc from="Part_0001" to="Dist_0007" />
+			<arc from="Part_0001" to="Dist_0008" />
+			<arc from="Part_0001" to="Dist_0009" />
+			<arc from="Part_0001" to="Dist_0010" />
+			<arc from="Part_0001" to="Dist_0011" />
+			<arc from="Part_0001" to="Dist_0012" />
+			<arc from="Part_0001" to="Dist_0013" />
+			<arc from="Part_0001" to="Dist_0014" />
+			<arc from="Part_0001" to="Dist_0015" />
+			<arc from="Part_0001" to="Dist_0016" />
+			<arc from="Part_0001" to="Dist_0017" />
+			<arc from="Part_0001" to="Dist_0018" />
+			<arc from="Part_0001" to="Dist_0019" />
+			<arc from="Part_0001" to="Dist_0020" />
+			<arc from="Part_0001" to="Dist_0021" />
+			<arc from="Part_0001" to="Dist_0022" />
+			<arc from="Part_0001" to="Dist_0023" />
+			<arc from="Part_0001" to="Dist_0024" />
+			<arc from="Part_0001" to="Dist_0025" />
+			<arc from="Part_0001" to="Dist_0026" />
+			<arc from="Part_0001" to="Dist_0027" />
+			<arc from="Part_0001" to="Dist_0028" />
+			<arc from="Part_0001" to="Dist_0029" />
+			<arc from="Part_0001" to="Dist_0030" />
+			<arc from="Part_0001" to="Dist_0031" />
+			<arc from="Part_0001" to="Dist_0032" />
+			<arc from="Part_0001" to="Dist_0033" />
+			<arc from="Part_0001" to="Dist_0034" />
+			<arc from="Part_0001" to="Dist_0035" />
+			<arc from="Part_0001" to="Dist_0036" />
+			<arc from="Part_0001" to="Dist_0037" />
+			<arc from="Part_0001" to="Dist_0038" />
+			<arc from="Part_0001" to="Dist_0039" />
+			<arc from="Part_0001" to="Dist_0040" />
+			<arc from="Part_0001" to="Dist_0041" />
+			<arc from="Part_0001" to="Dist_0042" />
+			<arc from="Part_0001" to="Dist_0043" />
+			<arc from="Part_0001" to="Dist_0044" />
+			<arc from="Part_0001" to="Dist_0045" />
+			<arc from="Part_0001" to="Dist_0046" />
+			<arc from="Part_0001" to="Dist_0047" />
+			<arc from="Part_0001" to="Dist_0048" />
+			<arc from="Trans_0001" to="Manuf_0001" />
+			<arc from="Trans_0002" to="Manuf_0002" />
+			<arc from="Trans_0003" to="Manuf_0003" />
+			<arc from="Trans_0004" to="Manuf_0004" />
+			<arc from="Trans_0005" to="Manuf_0005" />
+			<arc from="Trans_0006" to="Manuf_0006" />
+			<arc from="Trans_0007" to="Manuf_0007" />
+			<arc from="Trans_0008" to="Manuf_0008" />
+			<arc from="Trans_0009" to="Manuf_0009" />
+			<arc from="Trans_0010" to="Manuf_0010" />
+			<arc from="Trans_0011" to="Manuf_0011" />
+			<arc from="Trans_0012" to="Manuf_0012" />
+			<arc from="Trans_0013" to="Manuf_0013" />
+			<arc from="Trans_0014" to="Manuf_0014" />
+			<arc from="Trans_0015" to="Manuf_0015" />
+			<arc from="Trans_0016" to="Manuf_0016" />
+			<arc from="Trans_0017" to="Manuf_0017" />
+			<arc from="Trans_0018" to="Manuf_0018" />
+			<arc from="Trans_0019" to="Manuf_0019" />
+			<arc from="Trans_0020" to="Manuf_0020" />
+			<arc from="Trans_0021" to="Manuf_0021" />
+			<arc from="Trans_0022" to="Manuf_0022" />
+			<arc from="Trans_0023" to="Manuf_0023" />
+			<arc from="Trans_0024" to="Manuf_0024" />
+			<arc from="Trans_0025" to="Manuf_0025" />
+			<arc from="Trans_0026" to="Manuf_0026" />
+			<arc from="Trans_0027" to="Manuf_0027" />
+			<arc from="Trans_0028" to="Manuf_0028" />
+			<arc from="Trans_0029" to="Manuf_0029" />
+			<arc from="Trans_0030" to="Manuf_0030" />
+			<arc from="Trans_0031" to="Manuf_0031" />
+			<arc from="Trans_0032" to="Manuf_0032" />
+			<arc from="Trans_0033" to="Manuf_0033" />
+			<arc from="Trans_0034" to="Manuf_0034" />
+			<arc from="Trans_0035" to="Manuf_0035" />
+			<arc from="Trans_0036" to="Manuf_0036" />
+			<arc from="Trans_0037" to="Manuf_0037" />
+			<arc from="Trans_0038" to="Manuf_0038" />
+			<arc from="Trans_0039" to="Manuf_0039" />
+			<arc from="Trans_0040" to="Manuf_0040" />
+			<arc from="Trans_0041" to="Manuf_0041" />
+			<arc from="Trans_0042" to="Manuf_0042" />
+			<arc from="Trans_0043" to="Manuf_0043" />
+			<arc from="Trans_0044" to="Manuf_0044" />
+			<arc from="Trans_0045" to="Manuf_0045" />
+			<arc from="Trans_0046" to="Manuf_0046" />
+			<arc from="Trans_0047" to="Manuf_0047" />
+			<arc from="Trans_0048" to="Manuf_0048" />
+			<arc from="Trans_0049" to="Manuf_0049" />
+			<arc from="Trans_0050" to="Manuf_0050" />
+			<arc from="Trans_0051" to="Manuf_0051" />
+			<arc from="Trans_0052" to="Manuf_0052" />
+			<arc from="Trans_0053" to="Manuf_0053" />
+			<arc from="Trans_0054" to="Manuf_0054" />
+			<arc from="Trans_0055" to="Manuf_0055" />
+			<arc from="Trans_0056" to="Manuf_0056" />
+			<arc from="Trans_0057" to="Manuf_0057" />
+			<arc from="Trans_0058" to="Manuf_0058" />
+			<arc from="Trans_0059" to="Manuf_0059" />
+			<arc from="Trans_0060" to="Manuf_0060" />
+			<arc from="Trans_0061" to="Manuf_0061" />
+			<arc from="Trans_0062" to="Manuf_0062" />
+			<arc from="Trans_0063" to="Manuf_0063" />
+			<arc from="Trans_0064" to="Manuf_0064" />
+			<arc from="Trans_0065" to="Manuf_0065" />
+			<arc from="Trans_0066" to="Manuf_0066" />
+			<arc from="Trans_0067" to="Manuf_0067" />
+			<arc from="Trans_0068" to="Manuf_0068" />
+			<arc from="Trans_0069" to="Manuf_0069" />
+			<arc from="Trans_0070" to="Manuf_0070" />
+			<arc from="Trans_0071" to="Manuf_0071" />
+			<arc from="Trans_0072" to="Manuf_0072" />
+			<arc from="Trans_0073" to="Manuf_0073" />
+			<arc from="Trans_0074" to="Manuf_0074" />
+			<arc from="Trans_0075" to="Manuf_0075" />
+			<arc from="Trans_0076" to="Manuf_0076" />
+			<arc from="Trans_0077" to="Manuf_0077" />
+			<arc from="Trans_0078" to="Manuf_0078" />
+			<arc from="Trans_0079" to="Manuf_0079" />
+			<arc from="Trans_0080" to="Manuf_0080" />
+			<arc from="Trans_0081" to="Manuf_0081" />
+			<arc from="Trans_0082" to="Manuf_0082" />
+			<arc from="Trans_0083" to="Manuf_0083" />
+			<arc from="Trans_0084" to="Manuf_0084" />
+			<arc from="Trans_0085" to="Manuf_0085" />
+			<arc from="Trans_0086" to="Manuf_0086" />
+			<arc from="Trans_0087" to="Manuf_0087" />
+			<arc from="Trans_0088" to="Manuf_0088" />
+			<arc from="Trans_0089" to="Manuf_0089" />
+			<arc from="Trans_0090" to="Manuf_0090" />
+			<arc from="Trans_0091" to="Manuf_0091" />
+			<arc from="Trans_0092" to="Manuf_0092" />
+			<arc from="Trans_0093" to="Manuf_0093" />
+			<arc from="Trans_0094" to="Manuf_0094" />
+			<arc from="Trans_0095" to="Manuf_0095" />
+			<arc from="Trans_0096" to="Manuf_0096" />
+			<arc from="Trans_0097" to="Manuf_0097" />
+			<arc from="Trans_0098" to="Manuf_0098" />
+			<arc from="Trans_0099" to="Manuf_0099" />
+			<arc from="Trans_0100" to="Manuf_0100" />
+			<arc from="Trans_0101" to="Manuf_0101" />
+			<arc from="Trans_0102" to="Manuf_0102" />
+			<arc from="Trans_0103" to="Manuf_0103" />
+			<arc from="Trans_0104" to="Manuf_0104" />
+			<arc from="Trans_0105" to="Manuf_0105" />
+			<arc from="Trans_0106" to="Manuf_0106" />
+			<arc from="Trans_0107" to="Manuf_0107" />
+			<arc from="Trans_0108" to="Manuf_0108" />
+			<arc from="Trans_0109" to="Manuf_0109" />
+			<arc from="Trans_0110" to="Manuf_0110" />
+			<arc from="Trans_0111" to="Manuf_0111" />
+			<arc from="Trans_0112" to="Manuf_0112" />
+			<arc from="Trans_0113" to="Manuf_0113" />
+			<arc from="Trans_0114" to="Manuf_0114" />
+			<arc from="Trans_0115" to="Manuf_0115" />
+			<arc from="Trans_0116" to="Manuf_0116" />
+			<arc from="Trans_0117" to="Manuf_0117" />
+			<arc from="Trans_0118" to="Manuf_0118" />
+			<arc from="Trans_0119" to="Manuf_0119" />
+			<arc from="Trans_0120" to="Manuf_0119" />
+			<arc from="Trans_0121" to="Manuf_0120" />
+			<arc from="Trans_0122" to="Manuf_0120" />
+			<arc from="Trans_0123" to="Manuf_0121" />
+			<arc from="Trans_0124" to="Manuf_0122" />
+			<arc from="Trans_0125" to="Manuf_0123" />
+			<arc from="Trans_0126" to="Manuf_0124" />
+			<arc from="Trans_0127" to="Manuf_0125" />
+			<arc from="Trans_0128" to="Manuf_0126" />
+			<arc from="Trans_0129" to="Manuf_0127" />
+			<arc from="Trans_0130" to="Manuf_0128" />
+			<arc from="Trans_0131" to="Manuf_0129" />
+			<arc from="Trans_0132" to="Manuf_0130" />
+			<arc from="Trans_0133" to="Manuf_0131" />
+			<arc from="Trans_0134" to="Manuf_0132" />
+			<arc from="Trans_0135" to="Manuf_0133" />
+			<arc from="Trans_0136" to="Manuf_0134" />
+			<arc from="Trans_0137" to="Manuf_0134" />
+			<arc from="Trans_0138" to="Manuf_0135" />
+			<arc from="Trans_0139" to="Manuf_0136" />
+			<arc from="Trans_0140" to="Manuf_0137" />
+			<arc from="Trans_0141" to="Manuf_0139" />
+			<arc from="Trans_0142" to="Manuf_0138" />
+			<arc from="Trans_0143" to="Manuf_0140" />
+			<arc from="Trans_0144" to="Manuf_0141" />
+			<arc from="Trans_0145" to="Manuf_0141" />
+			<arc from="Trans_0146" to="Manuf_0142" />
+			<arc from="Trans_0147" to="Manuf_0143" />
+			<arc from="Trans_0148" to="Manuf_0144" />
+			<arc from="Trans_0149" to="Manuf_0145" />
+			<arc from="Trans_0150" to="Manuf_0146" />
+			<arc from="Trans_0151" to="Manuf_0147" />
+			<arc from="Trans_0152" to="Manuf_0148" />
+			<arc from="Trans_0153" to="Manuf_0149" />
+			<arc from="Trans_0154" to="Manuf_0150" />
+			<arc from="Trans_0155" to="Manuf_0151" />
+			<arc from="Trans_0156" to="Manuf_0152" />
+			<arc from="Trans_0157" to="Manuf_0152" />
+			<arc from="Trans_0158" to="Manuf_0153" />
+			<arc from="Trans_0159" to="Manuf_0154" />
+			<arc from="Trans_0160" to="Manuf_0155" />
+			<arc from="Trans_0161" to="Manuf_0156" />
+			<arc from="Trans_0162" to="Manuf_0157" />
+			<arc from="Trans_0163" to="Manuf_0158" />
+			<arc from="Trans_0164" to="Manuf_0159" />
+			<arc from="Trans_0165" to="Manuf_0160" />
+			<arc from="Trans_0166" to="Manuf_0161" />
+			<arc from="Trans_0167" to="Manuf_0162" />
+			<arc from="Trans_0168" to="Manuf_0163" />
+			<arc from="Trans_0169" to="Manuf_0164" />
+			<arc from="Trans_0170" to="Manuf_0165" />
+			<arc from="Trans_0171" to="Manuf_0166" />
+			<arc from="Trans_0172" to="Manuf_0167" />
+			<arc from="Trans_0173" to="Manuf_0168" />
+			<arc from="Trans_0174" to="Manuf_0169" />
+			<arc from="Trans_0175" to="Manuf_0169" />
+			<arc from="Trans_0176" to="Manuf_0170" />
+			<arc from="Trans_0177" to="Manuf_0171" />
+			<arc from="Trans_0178" to="Manuf_0172" />
+			<arc from="Trans_0179" to="Manuf_0173" />
+			<arc from="Trans_0180" to="Manuf_0173" />
+			<arc from="Trans_0181" to="Manuf_0174" />
+			<arc from="Trans_0182" to="Manuf_0175" />
+	</arcs>
+</chain>

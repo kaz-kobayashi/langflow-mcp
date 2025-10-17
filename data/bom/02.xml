@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Chain 02
+
+This XML file contains the data to Chain 02 that appeared in the paper 
+"Real-World Multi-Echelon Supply Chains Used for Inventory Optimization" by Sean P. Willems 
+published in Manufacturing & Service Operations Management.
+
+The data described in this paper are publicly available at the journal's web site http://www.msom.org
+The data are open to all researchers as long as the researcher is willing to cite the published M&SOM paper as the source.
+
+-->
+<chain company="02" companyIdentifier="Company Identifier" sicCode="SIC Code" sicDescription="SIC Description">
+	<stages>
+		<stage stageName="Manuf_0001"
+			stageCost="80"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="30"
+			xPos="64"
+			yPos="48" />
+		<stage stageName="Manuf_0002"
+			stageCost="12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="14"
+			xPos="416"
+			yPos="48" />
+		<stage stageName="Manuf_0003"
+			stageCost="12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="14"
+			xPos="416"
+			yPos="112" />
+		<stage stageName="Manuf_0004"
+			stageCost="12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="14"
+			xPos="416"
+			yPos="176" />
+		<stage stageName="Manuf_0005"
+			stageCost="12"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="14"
+			xPos="416"
+			yPos="240" />
+		<stage stageName="Retail_0001"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="4000"
+			stDevDemand="7500"
+			maxServiceTime="20"
+			serviceLevel="0.96"
+			stageTime="5"
+			xPos="592"
+			yPos="48" />
+		<stage stageName="Retail_0002"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="2000"
+			stDevDemand="3500"
+			maxServiceTime="20"
+			serviceLevel="0.96"
+			stageTime="5"
+			xPos="592"
+			yPos="112" />
+		<stage stageName="Retail_0003"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="8000"
+			stDevDemand="9000"
+			maxServiceTime="20"
+			serviceLevel="0.96"
+			stageTime="5"
+			xPos="592"
+			yPos="176" />
+		<stage stageName="Retail_0004"
+			stageCost="0"
+			relDepth="0"
+			stageClassification="Retail"
+			avgDemand="700"
+			stDevDemand="1400"
+			maxServiceTime="20"
+			serviceLevel="0.96"
+			stageTime="5"
+			xPos="592"
+			yPos="240" />
+		<stage stageName="Trans_0001"
+			stageCost="0.55"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="15"
+			xPos="240"
+			yPos="48" />
+		<stage stageName="Trans_0002"
+			stageCost="0.5"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="15"
+			xPos="240"
+			yPos="112" />
+		<stage stageName="Trans_0003"
+			stageCost="0.35"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="15"
+			xPos="240"
+			yPos="176" />
+		<stage stageName="Trans_0004"
+			stageCost="0.35"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="15"
+			xPos="240"
+			yPos="240" />
+	</stages>
+	<arcs>
+			<arc from="Manuf_0001" to="Trans_0001" />
+			<arc from="Manuf_0001" to="Trans_0002" />
+			<arc from="Manuf_0001" to="Trans_0003" />
+			<arc from="Manuf_0001" to="Trans_0004" />
+			<arc from="Manuf_0002" to="Retail_0001" />
+			<arc from="Manuf_0003" to="Retail_0002" />
+			<arc from="Manuf_0004" to="Retail_0003" />
+			<arc from="Manuf_0005" to="Retail_0003" />
+			<arc from="Manuf_0005" to="Retail_0004" />
+			<arc from="Trans_0001" to="Manuf_0002" />
+			<arc from="Trans_0002" to="Manuf_0003" />
+			<arc from="Trans_0003" to="Manuf_0004" />
+			<arc from="Trans_0004" to="Manuf_0005" />
+	</arcs>
+</chain>

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+Chain 03
+
+This XML file contains the data to Chain 03 that appeared in the paper 
+"Real-World Multi-Echelon Supply Chains Used for Inventory Optimization" by Sean P. Willems 
+published in Manufacturing & Service Operations Management.
+
+The data described in this paper are publicly available at the journal's web site http://www.msom.org
+The data are open to all researchers as long as the researcher is willing to cite the published M&SOM paper as the source.
+
+-->
+<chain company="03" companyIdentifier="Company Identifier" sicCode="SIC Code" sicDescription="SIC Description">
+	<stages>
+		<stage stageName="Dist_0001"
+			stageCost="400"
+			relDepth="1"
+			stageClassification="Dist"
+			avgDemand="70"
+			stDevDemand="35"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="1"
+			xPos="384"
+			yPos="272" />
+		<stage stageName="Dist_0002"
+			stageCost="150"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="126"
+			stDevDemand="132.3"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="1.2"
+			stDevStageTime="0.4"
+			StageTime_1_v="1"
+			StageTime_1_p="0.8"
+			StageTime_2_v="2"
+			StageTime_2_p="0.2"
+			xPos="480"
+			yPos="64" />
+		<stage stageName="Dist_0003"
+			stageCost="250"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="57"
+			stDevDemand="51.3"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="4.3"
+			stDevStageTime="0.640312423743285"
+			StageTime_1_v="4"
+			StageTime_1_p="0.8"
+			StageTime_2_v="5"
+			StageTime_2_p="0.1"
+			StageTime_3_v="6"
+			StageTime_3_p="0.1"
+			xPos="480"
+			yPos="144" />
+		<stage stageName="Dist_0004"
+			stageCost="335.4"
+			relDepth="0"
+			stageClassification="Dist"
+			avgDemand="46"
+			stDevDemand="45"
+			maxServiceTime="0"
+			serviceLevel="0.95"
+			stageTime="4.2"
+			stDevStageTime="0.4"
+			StageTime_1_v="4"
+			StageTime_1_p="0.8"
+			StageTime_2_v="5"
+			StageTime_2_p="0.2"
+			xPos="480"
+			yPos="240" />
+		<stage stageName="Manuf_0001"
+			stageCost="300"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="12"
+			xPos="192"
+			yPos="32" />
+		<stage stageName="Manuf_0002"
+			stageCost="250"
+			relDepth="3"
+			stageClassification="Manuf"
+			stageTime="10"
+			xPos="192"
+			yPos="272" />
+		<stage stageName="Manuf_0003"
+			stageCost="50"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="10"
+			xPos="384"
+			yPos="64" />
+		<stage stageName="Manuf_0004"
+			stageCost="60"
+			relDepth="1"
+			stageClassification="Manuf"
+			stageTime="10"
+			xPos="384"
+			yPos="192" />
+		<stage stageName="Part_0001"
+			stageCost="1100"
+			relDepth="4"
+			stageClassification="Part"
+			stageTime="45"
+			stDevStageTime="6.70820393249937"
+			StageTime_1_v="40"
+			StageTime_1_p="0.6"
+			StageTime_2_v="50"
+			StageTime_2_p="0.3"
+			StageTime_3_v="60"
+			StageTime_3_p="0.1"
+			xPos="96"
+			yPos="32" />
+		<stage stageName="Part_0002"
+			stageCost="600"
+			relDepth="4"
+			stageClassification="Part"
+			stageTime="37.5"
+			stDevStageTime="7.5"
+			StageTime_1_v="30"
+			StageTime_1_p="0.5"
+			StageTime_2_v="45"
+			StageTime_2_p="0.5"
+			xPos="96"
+			yPos="112" />
+		<stage stageName="Part_0003"
+			stageCost="400"
+			relDepth="4"
+			stageClassification="Part"
+			stageTime="53.5"
+			stDevStageTime="4.5"
+			StageTime_1_v="50"
+			StageTime_1_p="0.5"
+			StageTime_2_v="55"
+			StageTime_2_p="0.4"
+			StageTime_3_v="65"
+			StageTime_3_p="0.1"
+			xPos="96"
+			yPos="192" />
+		<stage stageName="Part_0004"
+			stageCost="1100"
+			relDepth="4"
+			stageClassification="Part"
+			stageTime="26"
+			stDevStageTime="6.6332495807108"
+			StageTime_1_v="20"
+			StageTime_1_p="0.5"
+			StageTime_2_v="30"
+			StageTime_2_p="0.4"
+			StageTime_3_v="40"
+			StageTime_3_p="0.1"
+			xPos="96"
+			yPos="272" />
+		<stage stageName="Part_0005"
+			stageCost="1500"
+			relDepth="3"
+			stageClassification="Part"
+			stageTime="31"
+			stDevStageTime="6.6332495807108"
+			StageTime_1_v="25"
+			StageTime_1_p="0.5"
+			StageTime_2_v="35"
+			StageTime_2_p="0.4"
+			StageTime_3_v="45"
+			StageTime_3_p="0.1"
+			xPos="192"
+			yPos="144" />
+		<stage stageName="Trans_0001"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="288"
+			yPos="32" />
+		<stage stageName="Trans_0002"
+			stageCost="3"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="288"
+			yPos="112" />
+		<stage stageName="Trans_0003"
+			stageCost="2"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="288"
+			yPos="192" />
+		<stage stageName="Trans_0004"
+			stageCost="0"
+			relDepth="2"
+			stageClassification="Trans"
+			stageTime="2"
+			xPos="288"
+			yPos="272" />
+	</stages>
+	<arcs>
+			<arc from="Manuf_0001" to="Trans_0001" />
+			<arc from="Manuf_0002" to="Trans_0004" />
+			<arc from="Manuf_0003" to="Dist_0002" />
+			<arc from="Manuf_0004" to="Dist_0003" />
+			<arc from="Manuf_0004" to="Dist_0004" />
+			<arc from="Part_0001" to="Manuf_0001" />
+			<arc from="Part_0002" to="Manuf_0001" />
+			<arc from="Part_0002" to="Manuf_0002" />
+			<arc from="Part_0003" to="Manuf_0001" />
+			<arc from="Part_0003" to="Manuf_0002" />
+			<arc from="Part_0004" to="Manuf_0002" />
+			<arc from="Part_0005" to="Trans_0002" />
+			<arc from="Part_0005" to="Trans_0003" />
+			<arc from="Trans_0001" to="Manuf_0003" />
+			<arc from="Trans_0002" to="Manuf_0003" />
+			<arc from="Trans_0003" to="Manuf_0004" />
+			<arc from="Trans_0004" to="Dist_0001" />
+			<arc from="Trans_0004" to="Manuf_0004" />
+	</arcs>
+</chain>
