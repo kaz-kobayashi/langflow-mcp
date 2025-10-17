@@ -1921,6 +1921,24 @@ MCP_TOOLS_DEFINITION = [
                         "type": "string",
                         "description": "注文データExcelファイルのパス"
                     },
+                    "start_date": {
+                        "type": "string",
+                        "description": "計画期間の開始日（例: '2025-01-01'）"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "計画期間の終了日（例: '2025-01-31'）"
+                    },
+                    "period": {
+                        "type": "integer",
+                        "description": "期間の長さ（デフォルト: 1）",
+                        "default": 1
+                    },
+                    "period_unit": {
+                        "type": "string",
+                        "description": "期間の単位（時/日/週/月）（デフォルト: '日'）",
+                        "default": "日"
+                    },
                     "max_cpu": {
                         "type": "integer",
                         "description": "ソルバーのCPU時間制限（秒）（デフォルト: 60）",
@@ -1937,7 +1955,7 @@ MCP_TOOLS_DEFINITION = [
                         "default": False
                     }
                 },
-                "required": ["master_filepath", "order_filepath"]
+                "required": ["master_filepath", "order_filepath", "start_date", "end_date"]
             }
         }
     },
@@ -7003,84 +7021,109 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             可視化フラグ
         """
         try:
-            from scmopt2.lotsizing import read_dfs_from_excel_lot, multi_mode_lotsizing, show_result_for_multimode_lotsizing
+            from scmopt2.lotsizing import (
+                read_dfs_from_excel_lot,
+                multi_mode_lotsizing,
+                show_result_for_multimode_lotsizing,
+                generate_demand_from_order,
+                get_resource_ub
+            )
+            from openpyxl import load_workbook
+            from pulp import PULP_CBC_CMD
             import uuid
             import plotly
 
             master_filepath = arguments.get("master_filepath")
             order_filepath = arguments.get("order_filepath")
+            start_date = arguments.get("start_date")
+            end_date = arguments.get("end_date")
+            period = arguments.get("period", 1)
+            period_unit = arguments.get("period_unit", "日")
             max_cpu = arguments.get("max_cpu", 60)
             solver = arguments.get("solver", "CBC")
             visualize = arguments.get("visualize", False)
 
-            # Excelファイルからデータを読み込み
-            item_df, process_df, resource_df, bom_df, usage_df, demand, capacity = read_dfs_from_excel_lot(
-                master_filepath, order_filepath
-            )
+            # Excelファイルをworkbookとして読み込み
+            master_wb = load_workbook(master_filepath)
+            order_wb = load_workbook(order_filepath)
 
-            # 計画期間数を算出
-            T = len(set(k.split(',')[0] for k in demand.keys() if ',' in k))
+            # マスターデータを読み込み
+            item_df, process_df, resource_df, bom_df, usage_df = read_dfs_from_excel_lot(master_wb)
 
-            # 最適化を実行
-            status, prob, df_prod_plan, df_inv, df_cost, cost_total = multi_mode_lotsizing(
+            # 注文データから需要を生成
+            demand, T = generate_demand_from_order(order_wb, start_date, end_date, period, period_unit)
+
+            # 資源容量を取得
+            capacity = get_resource_ub(master_wb, start_date, end_date, period, period_unit)
+
+            # モデルを構築
+            model = multi_mode_lotsizing(
                 item_df=item_df,
                 resource_df=resource_df,
                 process_df=process_df,
                 bom_df=bom_df,
                 usage_df=usage_df,
-                Demand=demand,
-                Capacity=capacity,
-                T=T,
-                max_cpu_second=max_cpu,
-                solver_name=solver
+                demand=demand,
+                capacity=capacity,
+                T=T
             )
+
+            # 最適化を実行
+            if solver == "CBC":
+                solver_obj = PULP_CBC_CMD(timeLimit=max_cpu, msg=0)
+                model.optimize(solver_obj)
+            else:
+                model.optimize()
+
+            # 結果の抽出
+            from scmopt2.lotsizing import make_cost_df
+            x, I, y, slack, surplus, inv_slack, inv_surplus, cost, items, modes, item_modes, setup_time, prod_time, parent, resources = model.__data
+
+            # コスト内訳
+            cost_df = make_cost_df(cost)
+            objective_value = sum(cost[i].X for i in range(5))
 
             # 結果を整形
             result = {
                 "status": "success",
-                "optimization_status": status,
-                "objective_value": float(cost_total),
+                "optimization_status": "Optimal" if model.status == 1 else "Infeasible",
+                "objective_value": float(objective_value),
                 "costs": {
-                    "demand_violation_penalty": float(df_cost.loc['需要違反ペナルティ', '費用']),
-                    "inventory_violation_penalty": float(df_cost.loc['在庫量違反ペナルティ', '費用']),
-                    "setup_cost": float(df_cost.loc['段取費用', '費用']),
-                    "production_cost": float(df_cost.loc['生産費用', '費用']),
-                    "inventory_cost": float(df_cost.loc['在庫費用', '費用'])
+                    "demand_violation_penalty": float(cost[0].X),
+                    "inventory_violation_penalty": float(cost[1].X),
+                    "setup_cost": float(cost[2].X),
+                    "production_cost": float(cost[3].X),
+                    "inventory_cost": float(cost[4].X)
                 },
                 "periods": T,
                 "items": len(item_df),
                 "resources": len(resource_df),
-                "message": f"最適化が完了しました。目的関数値: {cost_total:.2f}"
+                "message": f"最適化が完了しました。目的関数値: {objective_value:.2f}"
             }
 
             # 可視化
             if visualize:
-                viz_id = str(uuid.uuid4())[:8]
+                viz_id_inv = str(uuid.uuid4())
+                viz_id_prod = str(uuid.uuid4())
 
-                # 在庫推移の可視化
-                fig_inv = show_result_for_multimode_lotsizing(
-                    df_prod_plan, df_inv, item_df, resource_df, process_df
+                # 在庫推移と資源使用量の可視化
+                fig_inv, fig_prod = show_result_for_multimode_lotsizing(
+                    model, start_date, end_date, period, period_unit, capacity
                 )
-                html_inv = plotly.io.to_html(fig_inv, full_html=False, include_plotlyjs='cdn')
 
-                # HTMLファイルとして保存
-                viz_path = f"/tmp/visualizations/{viz_id}_inventory.html"
-                import os
-                os.makedirs(os.path.dirname(viz_path), exist_ok=True)
-                with open(viz_path, 'w', encoding='utf-8') as f:
-                    f.write(f"""
-                    <!DOCTYPE html>
-                    <html>
-                    <head><meta charset="utf-8"><title>Inventory Visualization</title></head>
-                    <body>
-                    <h2>在庫推移</h2>
-                    {html_inv}
-                    </body>
-                    </html>
-                    """)
+                # キャッシュに保存
+                if user_id is not None:
+                    if user_id not in _optimization_cache:
+                        _optimization_cache[user_id] = {}
+                    html_inv = plotly.io.to_html(fig_inv, include_plotlyjs='cdn')
+                    html_prod = plotly.io.to_html(fig_prod, include_plotlyjs='cdn')
+                    _optimization_cache[user_id][viz_id_inv] = html_inv
+                    _optimization_cache[user_id][viz_id_prod] = html_prod
 
-                result["visualization_id"] = viz_id
-                result["visualization_url"] = f"/api/visualization/{viz_id}_inventory"
+                result["inventory_visualization_id"] = viz_id_inv
+                result["inventory_visualization_url"] = f"/api/visualization/{viz_id_inv}"
+                result["production_visualization_id"] = viz_id_prod
+                result["production_visualization_url"] = f"/api/visualization/{viz_id_prod}"
 
             return result
 
