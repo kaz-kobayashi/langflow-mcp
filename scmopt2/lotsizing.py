@@ -57,11 +57,11 @@ def lotsizing(prod_df, production_df, bom_df, demand, resource_df, max_cpu = 10,
     if bom_df is not None:
         raw_materials = set(bom_df["child"])
         products = set(bom_df["parent"])
-        items = raw_materials | products
+        items = list(raw_materials | products)
     else:
         prod_df.reset_index(inplace=True)
         products = set(prod_df.name)
-        items = products
+        items = list(products)
         prod_df.set_index("name", inplace=True)
     #計画期間の数の抽出
     _, T = demand.shape
@@ -192,13 +192,13 @@ def show_result_for_lotsizing(model, T, prod_df, production_df, bom_df, resource
     if bom_df is not None:
         raw_materials = set(bom_df["child"])
         products = set(bom_df["parent"])
-        items = raw_materials | products
+        items = list(raw_materials | products)
     else:
         prod_df.reset_index(inplace=True)
         products = set(prod_df.name)
-        items = products
+        items = list(products)
         prod_df.set_index("name", inplace=True)
-        
+
     num_item =  len(items) #len(production_df)
     #items = production_df.index
     prod_array = np.zeros(shape=(num_item, T))
@@ -857,7 +857,15 @@ def show_result_for_multimode_lotsizing(model, start, finish, period, period_uni
 
     data =[]
     for i in items:
-        trace = go.Scatter( x=xrange, y = [I[t,i].X for t in range(T-1)]+[I[T-1,i]], name=str(i) )
+        # 在庫量の値を取得（変数の場合は.X、定数の場合はそのまま）
+        inv_values = []
+        for t in range(T):
+            try:
+                inv_values.append(I[t,i].X)
+            except AttributeError:
+                # I[t,i]が定数の場合
+                inv_values.append(float(I[t,i]))
+        trace = go.Scatter( x=xrange, y = inv_values, name=str(i) )
         data.append( trace)
     layout = go.Layout(
         autosize = True,

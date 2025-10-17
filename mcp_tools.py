@@ -1726,6 +1726,280 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["filename_suffix", "h_cost", "b_cost", "disruption_prob", "TTR"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_lotsizing",
+            "description": "基本的なロットサイズ最適化を実行します。単一モードでの生産計画において、段取り費用、生産費用、在庫費用の合計を最小化する生産量と在庫量を計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "item_data": {
+                        "type": "array",
+                        "description": "品目データのリスト。各品目には name, inv_cost, safety_inventory, target_inventory, initial_inventory が必要です。例: [{'name': 'Product1', 'inv_cost': 1.0, 'safety_inventory': 50, 'target_inventory': 1000, 'initial_inventory': 100}]"
+                    },
+                    "production_data": {
+                        "type": "array",
+                        "description": "生産データのリスト。各品目には name, SetupTime, SetupCost, ProdTime, ProdCost が必要です。例: [{'name': 'Product1', 'SetupTime': 30, 'SetupCost': 500, 'ProdTime': 2, 'ProdCost': 10}]"
+                    },
+                    "bom_data": {
+                        "type": "array",
+                        "description": "部品展開表データのリスト（オプション）。各エントリには child, parent, units が必要です。例: [{'child': 'Material1', 'parent': 'Product1', 'units': 2.0}]"
+                    },
+                    "demand": {
+                        "type": "array",
+                        "description": "需要データ（期間×品目の2次元配列）。例: [[100, 120, 110], [150, 160, 140]]"
+                    },
+                    "resource_data": {
+                        "type": "array",
+                        "description": "資源データのリスト。各エントリには name, period, capacity が必要です。例: [{'name': 'Res1', 'period': 0, 'capacity': 2000}]"
+                    },
+                    "max_cpu": {
+                        "type": "integer",
+                        "description": "最大計算時間（秒）（デフォルト: 60）",
+                        "default": 60
+                    },
+                    "solver": {
+                        "type": "string",
+                        "description": "使用するソルバー（CBC/SCIP/GRB）（デフォルト: CBC）",
+                        "default": "CBC",
+                        "enum": ["CBC", "SCIP", "GRB"]
+                    },
+                    "visualize": {
+                        "type": "boolean",
+                        "description": "可視化を実行するかどうか（デフォルト: false）",
+                        "default": False
+                    }
+                },
+                "required": ["item_data", "production_data", "demand", "resource_data"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_multimode_lotsizing",
+            "description": "マルチモードロットサイズ最適化を実行します。複数の生産モードを考慮した生産計画において、段取り費用、生産費用、在庫費用の合計を最小化する各モードの生産量と在庫量を計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "item_data": {
+                        "type": "array",
+                        "description": "品目データのリスト。各品目には name, inv_cost, safety_inventory, target_inventory, initial_inventory, final_inventory が必要です。"
+                    },
+                    "resource_data": {
+                        "type": "array",
+                        "description": "資源データのリスト。各エントリには name, capacity が必要です。"
+                    },
+                    "process_data": {
+                        "type": "array",
+                        "description": "工程データのリスト。各エントリには item, mode, setup_cost, prod_cost, n_children(オプション), n_resources が必要です。"
+                    },
+                    "bom_data": {
+                        "type": "array",
+                        "description": "部品展開表データのリスト。各エントリには item, mode, child, units が必要です。"
+                    },
+                    "usage_data": {
+                        "type": "array",
+                        "description": "資源使用量データのリスト。各エントリには item, mode, resource, setup_time, prod_time が必要です。"
+                    },
+                    "demand": {
+                        "type": "object",
+                        "description": "需要データの辞書。キー: '期間,品目'、値: 需要量。例: {'0,Product1': 100, '1,Product1': 120}"
+                    },
+                    "capacity": {
+                        "type": "object",
+                        "description": "資源容量の辞書。キー: '期間,資源名'、値: 容量。例: {'0,Machine1': 8000, '1,Machine1': 8000}"
+                    },
+                    "T": {
+                        "type": "integer",
+                        "description": "計画期間数"
+                    },
+                    "visualize": {
+                        "type": "boolean",
+                        "description": "可視化を実行するかどうか（デフォルト: false）",
+                        "default": False
+                    }
+                },
+                "required": ["item_data", "resource_data", "process_data", "bom_data", "usage_data", "demand", "capacity", "T"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_lotsize_template",
+            "description": "ロットサイズ最適化用のExcelテンプレートを生成します。品目、工程、資源、BOM、資源使用量のシートを含むマスターファイルを作成します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "output_filepath": {
+                        "type": "string",
+                        "description": "出力するExcelファイルのパス（例: 'lotsize-master.xlsx'）"
+                    },
+                    "include_bom": {
+                        "type": "boolean",
+                        "description": "BOMと資源使用量シートを含めるかどうか（デフォルト: false）",
+                        "default": False
+                    }
+                },
+                "required": ["output_filepath"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_order_template",
+            "description": "注文データ入力用のExcelテンプレートを生成します。品目、納期、数量を入力するシートを含みます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "output_filepath": {
+                        "type": "string",
+                        "description": "出力するExcelファイルのパス（例: 'order.xlsx'）"
+                    }
+                },
+                "required": ["output_filepath"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "add_lotsize_detailed_sheets",
+            "description": "既存のロットサイズマスターファイルに期別資源容量の詳細シートを追加します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "master_filepath": {
+                        "type": "string",
+                        "description": "既存のマスターExcelファイルのパス"
+                    },
+                    "output_filepath": {
+                        "type": "string",
+                        "description": "出力するExcelファイルのパス"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "description": "開始日（YYYY-MM-DD形式）"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "終了日（YYYY-MM-DD形式）"
+                    },
+                    "period": {
+                        "type": "integer",
+                        "description": "期間の長さ（デフォルト: 1）",
+                        "default": 1
+                    },
+                    "period_unit": {
+                        "type": "string",
+                        "description": "期間の単位（時/日/週/月のいずれか、デフォルト: 日）",
+                        "enum": ["時", "日", "週", "月"],
+                        "default": "日"
+                    }
+                },
+                "required": ["master_filepath", "output_filepath", "start_date", "end_date"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_lotsizing_from_excel",
+            "description": "Excelファイルからデータを読み込み、マルチモードロットサイズ最適化を実行します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "master_filepath": {
+                        "type": "string",
+                        "description": "マスターデータExcelファイルのパス"
+                    },
+                    "order_filepath": {
+                        "type": "string",
+                        "description": "注文データExcelファイルのパス"
+                    },
+                    "max_cpu": {
+                        "type": "integer",
+                        "description": "ソルバーのCPU時間制限（秒）（デフォルト: 60）",
+                        "default": 60
+                    },
+                    "solver": {
+                        "type": "string",
+                        "description": "使用するソルバー（CBC, PULP_CBC_CMD, GLPK, GUROBI等）（デフォルト: CBC）",
+                        "default": "CBC"
+                    },
+                    "visualize": {
+                        "type": "boolean",
+                        "description": "可視化を実行するかどうか（デフォルト: false）",
+                        "default": False
+                    }
+                },
+                "required": ["master_filepath", "order_filepath"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "export_lotsizing_result",
+            "description": "ロットサイズ最適化の結果をExcelファイルにエクスポートします。生産計画、在庫推移、資源使用量などの詳細データを含みます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "master_filepath": {
+                        "type": "string",
+                        "description": "マスターデータExcelファイルのパス"
+                    },
+                    "order_filepath": {
+                        "type": "string",
+                        "description": "注文データExcelファイルのパス"
+                    },
+                    "output_filepath": {
+                        "type": "string",
+                        "description": "出力するExcelファイルのパス（例: 'lotsize-result.xlsx'）"
+                    },
+                    "max_cpu": {
+                        "type": "integer",
+                        "description": "ソルバーのCPU時間制限（秒）（デフォルト: 60）",
+                        "default": 60
+                    },
+                    "solver": {
+                        "type": "string",
+                        "description": "使用するソルバー（CBC, PULP_CBC_CMD, GLPK, GUROBI等）（デフォルト: CBC）",
+                        "default": "CBC"
+                    }
+                },
+                "required": ["master_filepath", "order_filepath", "output_filepath"]
+            }
+        }
+    },
+    # Phase 3: ロットサイズ最適化結果の可視化
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_lotsizing_result",
+            "description": "直前に実行した基本ロットサイズ最適化（optimize_lotsizing）の結果を可視化します。在庫推移グラフと資源使用量グラフを生成します。",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_multimode_lotsizing_result",
+            "description": "直前に実行したマルチモードロットサイズ最適化（optimize_multimode_lotsizing）の結果を可視化します。在庫推移グラフと資源別生産量グラフを生成します。",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]
 
@@ -2309,6 +2583,138 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"可視化エラー: {str(e)}"
+            }
+
+    elif function_name == "visualize_lotsizing_result":
+        # Phase 3: 基本ロットサイズ最適化の結果可視化
+        if user_id is None or user_id not in _optimization_cache:
+            return {
+                "status": "error",
+                "message": "可視化できる最適化結果が見つかりません。まず optimize_lotsizing を実行してください。"
+            }
+
+        cache = _optimization_cache[user_id]
+        if cache.get("type") != "lotsizing_basic":
+            return {
+                "status": "error",
+                "message": f"キャッシュされているのは {cache.get('type')} です。visualize_lotsizing_result は optimize_lotsizing の結果のみ可視化できます。"
+            }
+
+        try:
+            import uuid
+            import plotly.io as pio
+            from scmopt2.lotsizing import show_result_for_lotsizing
+
+            # キャッシュから取得
+            model = cache["model"]
+            T = cache["T"]
+            prod_df = cache["prod_df"]
+            production_df = cache["production_df"]
+            bom_df = cache["bom_df"]
+            resource_df = cache["resource_df"]
+
+            # 可視化生成
+            violated, production, inventory, fig_inv, fig_prod = show_result_for_lotsizing(
+                model, T, prod_df, production_df, bom_df, resource_df
+            )
+
+            # HTMLを生成
+            html_inv = pio.to_html(fig_inv, include_plotlyjs='cdn')
+            html_prod = pio.to_html(fig_prod, include_plotlyjs='cdn')
+
+            # UUID生成
+            viz_id_inv = str(uuid.uuid4())
+            viz_id_prod = str(uuid.uuid4())
+
+            # キャッシュにHTML保存
+            _optimization_cache[user_id][viz_id_inv] = html_inv
+            _optimization_cache[user_id][viz_id_prod] = html_prod
+
+            return {
+                "status": "success",
+                "inventory_visualization_id": viz_id_inv,
+                "inventory_visualization_url": f"/api/visualization/{viz_id_inv}",
+                "production_visualization_id": viz_id_prod,
+                "production_visualization_url": f"/api/visualization/{viz_id_prod}",
+                "message": "基本ロットサイズ最適化の可視化が完成しました。",
+                "violated_constraints": violated.to_dict(orient='records') if not violated.empty else []
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"可視化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "visualize_multimode_lotsizing_result":
+        # Phase 3: マルチモードロットサイズ最適化の結果可視化
+        if user_id is None or user_id not in _optimization_cache:
+            return {
+                "status": "error",
+                "message": "可視化できる最適化結果が見つかりません。まず optimize_multimode_lotsizing を実行してください。"
+            }
+
+        cache = _optimization_cache[user_id]
+        if cache.get("type") != "lotsizing_multimode":
+            return {
+                "status": "error",
+                "message": f"キャッシュされているのは {cache.get('type')} です。visualize_multimode_lotsizing_result は optimize_multimode_lotsizing の結果のみ可視化できます。"
+            }
+
+        try:
+            import uuid
+            import plotly.io as pio
+            from scmopt2.lotsizing import show_result_for_multimode_lotsizing
+
+            # キャッシュから取得
+            model = cache["model"]
+            capacity = cache["capacity"]
+            T = cache["T"]
+
+            # デフォルトの日付範囲で可視化（T期間分の日付を生成）
+            import pandas as pd
+            start_date = "2024-01-01"
+            period = 1
+            period_unit = "日"
+            # T期間分の最終日を計算（start_date + (T-1)日）
+            end_date_obj = pd.to_datetime(start_date) + pd.Timedelta(days=T-1)
+            end_date = end_date_obj.strftime('%Y-%m-%d')
+
+            # 可視化生成
+            fig_inv, fig_prod = show_result_for_multimode_lotsizing(
+                model, start_date, end_date, period, period_unit, capacity
+            )
+
+            # HTMLを生成
+            html_inv = pio.to_html(fig_inv, include_plotlyjs='cdn')
+            html_prod = pio.to_html(fig_prod, include_plotlyjs='cdn')
+
+            # UUID生成
+            viz_id_inv = str(uuid.uuid4())
+            viz_id_prod = str(uuid.uuid4())
+
+            # キャッシュにHTML保存
+            _optimization_cache[user_id][viz_id_inv] = html_inv
+            _optimization_cache[user_id][viz_id_prod] = html_prod
+
+            return {
+                "status": "success",
+                "inventory_visualization_id": viz_id_inv,
+                "inventory_visualization_url": f"/api/visualization/{viz_id_inv}",
+                "production_visualization_id": viz_id_prod,
+                "production_visualization_url": f"/api/visualization/{viz_id_prod}",
+                "message": "マルチモードロットサイズ最適化の可視化が完成しました。",
+                "periods": T
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"可視化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
             }
 
     elif function_name == "generate_sample_data":
@@ -6102,6 +6508,638 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"方針比較エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "optimize_lotsizing":
+        """
+        基本ロットサイズ最適化
+
+        Parameters:
+        -----------
+        item_data : list
+            品目データのリスト
+        production_data : list
+            生産データのリスト
+        bom_data : list, optional
+            BOMデータのリスト
+        demand : list
+            需要データ（期間×品目の2次元配列）
+        resource_data : list
+            資源データのリスト
+        max_cpu : int, optional
+            最大計算時間（秒）
+        solver : str, optional
+            ソルバー（CBC/SCIP/GRB）
+        visualize : bool, optional
+            可視化フラグ
+
+        Returns:
+        --------
+        dict with optimization results
+        """
+        try:
+            import pandas as pd
+            import numpy as np
+            from scmopt2.lotsizing import lotsizing, show_result_for_lotsizing
+            import uuid
+            import plotly
+
+            # パラメータ取得
+            item_data = arguments.get("item_data", [])
+            production_data = arguments.get("production_data", [])
+            bom_data = arguments.get("bom_data", None)
+            demand = arguments.get("demand", [])
+            resource_data = arguments.get("resource_data", [])
+            max_cpu = arguments.get("max_cpu", 60)
+            solver = arguments.get("solver", "CBC")
+            visualize = arguments.get("visualize", False)
+
+            # データフレームに変換
+            prod_df = pd.DataFrame(item_data)
+            if 'name' in prod_df.columns:
+                prod_df = prod_df.set_index("name")
+
+            production_df = pd.DataFrame(production_data)
+            if 'name' in production_df.columns:
+                production_df = production_df.set_index("name")
+
+            # BOMデータ（オプション）
+            if bom_data and len(bom_data) > 0:
+                bom_df = pd.DataFrame(bom_data)
+            else:
+                bom_df = None
+
+            # 需要データをnumpy配列に変換
+            demand_array = np.array(demand)
+
+            # 資源データをDataFrameに変換
+            resource_df = pd.DataFrame(resource_data)
+
+            # 最適化実行
+            model, T = lotsizing(
+                prod_df, production_df, bom_df, demand_array,
+                resource_df, max_cpu, solver
+            )
+
+            # 結果を取得
+            violated, production, inventory, fig_inv, fig_prod = show_result_for_lotsizing(
+                model, T, prod_df, production_df, bom_df, resource_df
+            )
+
+            # 結果を整形
+            production_dict = production.to_dict(orient='index')
+            inventory_dict = inventory.to_dict(orient='index')
+            violated_dict = violated.to_dict(orient='records') if not violated.empty else []
+
+            result = {
+                "status": "success",
+                "objective_value": float(model.ObjVal),
+                "production": production_dict,
+                "inventory": inventory_dict,
+                "violated_constraints": violated_dict,
+                "periods": T,
+                "solver": solver,
+                "message": f"ロットサイズ最適化が完了しました（期間数: {T}, ソルバー: {solver}）"
+            }
+
+            # 可視化処理
+            if visualize:
+                viz_dir = "./data/visualizations/"
+                import os
+                os.makedirs(viz_dir, exist_ok=True)
+
+                viz_id = str(uuid.uuid4())
+
+                # 在庫図を保存
+                html_inv = plotly.offline.plot(fig_inv, include_plotlyjs='cdn', output_type='div')
+                with open(f"{viz_dir}{viz_id}_inventory.html", "w", encoding="utf-8") as f:
+                    f.write(f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="utf-8"><title>Inventory Visualization</title></head>
+                    <body>
+                    <h2>在庫推移</h2>
+                    {html_inv}
+                    </body>
+                    </html>
+                    """)
+
+                # 生産図を保存
+                html_prod = plotly.offline.plot(fig_prod, include_plotlyjs='cdn', output_type='div')
+                with open(f"{viz_dir}{viz_id}_production.html", "w", encoding="utf-8") as f:
+                    f.write(f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="utf-8"><title>Production Visualization</title></head>
+                    <body>
+                    <h2>生産量</h2>
+                    {html_prod}
+                    </body>
+                    </html>
+                    """)
+
+                result["visualization_id"] = viz_id
+                result["visualization_url"] = f"/api/visualization/{viz_id}_inventory"
+                result["production_viz_url"] = f"/api/visualization/{viz_id}_production"
+
+            # キャッシュに保存（Phase 3可視化ツール用）
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "type": "lotsizing_basic",
+                    "model": model,
+                    "T": T,
+                    "prod_df": prod_df,
+                    "production_df": production_df,
+                    "bom_df": bom_df,
+                    "resource_df": resource_df
+                }
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"ロットサイズ最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "optimize_multimode_lotsizing":
+        """
+        マルチモードロットサイズ最適化
+
+        Parameters:
+        -----------
+        item_data : list
+            品目データのリスト
+        resource_data : list
+            資源データのリスト
+        process_data : list
+            工程データのリスト
+        bom_data : list
+            BOMデータのリスト
+        usage_data : list
+            資源使用量データのリスト
+        demand : dict
+            需要データの辞書
+        capacity : dict
+            資源容量の辞書
+        T : int
+            計画期間数
+        visualize : bool, optional
+            可視化フラグ
+
+        Returns:
+        --------
+        dict with optimization results
+        """
+        try:
+            import pandas as pd
+            from scmopt2.lotsizing import multi_mode_lotsizing, make_cost_df, show_result_for_multimode_lotsizing
+            import uuid
+            import plotly
+
+            # パラメータ取得
+            item_data = arguments.get("item_data", [])
+            resource_data = arguments.get("resource_data", [])
+            process_data = arguments.get("process_data", [])
+            bom_data = arguments.get("bom_data", [])
+            usage_data = arguments.get("usage_data", [])
+            demand_raw = arguments.get("demand", {})
+            capacity_raw = arguments.get("capacity", {})
+            T = arguments.get("T", 1)
+            visualize = arguments.get("visualize", False)
+
+            # データフレームに変換
+            item_df = pd.DataFrame(item_data)
+            resource_df = pd.DataFrame(resource_data)
+            process_df = pd.DataFrame(process_data)
+            bom_df = pd.DataFrame(bom_data)
+            usage_df = pd.DataFrame(usage_data)
+
+            # 需要と容量の辞書を変換
+            demand = {}
+            for key, value in demand_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    demand[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    demand[key] = float(value)
+
+            capacity = {}
+            for key, value in capacity_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    capacity[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    capacity[key] = float(value)
+
+            # 最適化実行
+            model = multi_mode_lotsizing(
+                item_df, resource_df, process_df, bom_df, usage_df,
+                demand, capacity, T
+            )
+
+            # モデル最適化
+            from pulp import PULP_CBC_CMD
+            solver = PULP_CBC_CMD(timeLimit=60, presolve=True)
+            model.optimize(solver)
+
+            # コスト内訳を取得
+            x, I, y, slack, surplus, inv_slack, inv_surplus, cost, items, modes, item_modes, setup_time, prod_time, parent, resources = model.__data
+            cost_df = make_cost_df(cost)
+
+            # 生産量と在庫量を取得
+            production_data = {}
+            inventory_data = {}
+
+            for item in items:
+                for mode in modes[item]:
+                    for t in range(T):
+                        key = f"{t},{mode},{item}"
+                        production_data[key] = x[t, mode, item].X
+
+            for item in items:
+                for t in range(T):
+                    if t == T-1:
+                        inventory_data[f"{t},{item}"] = I[T-1, item]  # 最終期は定数
+                    else:
+                        inventory_data[f"{t},{item}"] = I[t, item].X
+
+            result = {
+                "status": "success",
+                "objective_value": float(model.ObjVal),
+                "costs": {
+                    "demand_violation_penalty": float(cost[0].X),
+                    "inventory_violation_penalty": float(cost[1].X),
+                    "setup_cost": float(cost[2].X),
+                    "production_cost": float(cost[3].X),
+                    "inventory_cost": float(cost[4].X)
+                },
+                "production": production_data,
+                "inventory": inventory_data,
+                "periods": T,
+                "message": f"マルチモードロットサイズ最適化が完了しました（期間数: {T}）"
+            }
+
+            # 可視化処理
+            if visualize:
+                viz_dir = "./data/visualizations/"
+                import os
+                os.makedirs(viz_dir, exist_ok=True)
+
+                viz_id = str(uuid.uuid4())
+
+                # 可視化を生成
+                fig_inv, fig_prod = show_result_for_multimode_lotsizing(
+                    model, "2024-01-01", "2024-12-31", 1, "日", capacity
+                )
+
+                # 在庫図を保存
+                html_inv = plotly.offline.plot(fig_inv, include_plotlyjs='cdn', output_type='div')
+                with open(f"{viz_dir}{viz_id}_inventory.html", "w", encoding="utf-8") as f:
+                    f.write(f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="utf-8"><title>Inventory Visualization</title></head>
+                    <body>
+                    <h2>在庫推移</h2>
+                    {html_inv}
+                    </body>
+                    </html>
+                    """)
+
+                # 生産図を保存
+                html_prod = plotly.offline.plot(fig_prod, include_plotlyjs='cdn', output_type='div')
+                with open(f"{viz_dir}{viz_id}_production.html", "w", encoding="utf-8") as f:
+                    f.write(f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="utf-8"><title>Production Visualization</title></head>
+                    <body>
+                    <h2>資源別生産量</h2>
+                    {html_prod}
+                    </body>
+                    </html>
+                    """)
+
+                result["visualization_id"] = viz_id
+                result["visualization_url"] = f"/api/visualization/{viz_id}_inventory"
+                result["production_viz_url"] = f"/api/visualization/{viz_id}_production"
+
+            # キャッシュに保存（Phase 3可視化ツール用）
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "type": "lotsizing_multimode",
+                    "model": model,
+                    "capacity": capacity,
+                    "item_df": item_df,
+                    "resource_df": resource_df,
+                    "T": T
+                }
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"マルチモードロットサイズ最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "generate_lotsize_template":
+        """
+        ロットサイズ最適化用のExcelテンプレートを生成
+
+        Parameters:
+        -----------
+        output_filepath : str
+            出力するExcelファイルのパス
+        include_bom : bool, optional
+            BOMと資源使用量シートを含めるかどうか
+        """
+        try:
+            from scmopt2.lotsizing import generate_lotsize_master, add_bom_resource_sheets
+
+            output_filepath = arguments.get("output_filepath")
+            include_bom = arguments.get("include_bom", False)
+
+            # マスターファイルを生成
+            wb = generate_lotsize_master()
+
+            # BOMシートを追加（オプション）
+            if include_bom:
+                wb = add_bom_resource_sheets(wb)
+
+            # ファイルを保存
+            wb.save(output_filepath)
+
+            return {
+                "status": "success",
+                "message": f"ロットサイズテンプレートを生成しました: {output_filepath}",
+                "filepath": output_filepath,
+                "include_bom": include_bom
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"テンプレート生成エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "generate_order_template":
+        """
+        注文データ入力用のExcelテンプレートを生成
+
+        Parameters:
+        -----------
+        output_filepath : str
+            出力するExcelファイルのパス
+        """
+        try:
+            from scmopt2.lotsizing import generate_order_master
+
+            output_filepath = arguments.get("output_filepath")
+
+            # 注文テンプレートを生成
+            wb = generate_order_master()
+            wb.save(output_filepath)
+
+            return {
+                "status": "success",
+                "message": f"注文テンプレートを生成しました: {output_filepath}",
+                "filepath": output_filepath
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"テンプレート生成エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "add_lotsize_detailed_sheets":
+        """
+        期別資源容量の詳細シートを追加
+
+        Parameters:
+        -----------
+        master_filepath : str
+            既存のマスターExcelファイルのパス
+        output_filepath : str
+            出力するExcelファイルのパス
+        start_date : str
+            開始日（YYYY-MM-DD形式）
+        end_date : str
+            終了日（YYYY-MM-DD形式）
+        period : int, optional
+            期間の長さ
+        period_unit : str, optional
+            期間の単位（時/日/週/月）
+        """
+        try:
+            from openpyxl import load_workbook
+            from scmopt2.lotsizing import add_detailed_resource_sheet
+            import pandas as pd
+
+            master_filepath = arguments.get("master_filepath")
+            output_filepath = arguments.get("output_filepath")
+            start_date = arguments.get("start_date")
+            end_date = arguments.get("end_date")
+            period = arguments.get("period", 1)
+            period_unit = arguments.get("period_unit", "日")
+
+            # 日付変換（日付のみを使用、時刻は含めない）
+            start = pd.to_datetime(start_date).date()
+            end = pd.to_datetime(end_date).date()
+
+            # マスターファイルを読み込み
+            wb = load_workbook(master_filepath)
+
+            # 詳細シートを追加
+            wb = add_detailed_resource_sheet(wb, start, end, period, period_unit)
+
+            # ファイルを保存
+            wb.save(output_filepath)
+
+            return {
+                "status": "success",
+                "message": f"期別資源容量シートを追加しました: {output_filepath}",
+                "filepath": output_filepath,
+                "start_date": start_date,
+                "end_date": end_date,
+                "period": period,
+                "period_unit": period_unit
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"シート追加エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "optimize_lotsizing_from_excel":
+        """
+        Excelファイルからデータを読み込んでマルチモードロットサイズ最適化を実行
+
+        Parameters:
+        -----------
+        master_filepath : str
+            マスターデータExcelファイルのパス
+        order_filepath : str
+            注文データExcelファイルのパス
+        max_cpu : int, optional
+            ソルバーのCPU時間制限（秒）
+        solver : str, optional
+            使用するソルバー
+        visualize : bool, optional
+            可視化フラグ
+        """
+        try:
+            from scmopt2.lotsizing import read_dfs_from_excel_lot, multi_mode_lotsizing, show_result_for_multimode_lotsizing
+            import uuid
+            import plotly
+
+            master_filepath = arguments.get("master_filepath")
+            order_filepath = arguments.get("order_filepath")
+            max_cpu = arguments.get("max_cpu", 60)
+            solver = arguments.get("solver", "CBC")
+            visualize = arguments.get("visualize", False)
+
+            # Excelファイルからデータを読み込み
+            item_df, process_df, resource_df, bom_df, usage_df, demand, capacity = read_dfs_from_excel_lot(
+                master_filepath, order_filepath
+            )
+
+            # 計画期間数を算出
+            T = len(set(k.split(',')[0] for k in demand.keys() if ',' in k))
+
+            # 最適化を実行
+            status, prob, df_prod_plan, df_inv, df_cost, cost_total = multi_mode_lotsizing(
+                item_df=item_df,
+                resource_df=resource_df,
+                process_df=process_df,
+                bom_df=bom_df,
+                usage_df=usage_df,
+                Demand=demand,
+                Capacity=capacity,
+                T=T,
+                max_cpu_second=max_cpu,
+                solver_name=solver
+            )
+
+            # 結果を整形
+            result = {
+                "status": "success",
+                "optimization_status": status,
+                "objective_value": float(cost_total),
+                "costs": {
+                    "demand_violation_penalty": float(df_cost.loc['需要違反ペナルティ', '費用']),
+                    "inventory_violation_penalty": float(df_cost.loc['在庫量違反ペナルティ', '費用']),
+                    "setup_cost": float(df_cost.loc['段取費用', '費用']),
+                    "production_cost": float(df_cost.loc['生産費用', '費用']),
+                    "inventory_cost": float(df_cost.loc['在庫費用', '費用'])
+                },
+                "periods": T,
+                "items": len(item_df),
+                "resources": len(resource_df),
+                "message": f"最適化が完了しました。目的関数値: {cost_total:.2f}"
+            }
+
+            # 可視化
+            if visualize:
+                viz_id = str(uuid.uuid4())[:8]
+
+                # 在庫推移の可視化
+                fig_inv = show_result_for_multimode_lotsizing(
+                    df_prod_plan, df_inv, item_df, resource_df, process_df
+                )
+                html_inv = plotly.io.to_html(fig_inv, full_html=False, include_plotlyjs='cdn')
+
+                # HTMLファイルとして保存
+                viz_path = f"/tmp/visualizations/{viz_id}_inventory.html"
+                import os
+                os.makedirs(os.path.dirname(viz_path), exist_ok=True)
+                with open(viz_path, 'w', encoding='utf-8') as f:
+                    f.write(f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="utf-8"><title>Inventory Visualization</title></head>
+                    <body>
+                    <h2>在庫推移</h2>
+                    {html_inv}
+                    </body>
+                    </html>
+                    """)
+
+                result["visualization_id"] = viz_id
+                result["visualization_url"] = f"/api/visualization/{viz_id}_inventory"
+
+            return result
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"Excelからの最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "export_lotsizing_result":
+        """
+        ロットサイズ最適化の結果をExcelファイルにエクスポート
+
+        Parameters:
+        -----------
+        master_filepath : str
+            マスターデータExcelファイルのパス
+        order_filepath : str
+            注文データExcelファイルのパス
+        output_filepath : str
+            出力するExcelファイルのパス
+        max_cpu : int, optional
+            ソルバーのCPU時間制限（秒）
+        solver : str, optional
+            使用するソルバー
+        """
+        try:
+            from scmopt2.lotsizing import lot_output_excel
+
+            master_filepath = arguments.get("master_filepath")
+            order_filepath = arguments.get("order_filepath")
+            output_filepath = arguments.get("output_filepath")
+            max_cpu = arguments.get("max_cpu", 60)
+            solver = arguments.get("solver", "CBC")
+
+            # 最適化を実行してExcelに出力
+            lot_output_excel(
+                master_file=master_filepath,
+                order_file=order_filepath,
+                output_file=output_filepath,
+                max_cpu_second=max_cpu,
+                solver_name=solver
+            )
+
+            return {
+                "status": "success",
+                "message": f"最適化結果をエクスポートしました: {output_filepath}",
+                "output_filepath": output_filepath,
+                "master_filepath": master_filepath,
+                "order_filepath": order_filepath
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"結果エクスポートエラー: {str(e)}",
                 "traceback": traceback.format_exc()
             }
 

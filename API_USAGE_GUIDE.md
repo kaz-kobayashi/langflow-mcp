@@ -189,6 +189,220 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/forecast_dema
   }'
 ```
 
+### SCRM（途絶リスク対応）在庫最適化
+
+#### 期待値最小化による在庫最適化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_scrm_inventory_expected \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01",
+    "h_cost": {
+      "0,Retail_0001": 1.0,
+      "1,Retail_0001": 1.0,
+      "0,Retail_0003": 1.0,
+      "1,Retail_0002": 1.0,
+      "2,Retail_0002": 1.0,
+      "2,Retail_0003": 1.0
+    },
+    "b_cost": {
+      "0,Retail_0001": 10.0,
+      "1,Retail_0001": 10.0,
+      "0,Retail_0003": 10.0,
+      "1,Retail_0002": 10.0,
+      "2,Retail_0002": 10.0,
+      "2,Retail_0003": 10.0
+    },
+    "disruption_prob": {
+      "0": 0.1,
+      "1": 0.1,
+      "2": 0.05
+    },
+    "TTR": {
+      "0": 2,
+      "1": 3,
+      "2": 2
+    },
+    "K_max": 2
+  }'
+```
+
+**レスポンス**:
+```json
+{
+  "status": "success",
+  "optimization_type": "expected_value",
+  "total_cost": 1492.00,
+  "expected_inventory_cost": 746.00,
+  "expected_backorder_cost": 746.00,
+  "optimal_inventory": {
+    "0,Retail_0001": 253.0,
+    "1,Retail_0001": 253.0,
+    "0,Retail_0003": 75.0,
+    "1,Retail_0002": 45.0,
+    "2,Retail_0002": 45.0,
+    "2,Retail_0003": 75.0
+  },
+  "num_scenarios": 7,
+  "_meta": {
+    "tool_name": "optimize_scrm_inventory_expected",
+    "user_id": 3,
+    "username": "myusername"
+  }
+}
+```
+
+#### CVaR最小化による在庫最適化（リスク回避型）
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_scrm_inventory_cvar \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01",
+    "h_cost": {
+      "0,Retail_0001": 1.0,
+      "1,Retail_0001": 1.0,
+      "0,Retail_0003": 1.0,
+      "1,Retail_0002": 1.0,
+      "2,Retail_0002": 1.0,
+      "2,Retail_0003": 1.0
+    },
+    "b_cost": {
+      "0,Retail_0001": 10.0,
+      "1,Retail_0001": 10.0,
+      "0,Retail_0003": 10.0,
+      "1,Retail_0002": 10.0,
+      "2,Retail_0002": 10.0,
+      "2,Retail_0003": 10.0
+    },
+    "disruption_prob": {
+      "0": 0.1,
+      "1": 0.1,
+      "2": 0.05
+    },
+    "TTR": {
+      "0": 2,
+      "1": 3,
+      "2": 2
+    },
+    "beta": 0.95,
+    "K_max": 2
+  }'
+```
+
+**レスポンス**:
+```json
+{
+  "status": "success",
+  "optimization_type": "cvar",
+  "cvar": 1492.00,
+  "var": 1492.00,
+  "expected_cost": 1492.00,
+  "beta": 0.95,
+  "optimal_inventory": {
+    "0,Retail_0001": 253.0,
+    "1,Retail_0001": 253.0,
+    "0,Retail_0003": 75.0,
+    "1,Retail_0002": 45.0,
+    "2,Retail_0002": 45.0,
+    "2,Retail_0003": 75.0
+  },
+  "num_scenarios": 7,
+  "_meta": {
+    "tool_name": "optimize_scrm_inventory_cvar",
+    "user_id": 3,
+    "username": "myusername"
+  }
+}
+```
+
+#### 在庫方針比較（期待値 vs CVaR）
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/compare_scrm_policies \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01",
+    "h_cost": {
+      "0,Retail_0001": 1.0,
+      "1,Retail_0001": 1.0,
+      "0,Retail_0003": 1.0,
+      "1,Retail_0002": 1.0,
+      "2,Retail_0002": 1.0,
+      "2,Retail_0003": 1.0
+    },
+    "b_cost": {
+      "0,Retail_0001": 10.0,
+      "1,Retail_0001": 10.0,
+      "0,Retail_0003": 10.0,
+      "1,Retail_0002": 10.0,
+      "2,Retail_0002": 10.0,
+      "2,Retail_0003": 10.0
+    },
+    "disruption_prob": {
+      "0": 0.1,
+      "1": 0.1,
+      "2": 0.05
+    },
+    "TTR": {
+      "0": 2,
+      "1": 3,
+      "2": 2
+    },
+    "beta": 0.95,
+    "K_max": 2
+  }'
+```
+
+**レスポンス**:
+```json
+{
+  "status": "success",
+  "expected_policy": {
+    "total_cost": 1492.00,
+    "expected_inventory_cost": 746.00,
+    "expected_backorder_cost": 746.00,
+    "optimal_inventory": {
+      "0,Retail_0001": 253.0,
+      "1,Retail_0001": 253.0,
+      "0,Retail_0003": 75.0,
+      "1,Retail_0002": 45.0,
+      "2,Retail_0002": 45.0,
+      "2,Retail_0003": 75.0
+    }
+  },
+  "cvar_policy": {
+    "cvar": 1492.00,
+    "var": 1492.00,
+    "expected_cost": 1492.00,
+    "optimal_inventory": {
+      "0,Retail_0001": 253.0,
+      "1,Retail_0001": 253.0,
+      "0,Retail_0003": 75.0,
+      "1,Retail_0002": 45.0,
+      "2,Retail_0002": 45.0,
+      "2,Retail_0003": 75.0
+    }
+  },
+  "comparison": {
+    "expected_total_cost": 1492.00,
+    "cvar_total_cost": 1492.00,
+    "cost_difference": 0.0,
+    "cost_increase_pct": 0.0
+  },
+  "recommendation": "期待値方針とCVaR方針のコストが同じです。CVaR方針を推奨します（リスク回避効果があります）。",
+  "_meta": {
+    "tool_name": "compare_scrm_policies",
+    "user_id": 3,
+    "username": "myusername"
+  }
+}
+```
+
 ---
 
 ## Python SDK
@@ -330,6 +544,62 @@ class InventoryOptimizationClient:
             method=method,
             visualize=visualize
         )
+
+    # SCRM途絶リスク対応在庫最適化
+    def optimize_scrm_inventory_expected(self, filename_suffix: str,
+                                        h_cost: Dict[str, float],
+                                        b_cost: Dict[str, float],
+                                        disruption_prob: Dict[str, float],
+                                        TTR: Dict[str, int],
+                                        K_max: int = 2) -> Dict[str, Any]:
+        """期待値最小化による在庫最適化"""
+        return self._call_tool(
+            "optimize_scrm_inventory_expected",
+            filename_suffix=filename_suffix,
+            h_cost=h_cost,
+            b_cost=b_cost,
+            disruption_prob=disruption_prob,
+            TTR=TTR,
+            K_max=K_max
+        )
+
+    def optimize_scrm_inventory_cvar(self, filename_suffix: str,
+                                    h_cost: Dict[str, float],
+                                    b_cost: Dict[str, float],
+                                    disruption_prob: Dict[str, float],
+                                    TTR: Dict[str, int],
+                                    beta: float = 0.95,
+                                    K_max: int = 2) -> Dict[str, Any]:
+        """CVaR最小化による在庫最適化（リスク回避型）"""
+        return self._call_tool(
+            "optimize_scrm_inventory_cvar",
+            filename_suffix=filename_suffix,
+            h_cost=h_cost,
+            b_cost=b_cost,
+            disruption_prob=disruption_prob,
+            TTR=TTR,
+            beta=beta,
+            K_max=K_max
+        )
+
+    def compare_scrm_policies(self, filename_suffix: str,
+                             h_cost: Dict[str, float],
+                             b_cost: Dict[str, float],
+                             disruption_prob: Dict[str, float],
+                             TTR: Dict[str, int],
+                             beta: float = 0.95,
+                             K_max: int = 2) -> Dict[str, Any]:
+        """在庫方針比較（期待値 vs CVaR）"""
+        return self._call_tool(
+            "compare_scrm_policies",
+            filename_suffix=filename_suffix,
+            h_cost=h_cost,
+            b_cost=b_cost,
+            disruption_prob=disruption_prob,
+            TTR=TTR,
+            beta=beta,
+            K_max=K_max
+        )
 ```
 
 ### SDK使用例
@@ -395,6 +665,89 @@ forecast_result = client.forecast_demand(
     method="exponential_smoothing"
 )
 print(f"予測値: {forecast_result['forecast']}")
+
+# SCRM途絶リスク対応在庫最適化
+# 期待値最小化
+expected_result = client.optimize_scrm_inventory_expected(
+    filename_suffix="test_01",
+    h_cost={
+        "0,Retail_0001": 1.0,
+        "1,Retail_0001": 1.0,
+        "0,Retail_0003": 1.0,
+        "1,Retail_0002": 1.0,
+        "2,Retail_0002": 1.0,
+        "2,Retail_0003": 1.0
+    },
+    b_cost={
+        "0,Retail_0001": 10.0,
+        "1,Retail_0001": 10.0,
+        "0,Retail_0003": 10.0,
+        "1,Retail_0002": 10.0,
+        "2,Retail_0002": 10.0,
+        "2,Retail_0003": 10.0
+    },
+    disruption_prob={"0": 0.1, "1": 0.1, "2": 0.05},
+    TTR={"0": 2, "1": 3, "2": 2},
+    K_max=2
+)
+print(f"期待値最小化 - 総コスト: {expected_result['total_cost']:.2f}")
+print(f"最適在庫量: {expected_result['optimal_inventory']}")
+
+# CVaR最小化（リスク回避型）
+cvar_result = client.optimize_scrm_inventory_cvar(
+    filename_suffix="test_01",
+    h_cost={
+        "0,Retail_0001": 1.0,
+        "1,Retail_0001": 1.0,
+        "0,Retail_0003": 1.0,
+        "1,Retail_0002": 1.0,
+        "2,Retail_0002": 1.0,
+        "2,Retail_0003": 1.0
+    },
+    b_cost={
+        "0,Retail_0001": 10.0,
+        "1,Retail_0001": 10.0,
+        "0,Retail_0003": 10.0,
+        "1,Retail_0002": 10.0,
+        "2,Retail_0002": 10.0,
+        "2,Retail_0003": 10.0
+    },
+    disruption_prob={"0": 0.1, "1": 0.1, "2": 0.05},
+    TTR={"0": 2, "1": 3, "2": 2},
+    beta=0.95,
+    K_max=2
+)
+print(f"CVaR: {cvar_result['cvar']:.2f}")
+print(f"VaR: {cvar_result['var']:.2f}")
+print(f"期待コスト: {cvar_result['expected_cost']:.2f}")
+
+# 方針比較
+comparison_result = client.compare_scrm_policies(
+    filename_suffix="test_01",
+    h_cost={
+        "0,Retail_0001": 1.0,
+        "1,Retail_0001": 1.0,
+        "0,Retail_0003": 1.0,
+        "1,Retail_0002": 1.0,
+        "2,Retail_0002": 1.0,
+        "2,Retail_0003": 1.0
+    },
+    b_cost={
+        "0,Retail_0001": 10.0,
+        "1,Retail_0001": 10.0,
+        "0,Retail_0003": 10.0,
+        "1,Retail_0002": 10.0,
+        "2,Retail_0002": 10.0,
+        "2,Retail_0003": 10.0
+    },
+    disruption_prob={"0": 0.1, "1": 0.1, "2": 0.05},
+    TTR={"0": 2, "1": 3, "2": 2},
+    beta=0.95,
+    K_max=2
+)
+print(f"期待値方針コスト: {comparison_result['comparison']['expected_total_cost']:.2f}")
+print(f"CVaR方針コスト: {comparison_result['comparison']['cvar_total_cost']:.2f}")
+print(f"推奨: {comparison_result['recommendation']}")
 ```
 
 ---
@@ -435,7 +788,7 @@ print(f"予測値: {forecast_result['forecast']}")
 
 ---
 
-## 利用可能なツール一覧（全34種類）
+## 利用可能なツール一覧（全37種類）
 
 ### 1. EOQ（経済発注量）計算
 - `calculate_eoq_raw` - 基本EOQ計算
@@ -475,7 +828,12 @@ print(f"予測値: {forecast_result['forecast']}")
 - `find_best_distribution` - 最適確率分布フィッティング
 - `visualize_demand_histogram` - 需要ヒストグラム可視化
 
-### 8. その他
+### 8. SCRM（途絶リスク対応）
+- `optimize_scrm_inventory_expected` - 期待値最小化による在庫最適化
+- `optimize_scrm_inventory_cvar` - CVaR最小化による在庫最適化（リスク回避型）
+- `compare_scrm_policies` - 在庫方針比較（期待値 vs CVaR）
+
+### 9. その他
 - `calculate_wagner_whitin` - Wagner-Whitinアルゴリズム
 - `compare_inventory_policies` - 在庫方策比較
 - `analyze_inventory_network` - 在庫ネットワーク分析

@@ -20,8 +20,8 @@
 - ユーザー認証（JWT）
 - チャット履歴の保存
 - OpenAI Function Callingによる自動ツール呼び出し
-- **40種類**の在庫最適化・リスク管理機能
-  - 在庫最適化ツール（34種類）: EOQ、安全在庫、定期発注、需要予測など
+- **49種類**の在庫最適化・リスク管理機能
+  - 在庫最適化ツール（43種類）: EOQ、安全在庫、定期発注、需要予測、ロットサイズ最適化、Excel連携、最適化結果の可視化など
   - サプライチェーンリスク管理ツール（6種類）: MERIODAS によるリスク分析
 - インタラクティブな可視化（Plotly）
 
@@ -506,7 +506,7 @@ curl http://localhost:8000/health
 
 MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される在庫最適化関数群です。
 
-### ツール一覧（34種類）
+### ツール一覧（43種類）
 
 #### カテゴリ別分類
 
@@ -600,6 +600,21 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 | ツール名 | 機能 | ファイル参照 |
 |---------|------|-------------|
 | `generate_sample_data` | サンプルデータ生成 | mcp_tools.py:392 |
+
+---
+
+##### 11. ロットサイズ最適化
+| ツール名 | 機能 | ファイル参照 |
+|---------|------|-------------|
+| `optimize_lotsizing` | 基本ロットサイズ最適化（単一モード） | mcp_tools.py:1730 |
+| `optimize_multimode_lotsizing` | マルチモードロットサイズ最適化 | mcp_tools.py:1780 |
+| `visualize_lotsizing_result` | 基本ロットサイズ最適化結果の可視化 | mcp_tools.py:2588 |
+| `visualize_multimode_lotsizing_result` | マルチモードロットサイズ最適化結果の可視化 | mcp_tools.py:2651 |
+| `generate_lotsize_template` | ロットサイズ最適化用Excelテンプレート生成 | mcp_tools.py:1832 |
+| `generate_order_template` | 注文データ入力用Excelテンプレート生成 | mcp_tools.py:1852 |
+| `add_lotsize_detailed_sheets` | 期別資源容量の詳細シート追加 | mcp_tools.py:1871 |
+| `optimize_lotsizing_from_excel` | ExcelからデータRを読み込んで最適化実行 | mcp_tools.py:1911 |
+| `export_lotsizing_result` | 最適化結果のExcelエクスポート | mcp_tools.py:1947 |
 
 ---
 
@@ -1034,6 +1049,842 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 
 ---
 
+#### `optimize_lotsizing`
+**機能**: 基本ロットサイズ最適化（単一モード生産）
+
+**入力パラメータ**:
+```json
+{
+  "item_data": [
+    {"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100}
+  ],
+  "production_data": [
+    {"name": "Product1", "SetupTime": 30, "SetupCost": 500, "ProdTime": 2, "ProdCost": 10}
+  ],
+  "demand": [[100, 120, 110, 130, 140, 125, 135, 145, 150, 160]],
+  "resource_data": [
+    {"name": "Res1", "period": 0, "capacity": 2000},
+    {"name": "Res1", "period": 1, "capacity": 2000}
+  ],
+  "max_cpu": 60,
+  "solver": "CBC",
+  "visualize": false
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| item_data | array | ✓ | 品目データ配列 |
+| production_data | array | ✓ | 生産データ配列 |
+| demand | array | ✓ | 需要データ（2次元配列: [品目][期]） |
+| resource_data | array | ✓ | 資源データ配列 |
+| max_cpu | integer | - | 最大計算時間（秒）（デフォルト: 60） |
+| solver | string | - | ソルバー（"CBC" / "GRB"）（デフォルト: "CBC"） |
+| visualize | boolean | - | 可視化するか（デフォルト: false） |
+
+**item_data構造**:
+- `name`: 品目名
+- `inv_cost`: 在庫保管費用（円/期/unit）
+- `safety_inventory`: 安全在庫量（下限）
+- `target_inventory`: 目標在庫量（上限）
+- `initial_inventory`: 初期在庫量
+
+**production_data構造**:
+- `name`: 品目名
+- `SetupTime`: 段取り時間（分）
+- `SetupCost`: 段取り費用（円）
+- `ProdTime`: 生産時間（分/unit）
+- `ProdCost`: 生産費用（円/unit）
+
+**resource_data構造**:
+- `name`: 資源名
+- `period`: 期
+- `capacity`: 容量（分）
+
+**出力**:
+```json
+{
+  "status": "success",
+  "objective_value": 16185.0,
+  "message": "最適化が完了しました",
+  "solver_status": "Optimal",
+  "production_plan": {
+    "Product1": [0, 245, 0, 0, 280, 0, 0, 295, 0, 0]
+  },
+  "inventory_levels": {
+    "Product1": [100, 0, 125, 15, 0, 140, 15, 0, 150, 0]
+  },
+  "violated_constraints": []
+}
+```
+
+**実装**: `mcp_tools.py:6417-6526`
+
+---
+
+#### `optimize_multimode_lotsizing`
+**機能**: マルチモードロットサイズ最適化（複数の生産モードから最適なモードと生産量を選択）
+
+**入力パラメータ**:
+```json
+{
+  "item_data": [
+    {"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100, "final_inventory": 50}
+  ],
+  "resource_data": [
+    {"name": "Machine1", "capacity": 8000}
+  ],
+  "process_data": [
+    {"item": "Product1", "mode": "Fast", "setup_cost": 500, "prod_cost": 15, "n_resources": 1},
+    {"item": "Product1", "mode": "Slow", "setup_cost": 300, "prod_cost": 12, "n_resources": 1}
+  ],
+  "bom_data": [],
+  "usage_data": [
+    {"item": "Product1", "mode": "Fast", "resource": "Machine1", "setup_time": 60, "prod_time": 5},
+    {"item": "Product1", "mode": "Slow", "resource": "Machine1", "setup_time": 30, "prod_time": 8}
+  ],
+  "demand": {"0,Product1": 100, "1,Product1": 120, "2,Product1": 110},
+  "capacity": {"0,Machine1": 8000, "1,Machine1": 8000, "2,Machine1": 8000},
+  "T": 3,
+  "visualize": false
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| item_data | array | ✓ | 品目データ配列 |
+| resource_data | array | ✓ | 資源データ配列 |
+| process_data | array | ✓ | 工程データ配列（モード別） |
+| bom_data | array | ✓ | BOM（部品表）データ配列 |
+| usage_data | array | ✓ | 資源使用データ配列 |
+| demand | object | ✓ | 需要データ（辞書形式: "期,品目": 需要量） |
+| capacity | object | ✓ | 容量データ（辞書形式: "期,資源": 容量） |
+| T | integer | ✓ | 計画期間数 |
+| visualize | boolean | - | 可視化するか（デフォルト: false） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "objective_value": 7930.0,
+  "message": "マルチモードロットサイズ最適化が完了しました",
+  "solver_status": "Optimal",
+  "production_plan": {
+    "Product1,Fast": [100, 0, 110],
+    "Product1,Slow": [0, 120, 0]
+  },
+  "inventory_levels": {
+    "Product1": [100, 0, 0]
+  }
+}
+```
+
+**実装**: `mcp_tools.py:6607-6710`
+
+---
+
+#### `visualize_lotsizing_result`
+**機能**: 直前に実行した基本ロットサイズ最適化（`optimize_lotsizing`）の結果を可視化
+
+**入力パラメータ**: なし
+
+**出力**:
+```json
+{
+  "status": "success",
+  "inventory_visualization_id": "550e8400-e29b-41d4-a716-446655440010",
+  "inventory_visualization_url": "/api/visualization/550e8400-e29b-41d4-a716-446655440010",
+  "production_visualization_id": "550e8400-e29b-41d4-a716-446655440011",
+  "production_visualization_url": "/api/visualization/550e8400-e29b-41d4-a716-446655440011",
+  "message": "基本ロットサイズ最適化の可視化が完成しました。",
+  "violated_constraints": []
+}
+```
+
+**可視化内容**:
+1. **在庫推移グラフ** (`inventory_visualization_url`):
+   - 各品目の在庫量の時系列推移
+   - 安全在庫・目標在庫のライン表示
+
+2. **生産量・資源使用グラフ** (`production_visualization_url`):
+   - 各品目の期別生産量（棒グラフ）
+   - 資源容量制約のライン表示
+
+**注意**:
+- `optimize_lotsizing`を事前に実行している必要がある
+- ユーザーごとにキャッシュが管理される
+- キャッシュは最後の最適化結果のみ保持
+
+**実装**: `mcp_tools.py:2588-2649`
+
+---
+
+#### `visualize_multimode_lotsizing_result`
+**機能**: 直前に実行したマルチモードロットサイズ最適化（`optimize_multimode_lotsizing`）の結果を可視化
+
+**入力パラメータ**: なし
+
+**出力**:
+```json
+{
+  "status": "success",
+  "inventory_visualization_id": "550e8400-e29b-41d4-a716-446655440012",
+  "inventory_visualization_url": "/api/visualization/550e8400-e29b-41d4-a716-446655440012",
+  "production_visualization_id": "550e8400-e29b-41d4-a716-446655440013",
+  "production_visualization_url": "/api/visualization/550e8400-e29b-41d4-a716-446655440013",
+  "message": "マルチモードロットサイズ最適化の可視化が完成しました。",
+  "periods": 5
+}
+```
+
+**可視化内容**:
+1. **在庫推移グラフ** (`inventory_visualization_url`):
+   - 各品目の在庫量の時系列推移
+   - 在庫上下限のライン表示
+
+2. **資源別生産量グラフ** (`production_visualization_url`):
+   - 資源ごとのサブプロット
+   - モード別生産量（積み上げ棒グラフ）
+   - 資源容量制約のライン表示
+
+**注意**:
+- `optimize_multimode_lotsizing`を事前に実行している必要がある
+- ユーザーごとにキャッシュが管理される
+
+**実装**: `mcp_tools.py:2651-2716`
+
+---
+
+#### `generate_lotsize_template`
+**機能**: ロットサイズ最適化用のExcelテンプレートを生成
+
+**入力パラメータ**:
+```json
+{
+  "output_filepath": "lotsize_master.xlsx",
+  "include_bom": true
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| output_filepath | string | ✓ | 出力ファイルパス |
+| include_bom | boolean | - | BOM関連シートを含めるか（デフォルト: false） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "filepath": "lotsize_master.xlsx",
+  "include_bom": true,
+  "message": "ロットサイズ最適化用のExcelテンプレートを生成しました",
+  "sheets_created": ["品目", "工程", "資源", "部品展開表", "資源必要量"]
+}
+```
+
+**生成されるシート**:
+1. **品目**: 品目マスタ（在庫費用、在庫上下限、初期・最終在庫量）
+2. **工程**: 工程マスタ（段取り費用・時間、生産費用・時間）
+3. **資源**: 資源マスタ（稼働時間上限）
+4. **部品展開表** (include_bom=trueの場合): BOM構造
+5. **資源必要量** (include_bom=trueの場合): モード別資源使用量
+
+**実装**: `mcp_tools.py:6786-6830`
+
+---
+
+#### `generate_order_template`
+**機能**: 注文データ入力用のExcelテンプレートを生成
+
+**入力パラメータ**:
+```json
+{
+  "output_filepath": "order_data.xlsx"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| output_filepath | string | ✓ | 出力ファイルパス |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "filepath": "order_data.xlsx",
+  "message": "注文データ入力用のExcelテンプレートを生成しました"
+}
+```
+
+**生成されるシート**:
+- **注文**: 品目ID、納期、数量の入力欄
+
+**実装**: `mcp_tools.py:6832-6850`
+
+---
+
+#### `add_lotsize_detailed_sheets`
+**機能**: 既存のロットサイズマスタに期別資源容量の詳細シートを追加
+
+**入力パラメータ**:
+```json
+{
+  "master_filepath": "lotsize_master.xlsx",
+  "output_filepath": "lotsize_master_detailed.xlsx",
+  "start_date": "2025-01-01",
+  "end_date": "2025-01-31",
+  "period": 1,
+  "period_unit": "日"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| master_filepath | string | ✓ | 入力マスタファイルパス |
+| output_filepath | string | ✓ | 出力ファイルパス |
+| start_date | string | ✓ | 開始日（YYYY-MM-DD） |
+| end_date | string | ✓ | 終了日（YYYY-MM-DD） |
+| period | integer | - | 期の長さ（デフォルト: 1） |
+| period_unit | string | - | 期の単位（"時" / "日" / "週" / "月"）（デフォルト: "日"） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "filepath": "lotsize_master_detailed.xlsx",
+  "start_date": "2025-01-01",
+  "end_date": "2025-01-31",
+  "period": 1,
+  "period_unit": "日",
+  "num_periods": 31,
+  "message": "期別資源容量の詳細シートを追加しました"
+}
+```
+
+**実装**: `mcp_tools.py:6852-6910`
+
+---
+
+#### `optimize_lotsizing_from_excel`
+**機能**: ExcelファイルからデータR読み込んでロットサイズ最適化を実行
+
+**入力パラメータ**:
+```json
+{
+  "master_filepath": "lotsize_master_detailed.xlsx",
+  "order_filepath": "order_data.xlsx",
+  "start_date": "2025-01-01",
+  "end_date": "2025-01-31",
+  "period": 1,
+  "period_unit": "日",
+  "max_cpu": 60,
+  "solver": "CBC",
+  "visualize": false
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| master_filepath | string | ✓ | マスタファイルパス |
+| order_filepath | string | ✓ | 注文ファイルパス |
+| start_date | string | ✓ | 開始日（YYYY-MM-DD） |
+| end_date | string | ✓ | 終了日（YYYY-MM-DD） |
+| period | integer | - | 期の長さ（デフォルト: 1） |
+| period_unit | string | - | 期の単位（デフォルト: "日"） |
+| max_cpu | integer | - | 最大計算時間（秒）（デフォルト: 60） |
+| solver | string | - | ソルバー（デフォルト: "CBC"） |
+| visualize | boolean | - | 可視化するか（デフォルト: false） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "objective_value": 25430.0,
+  "message": "Excelファイルからの最適化が完了しました",
+  "solver_status": "Optimal",
+  "num_items": 5,
+  "num_periods": 31,
+  "cost_breakdown": {
+    "setup_cost": 12000.0,
+    "production_cost": 8500.0,
+    "inventory_cost": 4930.0
+  }
+}
+```
+
+**実装**: `mcp_tools.py:6912-6998`
+
+---
+
+#### `export_lotsizing_result`
+**機能**: 直前に実行したロットサイズ最適化結果をExcelファイルにエクスポート
+
+**入力パラメータ**:
+```json
+{
+  "output_filepath": "optimization_result.xlsx",
+  "start_date": "2025-01-01",
+  "end_date": "2025-01-31",
+  "period": 1,
+  "period_unit": "日"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| output_filepath | string | ✓ | 出力ファイルパス |
+| start_date | string | ✓ | 開始日（YYYY-MM-DD） |
+| end_date | string | ✓ | 終了日（YYYY-MM-DD） |
+| period | integer | - | 期の長さ（デフォルト: 1） |
+| period_unit | string | - | 期の単位（デフォルト: "日"） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "filepath": "optimization_result.xlsx",
+  "message": "最適化結果をExcelファイルにエクスポートしました",
+  "sheets_created": ["費用内訳", "品目Product1", "品目Product2"]
+}
+```
+
+**エクスポートされるシート**:
+1. **費用内訳**: 各費用項目の合計
+2. **品目別シート**: 各品目の在庫量、生産量、需要量、品切れ量、超過量
+
+**注意**:
+- `optimize_multimode_lotsizing`を事前に実行している必要がある
+- ユーザーごとにキャッシュが管理される
+
+**実装**: `mcp_tools.py:7000-7062`
+
+---
+
+### ロットサイズ最適化ツールの実行例
+
+以下は、Phase 1, 2, 3のロットサイズ最適化ツールをcurlコマンドで実行する例です。
+
+#### 前提条件
+
+JWT認証トークンを取得する必要があります：
+
+```bash
+# 1. ログインしてトークンを取得
+curl -X POST https://web-production-1ed39.up.railway.app/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your-email@example.com","password":"your-password"}'
+
+# レスポンス例:
+# {"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...","token_type":"bearer"}
+
+# 2. トークンを環境変数に設定
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+#### Phase 1: 基本最適化ツールの実行例
+
+##### 例1: 基本ロットサイズ最適化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_lotsizing \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_data": [
+      {"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100}
+    ],
+    "production_data": [
+      {"name": "Product1", "SetupTime": 30, "SetupCost": 500, "ProdTime": 2, "ProdCost": 10}
+    ],
+    "demand": [[100, 120, 110, 130, 140]],
+    "resource_data": [
+      {"name": "Res1", "period": 0, "capacity": 2000},
+      {"name": "Res1", "period": 1, "capacity": 2000},
+      {"name": "Res1", "period": 2, "capacity": 2000},
+      {"name": "Res1", "period": 3, "capacity": 2000},
+      {"name": "Res1", "period": 4, "capacity": 2000}
+    ],
+    "max_cpu": 60,
+    "solver": "CBC",
+    "visualize": false
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "objective_value": 8185.0,
+  "message": "最適化が完了しました",
+  "solver_status": "Optimal",
+  "production_plan": {
+    "Product1": [0, 245, 0, 0, 280]
+  },
+  "inventory_levels": {
+    "Product1": [100, 0, 125, 15, 0]
+  },
+  "violated_constraints": []
+}
+```
+
+##### 例2: マルチモードロットサイズ最適化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_multimode_lotsizing \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_data": [
+      {"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100, "final_inventory": 50}
+    ],
+    "resource_data": [
+      {"name": "Machine1", "capacity": 8000}
+    ],
+    "process_data": [
+      {"item": "Product1", "mode": "Fast", "setup_cost": 500, "prod_cost": 15, "n_resources": 1},
+      {"item": "Product1", "mode": "Slow", "setup_cost": 300, "prod_cost": 12, "n_resources": 1}
+    ],
+    "bom_data": [],
+    "usage_data": [
+      {"item": "Product1", "mode": "Fast", "resource": "Machine1", "setup_time": 60, "prod_time": 5},
+      {"item": "Product1", "mode": "Slow", "resource": "Machine1", "setup_time": 30, "prod_time": 8}
+    ],
+    "demand": {"0,Product1": 100, "1,Product1": 120, "2,Product1": 110, "3,Product1": 130, "4,Product1": 140},
+    "capacity": {"0,Machine1": 8000, "1,Machine1": 8000, "2,Machine1": 8000, "3,Machine1": 8000, "4,Machine1": 8000},
+    "T": 5,
+    "visualize": false
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "objective_value": 7930.0,
+  "message": "マルチモードロットサイズ最適化が完了しました",
+  "solver_status": "Optimal",
+  "production_plan": {
+    "Product1,Fast": [100, 0, 110, 0, 140],
+    "Product1,Slow": [0, 120, 0, 130, 0]
+  },
+  "inventory_levels": {
+    "Product1": [100, 0, 0, 0, 0]
+  }
+}
+```
+
+#### Phase 3: 可視化ツールの実行例
+
+##### 例3: 基本ロットサイズ最適化結果の可視化
+
+```bash
+# Step 1: 最適化を実行（上記の例1を実行）
+
+# Step 2: 可視化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_lotsizing_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "inventory_visualization_id": "37c53e34-0cb0-4d23-86c5-ac3bb349b4fc",
+  "inventory_visualization_url": "/api/visualization/37c53e34-0cb0-4d23-86c5-ac3bb349b4fc",
+  "production_visualization_id": "2828e684-4240-4672-9269-0a61443ff563",
+  "production_visualization_url": "/api/visualization/2828e684-4240-4672-9269-0a61443ff563",
+  "message": "基本ロットサイズ最適化の可視化が完成しました。",
+  "violated_constraints": []
+}
+```
+
+可視化を表示するには：
+```bash
+# 在庫推移グラフを表示
+open "https://web-production-1ed39.up.railway.app/api/visualization/37c53e34-0cb0-4d23-86c5-ac3bb349b4fc"
+
+# 生産量・資源使用グラフを表示
+open "https://web-production-1ed39.up.railway.app/api/visualization/2828e684-4240-4672-9269-0a61443ff563"
+```
+
+##### 例4: マルチモードロットサイズ最適化結果の可視化
+
+```bash
+# Step 1: マルチモード最適化を実行（上記の例2を実行）
+
+# Step 2: 可視化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_multimode_lotsizing_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "inventory_visualization_id": "68baba1c-7049-458b-a735-fc8689bd91d7",
+  "inventory_visualization_url": "/api/visualization/68baba1c-7049-458b-a735-fc8689bd91d7",
+  "production_visualization_id": "12c3c40e-9c14-44a7-866a-3bfca710cfd7",
+  "production_visualization_url": "/api/visualization/12c3c40e-9c14-44a7-866a-3bfca710cfd7",
+  "message": "マルチモードロットサイズ最適化の可視化が完成しました。",
+  "periods": 5
+}
+```
+
+#### Phase 2: Excel関連ツールの実行例
+
+##### 例5: ロットサイズテンプレート生成
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_lotsize_template \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "output_filepath": "my_lotsize_master.xlsx",
+    "include_bom": true
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "filepath": "my_lotsize_master.xlsx",
+  "include_bom": true,
+  "message": "ロットサイズ最適化用のExcelテンプレートを生成しました",
+  "sheets_created": ["品目", "工程", "資源", "部品展開表", "資源必要量"]
+}
+```
+
+##### 例6: 注文テンプレート生成
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_order_template \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "output_filepath": "my_order_data.xlsx"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "filepath": "my_order_data.xlsx",
+  "message": "注文データ入力用のExcelテンプレートを生成しました"
+}
+```
+
+##### 例7: 期別詳細シート追加
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/add_lotsize_detailed_sheets \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "master_filepath": "my_lotsize_master.xlsx",
+    "output_filepath": "my_lotsize_master_detailed.xlsx",
+    "start_date": "2025-01-01",
+    "end_date": "2025-01-31",
+    "period": 1,
+    "period_unit": "日"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "filepath": "my_lotsize_master_detailed.xlsx",
+  "start_date": "2025-01-01",
+  "end_date": "2025-01-31",
+  "period": 1,
+  "period_unit": "日",
+  "num_periods": 31,
+  "message": "期別資源容量の詳細シートを追加しました"
+}
+```
+
+##### 例8: ExcelからデータR読み込んで最適化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_lotsizing_from_excel \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "master_filepath": "my_lotsize_master_detailed.xlsx",
+    "order_filepath": "my_order_data.xlsx",
+    "start_date": "2025-01-01",
+    "end_date": "2025-01-31",
+    "period": 1,
+    "period_unit": "日",
+    "max_cpu": 60,
+    "solver": "CBC",
+    "visualize": false
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "objective_value": 25430.0,
+  "message": "Excelファイルからの最適化が完了しました",
+  "solver_status": "Optimal",
+  "num_items": 5,
+  "num_periods": 31,
+  "cost_breakdown": {
+    "setup_cost": 12000.0,
+    "production_cost": 8500.0,
+    "inventory_cost": 4930.0
+  }
+}
+```
+
+##### 例9: 最適化結果のExcelエクスポート
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/export_lotsizing_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "output_filepath": "optimization_result.xlsx",
+    "start_date": "2025-01-01",
+    "end_date": "2025-01-31",
+    "period": 1,
+    "period_unit": "日"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "filepath": "optimization_result.xlsx",
+  "message": "最適化結果をExcelファイルにエクスポートしました",
+  "sheets_created": ["費用内訳", "品目Product1", "品目Product2", "品目Product3"]
+}
+```
+
+#### 典型的なワークフロー例
+
+##### ワークフロー1: JSONデータから直接最適化→可視化
+
+```bash
+# Step 1: 基本ロットサイズ最適化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_lotsizing \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_data": [{"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100}],
+    "production_data": [{"name": "Product1", "SetupTime": 30, "SetupCost": 500, "ProdTime": 2, "ProdCost": 10}],
+    "demand": [[100, 120, 110, 130, 140]],
+    "resource_data": [
+      {"name": "Res1", "period": 0, "capacity": 2000},
+      {"name": "Res1", "period": 1, "capacity": 2000},
+      {"name": "Res1", "period": 2, "capacity": 2000},
+      {"name": "Res1", "period": 3, "capacity": 2000},
+      {"name": "Res1", "period": 4, "capacity": 2000}
+    ],
+    "max_cpu": 60,
+    "solver": "CBC",
+    "visualize": false
+  }'
+
+# Step 2: 可視化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_lotsizing_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+##### ワークフロー2: Excelファイル経由で最適化→エクスポート
+
+```bash
+# Step 1: テンプレート生成
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_lotsize_template \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"output_filepath":"master.xlsx","include_bom":true}'
+
+# Step 2: 注文テンプレート生成
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_order_template \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"output_filepath":"order.xlsx"}'
+
+# Step 3: 期別詳細シート追加
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/add_lotsize_detailed_sheets \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "master_filepath":"master.xlsx",
+    "output_filepath":"master_detailed.xlsx",
+    "start_date":"2025-01-01",
+    "end_date":"2025-01-31",
+    "period":1,
+    "period_unit":"日"
+  }'
+
+# [手動] Step 4: Excelファイルにデータを入力
+
+# Step 5: Excelから最適化
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_lotsizing_from_excel \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "master_filepath":"master_detailed.xlsx",
+    "order_filepath":"order.xlsx",
+    "start_date":"2025-01-01",
+    "end_date":"2025-01-31",
+    "period":1,
+    "period_unit":"日",
+    "max_cpu":60,
+    "solver":"CBC",
+    "visualize":false
+  }'
+
+# Step 6: 結果をExcelにエクスポート
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/export_lotsizing_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "output_filepath":"result.xlsx",
+    "start_date":"2025-01-01",
+    "end_date":"2025-01-31",
+    "period":1,
+    "period_unit":"日"
+  }'
+```
+
+#### ローカル環境での実行例
+
+ローカル開発環境（`ENVIRONMENT=local`）では、認証なしで実行できます：
+
+```bash
+# ローカル環境（認証不要）
+curl -X POST http://localhost:8000/api/tools/optimize_lotsizing \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_data": [{"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100}],
+    "production_data": [{"name": "Product1", "SetupTime": 30, "SetupCost": 500, "ProdTime": 2, "ProdCost": 10}],
+    "demand": [[100, 120, 110]],
+    "resource_data": [
+      {"name": "Res1", "period": 0, "capacity": 2000},
+      {"name": "Res1", "period": 1, "capacity": 2000},
+      {"name": "Res1", "period": 2, "capacity": 2000}
+    ],
+    "max_cpu": 60,
+    "solver": "CBC"
+  }'
+```
+
+---
+
 ### MCP Tools実装関数
 
 #### `execute_mcp_function(function_name: str, arguments: dict, user_id: int = None) -> dict`
@@ -1097,7 +1948,7 @@ html = get_visualization_html(user_id=123, viz_id="550e8400-...")
 
 SCRM Toolsは、MERIODAS（MEta RIsk Oriented Disruption Analysis System）フレームワークを用いて、サプライチェーンネットワークにおける供給混乱リスクを分析するためのツール群です。
 
-### ツール一覧（6種類）
+### ツール一覧（9種類）
 
 #### カテゴリ別分類
 
@@ -1121,7 +1972,14 @@ SCRM Toolsは、MERIODAS（MEta RIsk Oriented Disruption Analysis System）フ�
 | ツール名 | 機能 | ファイル参照 |
 |---------|------|-------------|
 | `analyze_supply_chain_risk` | サプライチェーンリスク分析（TTS計算） | mcp_tools.py:5354 |
-| `visualize_scrm_network` | リスク分析結果のネットワーク可視化 | mcp_tools.py:5423 |
+| `visualize_scrm_network` | リスク分析結果のネットワーク可視化 | mcp_tools.py:5729 |
+
+##### 5. 在庫最適化（途絶リスク対応）
+| ツール名 | 機能 | ファイル参照 |
+|---------|------|-------------|
+| `optimize_scrm_inventory_expected` | 期待値最小化による在庫最適化 | mcp_tools.py:5805 |
+| `optimize_scrm_inventory_cvar` | CVaR最小化による在庫最適化（リスク回避型） | mcp_tools.py:5899 |
+| `compare_scrm_policies` | 在庫方針比較（期待値 vs CVaR） | mcp_tools.py:5999 |
 
 ---
 
@@ -1461,7 +2319,254 @@ SCRM Toolsは、MERIODAS（MEta RIsk Oriented Disruption Analysis System）フ�
 - エッジ: サプライチェーンのリンクを表示
 - インタラクティブ: ノードをホバーするとTTS値と詳細情報を表示
 
-**実装**: `mcp_tools.py:5423` (execute_mcp_function内)
+**実装**: `mcp_tools.py:5729` (execute_mcp_function内)
+
+---
+
+#### `optimize_scrm_inventory_expected`
+**機能**: 期待値最小化による在庫最適化を実行します。サプライチェーンの途絶シナリオを考慮し、在庫保管費用と品切れ費用の期待値を最小化する最適在庫量を計算します。
+
+**入力パラメータ**:
+```json
+{
+  "filename_suffix": "test_01",
+  "h_cost": {
+    "0,Retail_0001": 1.0,
+    "1,Retail_0001": 1.0,
+    "0,Retail_0003": 1.0
+  },
+  "b_cost": {
+    "0,Retail_0001": 10.0,
+    "1,Retail_0001": 10.0,
+    "0,Retail_0003": 10.0
+  },
+  "disruption_prob": {
+    "0": 0.1,
+    "1": 0.1,
+    "2": 0.05
+  },
+  "TTR": {
+    "0": 2,
+    "1": 3,
+    "2": 2
+  },
+  "K_max": 2
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filename_suffix | string | ✓ | 読み込むCSVファイル名のサフィックス |
+| h_cost | object | ✓ | 在庫保管費用の辞書。キー: '工場番号,製品名'、値: 費用 |
+| b_cost | object | ✓ | 品切れ費用の辞書。キー: '工場番号,製品名'、値: 費用 |
+| disruption_prob | object | ✓ | 工場の途絶確率の辞書。キー: 工場番号(文字列)、値: 確率(0-1) |
+| TTR | object | ✓ | 工場の回復時間(Time To Recover)の辞書。キー: 工場番号(文字列)、値: 期間数 |
+| K_max | integer | - | 同時途絶する工場数の上限（デフォルト: 2） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "optimal_inventory": {
+    "0,Retail_0001": 150.5,
+    "1,Retail_0001": 200.3,
+    "0,Retail_0003": 100.0
+  },
+  "total_cost": 1492.0,
+  "expected_inventory_cost": 1492.0,
+  "expected_backorder_cost": 0.0,
+  "n_scenarios": 45,
+  "message": "期待値最小化による在庫最適化が完了しました（シナリオ数: 45）"
+}
+```
+
+**最適化アルゴリズム**:
+- **目的関数**: 期待総費用最小化 = 在庫保管費用 + 期待品切れ費用
+- **モデル**: 2段階確率最適化（即時決定変数: 在庫量、リカース変数: バックオーダー量）
+- **シナリオ生成**: 工場途絶の組み合わせからシナリオを生成（単一途絶、同時途絶）
+- **制約**: BOM制約、生産容量制約、需要満足制約
+
+**適用例**:
+- 標準的なリスク対応在庫計画
+- コスト効率重視の在庫配置
+- 期待値ベースの意思決定
+
+**実装**: `mcp_tools.py:5805` (execute_mcp_function内)
+
+---
+
+#### `optimize_scrm_inventory_cvar`
+**機能**: CVaR（Conditional Value at Risk）最小化による在庫最適化を実行します。期待値最小化よりもリスク回避的な最適化で、最悪シナリオに対して頑健な在庫量を計算します。
+
+**入力パラメータ**:
+```json
+{
+  "filename_suffix": "test_01",
+  "h_cost": {
+    "0,Retail_0001": 1.0,
+    "1,Retail_0001": 1.0,
+    "0,Retail_0003": 1.0
+  },
+  "b_cost": {
+    "0,Retail_0001": 10.0,
+    "1,Retail_0001": 10.0,
+    "0,Retail_0003": 10.0
+  },
+  "disruption_prob": {
+    "0": 0.1,
+    "1": 0.1,
+    "2": 0.05
+  },
+  "TTR": {
+    "0": 2,
+    "1": 3,
+    "2": 2
+  },
+  "beta": 0.95,
+  "K_max": 2
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filename_suffix | string | ✓ | 読み込むCSVファイル名のサフィックス |
+| h_cost | object | ✓ | 在庫保管費用の辞書。キー: '工場番号,製品名'、値: 費用 |
+| b_cost | object | ✓ | 品切れ費用の辞書。キー: '工場番号,製品名'、値: 費用 |
+| disruption_prob | object | ✓ | 工場の途絶確率の辞書 |
+| TTR | object | ✓ | 工場の回復時間の辞書 |
+| beta | number | - | 信頼水準（デフォルト: 0.95）。0.95は95%信頼水準を意味 |
+| K_max | integer | - | 同時途絶する工場数の上限（デフォルト: 2） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "optimal_inventory": {
+    "0,Retail_0001": 180.2,
+    "1,Retail_0001": 230.5,
+    "0,Retail_0003": 120.0
+  },
+  "cvar": 1650.5,
+  "var": 1580.0,
+  "expected_cost": 1520.0,
+  "expected_inventory_cost": 1520.0,
+  "expected_backorder_cost": 0.0,
+  "beta": 0.95,
+  "n_scenarios": 45,
+  "message": "CVaR最小化による在庫最適化が完了しました（β=0.95, シナリオ数: 45）"
+}
+```
+
+**最適化アルゴリズム**:
+- **目的関数**: CVaR最小化 = θ + (1/(1-β)) * Σ(確率 × 超過費用)
+- **VaR (Value at Risk)**: θ = β分位点の費用
+- **CVaR**: VaRを超える費用の期待値
+- **リスク回避度**: betaが高いほど保守的（0.95 > 0.90）
+
+**適用例**:
+- リスク回避的な在庫計画
+- 最悪ケースへの備えが重要な場合
+- 規制要件で高い信頼性が求められる場合
+
+**実装**: `mcp_tools.py:5899` (execute_mcp_function内)
+
+---
+
+#### `compare_scrm_policies`
+**機能**: 期待値最小化とCVaR最小化の2つの在庫方針を比較します。両方の最適化を実行し、在庫量、総費用、リスク指標を比較して推奨方針を提示します。
+
+**入力パラメータ**:
+```json
+{
+  "filename_suffix": "test_01",
+  "h_cost": {
+    "0,Retail_0001": 1.0,
+    "1,Retail_0001": 1.0
+  },
+  "b_cost": {
+    "0,Retail_0001": 10.0,
+    "1,Retail_0001": 10.0
+  },
+  "disruption_prob": {
+    "0": 0.1,
+    "1": 0.1,
+    "2": 0.05
+  },
+  "TTR": {
+    "0": 2,
+    "1": 3,
+    "2": 2
+  },
+  "beta": 0.95,
+  "K_max": 2
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filename_suffix | string | ✓ | 読み込むCSVファイル名のサフィックス |
+| h_cost | object | ✓ | 在庫保管費用の辞書 |
+| b_cost | object | ✓ | 品切れ費用の辞書 |
+| disruption_prob | object | ✓ | 工場の途絶確率の辞書 |
+| TTR | object | ✓ | 工場の回復時間の辞書 |
+| beta | number | - | CVaR信頼水準（デフォルト: 0.95） |
+| K_max | integer | - | 同時途絶する工場数の上限（デフォルト: 2） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "expected_policy": {
+    "optimal_inventory": {
+      "0,Retail_0001": 150.5,
+      "1,Retail_0001": 200.3
+    },
+    "total_cost": 1492.0,
+    "expected_inventory_cost": 1492.0,
+    "expected_backorder_cost": 0.0
+  },
+  "cvar_policy": {
+    "optimal_inventory": {
+      "0,Retail_0001": 180.2,
+      "1,Retail_0001": 230.5
+    },
+    "cvar": 1650.5,
+    "var": 1580.0,
+    "expected_cost": 1520.0
+  },
+  "comparison": {
+    "total_expected_inventory": 350.8,
+    "total_cvar_inventory": 410.7,
+    "inventory_increase": 59.9,
+    "inventory_increase_pct": 17.1,
+    "expected_total_cost": 1492.0,
+    "cvar_total_cost": 1520.0,
+    "cost_increase": 28.0,
+    "cost_increase_pct": 1.88,
+    "var": 1580.0,
+    "cvar": 1650.5
+  },
+  "recommendation": "CVaR方針を推奨します。費用増加が小さく、リスク回避効果が高いです。",
+  "message": "在庫方針の比較が完了しました"
+}
+```
+
+**比較基準**:
+- **在庫量**: CVaR方針は通常、期待値方針より多くの在庫を保持
+- **費用**: 期待値方針の方が期待費用は低いが、リスクが高い
+- **リスク指標**: CVaR/VaRは最悪ケースへの備えを示す
+
+**推奨ロジック**:
+- 費用増加率 < 5%: CVaR方針を推奨（コスト増加が小さく、リスク回避効果が高い）
+- 費用増加率 5-15%: 状況に応じて選択（トレードオフを考慮）
+- 費用増加率 > 15%: 期待値方針を推奨（CVaR方針の費用増加が大きすぎる）
+
+**適用例**:
+- 在庫方針の意思決定支援
+- リスク許容度に応じた方針選択
+- 経営層への提案資料作成
+
+**実装**: `mcp_tools.py:5999` (execute_mcp_function内)
 
 ---
 
