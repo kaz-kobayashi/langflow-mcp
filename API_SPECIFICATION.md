@@ -7,7 +7,8 @@
 4. [認証・セキュリティ](#認証セキュリティ)
 5. [FastAPIエンドポイント](#fastapiエンドポイント)
 6. [MCP Tools（在庫最適化ツール）](#mcp-tools在庫最適化ツール)
-7. [環境変数](#環境変数)
+7. [SCRM Tools（サプライチェーンリスク管理ツール）](#scrm-toolsサプライチェーンリスク管理ツール)
+8. [環境変数](#環境変数)
 
 ---
 
@@ -19,7 +20,9 @@
 - ユーザー認証（JWT）
 - チャット履歴の保存
 - OpenAI Function Callingによる自動ツール呼び出し
-- 30種類以上の在庫最適化機能（EOQ、安全在庫、定期発注、需要予測など）
+- **40種類**の在庫最適化・リスク管理機能
+  - 在庫最適化ツール（34種類）: EOQ、安全在庫、定期発注、需要予測など
+  - サプライチェーンリスク管理ツール（6種類）: MERIODAS によるリスク分析
 - インタラクティブな可視化（Plotly）
 
 ---
@@ -503,7 +506,7 @@ curl http://localhost:8000/health
 
 MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される在庫最適化関数群です。
 
-### ツール一覧（32種類）
+### ツール一覧（34種類）
 
 #### カテゴリ別分類
 
@@ -1087,6 +1090,454 @@ result = execute_mcp_function(
 ```python
 html = get_visualization_html(user_id=123, viz_id="550e8400-...")
 ```
+
+---
+
+## SCRM Tools（サプライチェーンリスク管理ツール）
+
+SCRM Toolsは、MERIODAS（MEta RIsk Oriented Disruption Analysis System）フレームワークを用いて、サプライチェーンネットワークにおける供給混乱リスクを分析するためのツール群です。
+
+### ツール一覧（6種類）
+
+#### カテゴリ別分類
+
+##### 1. データ生成・保存
+| ツール名 | 機能 | ファイル参照 |
+|---------|------|-------------|
+| `generate_scrm_data` | ベンチマーク問題からSCRMデータ生成 | mcp_tools.py:5004 |
+| `save_scrm_data_to_csv` | SCRMデータをCSVファイルに保存 | mcp_tools.py:5102 |
+
+##### 2. データ読み込み
+| ツール名 | 機能 | ファイル参照 |
+|---------|------|-------------|
+| `load_scrm_data_from_csv` | CSVファイルからSCRMデータを読み込み | mcp_tools.py:5208 |
+
+##### 3. グラフ可視化
+| ツール名 | 機能 | ファイル参照 |
+|---------|------|-------------|
+| `visualize_scrm_graph` | BOM/工場/生産グラフの可視化 | mcp_tools.py:5271 |
+
+##### 4. リスク分析
+| ツール名 | 機能 | ファイル参照 |
+|---------|------|-------------|
+| `analyze_supply_chain_risk` | サプライチェーンリスク分析（TTS計算） | mcp_tools.py:5354 |
+| `visualize_scrm_network` | リスク分析結果のネットワーク可視化 | mcp_tools.py:5423 |
+
+---
+
+### ツール詳細仕様
+
+#### `generate_scrm_data`
+**機能**: ベンチマーク問題例からSCRM（サプライチェーンリスク管理）用のネットワークデータを生成します。BOMグラフ、工場ネットワーク、生産グラフを生成し、需要、容量、パイプライン在庫などのパラメータを設定します。
+
+**入力パラメータ**:
+```json
+{
+  "benchmark_id": "01",
+  "n_plants": 3,
+  "n_flex": 2,
+  "prob": 0.5,
+  "capacity_factor": 1.0,
+  "production_factor": 1.0,
+  "pipeline_factor": 1.0,
+  "seed": 1
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| benchmark_id | string | ✓ | ベンチマーク問題のID（"01"〜"38"） |
+| n_plants | integer | - | 各階層の工場数（デフォルト: 3） |
+| n_flex | integer | - | 各工場で生産可能な製品数（デフォルト: 2） |
+| prob | number | - | 工場間の輸送リンク生成確率（0.0〜1.0、デフォルト: 0.5） |
+| capacity_factor | number | - | 生産容量の倍率（デフォルト: 1.0） |
+| production_factor | number | - | 生産量の倍率（デフォルト: 1.0） |
+| pipeline_factor | number | - | パイプライン在庫の倍率（デフォルト: 1.0） |
+| seed | integer | - | 乱数シード（デフォルト: 1） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "benchmark_id": "01",
+  "total_demand": 1000.0,
+  "demand": {
+    "('Plant_0', 'Product_A')": 100.0,
+    "('Plant_1', 'Product_B')": 150.0
+  },
+  "upper_bound": {
+    "('Plant_0', 'Product_A')": 200.0
+  },
+  "capacity": {
+    "('Plant_0', 'Product_A')": 150.0
+  },
+  "pipeline": {
+    "('Plant_0', 'Product_A')": 50.0
+  },
+  "network_info": {
+    "num_plants": 3,
+    "num_products": 5,
+    "num_production_nodes": 15,
+    "num_edges": 42,
+    "n_flex": 2
+  },
+  "parameters": {
+    "n_plants": 3,
+    "n_flex": 2,
+    "prob": 0.5,
+    "capacity_factor": 1.0,
+    "production_factor": 1.0,
+    "pipeline_factor": 1.0,
+    "seed": 1
+  }
+}
+```
+
+**実装**: `mcp_tools.py:5004` (execute_mcp_function内)
+
+---
+
+#### `save_scrm_data_to_csv`
+**機能**: 生成したSCRMデータをCSVファイルに保存します。BOM構造、工場間輸送、工場-製品マトリックス、工場データの4つのCSVファイルを生成します。
+
+**入力パラメータ**:
+```json
+{
+  "benchmark_id": "01",
+  "filename_suffix": "test_01",
+  "n_plants": 3,
+  "n_flex": 2,
+  "prob": 0.5,
+  "capacity_factor": 1.0,
+  "production_factor": 1.0,
+  "pipeline_factor": 1.0,
+  "seed": 1
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| benchmark_id | string | ✓ | ベンチマーク問題のID（"01"〜"38"） |
+| filename_suffix | string | ✓ | CSVファイル名のサフィックス |
+| n_plants | integer | - | 各階層の工場数（デフォルト: 3） |
+| n_flex | integer | - | 各工場で生産可能な製品数（デフォルト: 2） |
+| prob | number | - | 工場間の輸送リンク生成確率（デフォルト: 0.5） |
+| capacity_factor | number | - | 生産容量の倍率（デフォルト: 1.0） |
+| production_factor | number | - | 生産量の倍率（デフォルト: 1.0） |
+| pipeline_factor | number | - | パイプライン在庫の倍率（デフォルト: 1.0） |
+| seed | integer | - | 乱数シード（デフォルト: 1） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "message": "SCRMデータをCSVファイルに保存しました",
+  "files_created": [
+    "./data/scrm/bom_test_01.csv",
+    "./data/scrm/trans_test_01.csv",
+    "./data/scrm/plnt_prod_test_01.csv",
+    "./data/scrm/plnt_test_01.csv"
+  ],
+  "benchmark_id": "01",
+  "filename_suffix": "test_01",
+  "network_info": {
+    "num_plants": 3,
+    "num_products": 5,
+    "num_production_nodes": 15
+  }
+}
+```
+
+**CSVファイル構造**:
+- `bom_{suffix}.csv`: BOM構造（子製品、親製品、使用量）
+- `trans_{suffix}.csv`: 工場間輸送リンク（出発工場、到着工場、輸送時間）
+- `plnt_prod_{suffix}.csv`: 工場-製品マトリックス（工場、製品、生産可否）
+- `plnt_{suffix}.csv`: 工場データ（工場名、需要、在庫上限、生産容量、パイプライン在庫）
+
+**実装**: `mcp_tools.py:5102` (execute_mcp_function内)
+
+---
+
+#### `load_scrm_data_from_csv`
+**機能**: 保存されたCSVファイルからSCRMデータを読み込み、ネットワーク構造を復元します。
+
+**入力パラメータ**:
+```json
+{
+  "filename_suffix": "test_01"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filename_suffix | string | ✓ | 読み込むCSVファイル名のサフィックス |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "message": "SCRMデータをCSVファイルから読み込みました",
+  "files_loaded": [
+    "./data/scrm/bom_test_01.csv",
+    "./data/scrm/trans_test_01.csv",
+    "./data/scrm/plnt_prod_test_01.csv",
+    "./data/scrm/plnt_test_01.csv"
+  ],
+  "demand": {
+    "('Plant_0', 'Product_A')": 100.0
+  },
+  "upper_bound": {
+    "('Plant_0', 'Product_A')": 200.0
+  },
+  "capacity": {
+    "('Plant_0', 'Product_A')": 150.0
+  },
+  "pipeline": {
+    "('Plant_0', 'Product_A')": 50.0
+  },
+  "network_info": {
+    "num_bom_nodes": 5,
+    "num_bom_edges": 8,
+    "num_plants": 3,
+    "num_plant_edges": 6,
+    "num_production_nodes": 15,
+    "num_production_edges": 42,
+    "num_products": 5
+  }
+}
+```
+
+**実装**: `mcp_tools.py:5208` (execute_mcp_function内)
+
+---
+
+#### `visualize_scrm_graph`
+**機能**: BOMグラフ、工場ネットワークグラフ、または生産グラフを可視化します。NetworkXとPlotlyを使用してインタラクティブなネットワーク図を生成します。
+
+**入力パラメータ**:
+```json
+{
+  "filename_suffix": "test_01",
+  "graph_type": "production",
+  "title": "生産グラフ",
+  "node_size": 30,
+  "node_color": "lightblue"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filename_suffix | string | ✓ | 読み込むCSVファイル名のサフィックス |
+| graph_type | string | ✓ | グラフの種類（"bom", "plant", "production"） |
+| title | string | - | グラフのタイトル（デフォルト: グラフ種類に応じた自動タイトル） |
+| node_size | integer | - | ノードのサイズ（デフォルト: 30） |
+| node_color | string | - | ノードの色（デフォルト: "lightblue"） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "visualization_id": "550e8400-e29b-41d4-a716-446655440005",
+  "url": "http://localhost:8000/api/visualization/550e8400-e29b-41d4-a716-446655440005",
+  "graph_type": "production",
+  "network_info": {
+    "num_nodes": 15,
+    "num_edges": 42
+  }
+}
+```
+
+**グラフ種類**:
+- `"bom"`: BOMグラフ（部品表の階層構造）
+- `"plant"`: 工場ネットワークグラフ（工場間の輸送リンク）
+- `"production"`: 生産グラフ（工場グラフとBOMグラフのテンソル積）
+
+**実装**: `mcp_tools.py:5271` (execute_mcp_function内)
+
+---
+
+#### `analyze_supply_chain_risk`
+**機能**: MERIODAS（MEta RIsk Oriented Disruption Analysis System）を使用してサプライチェーンリスクを分析します。各ノード（工場-製品の組み合わせ）のTTS（Time-to-Survival: 生存期間）を計算し、供給混乱に対する脆弱性を評価します。
+
+**入力パラメータ**:
+```json
+{
+  "filename_suffix": "test_01"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filename_suffix | string | ✓ | 読み込むCSVファイル名のサフィックス |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "survival_times": {
+    "('Plant_0', 'Product_A')": 5.0,
+    "('Plant_1', 'Product_B')": 3.5,
+    "('Plant_2', 'Product_C')": 7.2
+  },
+  "statistics": {
+    "mean_tts": 5.23,
+    "min_tts": 2.0,
+    "max_tts": 10.5,
+    "std_tts": 2.15
+  },
+  "critical_nodes_top10": [
+    {
+      "node": "('Plant_1', 'Product_B')",
+      "tts": 2.0,
+      "risk_level": "critical"
+    },
+    {
+      "node": "('Plant_3', 'Product_D')",
+      "tts": 2.5,
+      "risk_level": "high"
+    }
+  ],
+  "network_info": {
+    "num_nodes_analyzed": 15,
+    "num_critical_nodes": 2,
+    "num_high_risk_nodes": 3,
+    "num_medium_risk_nodes": 5,
+    "num_low_risk_nodes": 5
+  },
+  "filename_suffix": "test_01"
+}
+```
+
+**TTS（Time-to-Survival）の解釈**:
+- **低いTTS（0〜3）**: 非常に脆弱。短期間で在庫切れになる
+- **中程度のTTS（3〜7）**: 中程度のリスク。一定期間は対応可能
+- **高いTTS（7以上）**: 低リスク。長期間の供給混乱にも耐えられる
+
+**実装**: `mcp_tools.py:5354` (execute_mcp_function内)
+
+---
+
+#### `visualize_scrm_network`
+**機能**: サプライチェーンリスク分析結果をネットワーク図として可視化します。各ノードのTTS値に応じて色分けし、リスクの高いノードを視覚的に識別できます。
+
+**入力パラメータ**:
+```json
+{
+  "filename_suffix": "test_01"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filename_suffix | string | ✓ | 読み込むCSVファイル名のサフィックス |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "visualization_id": "550e8400-e29b-41d4-a716-446655440006",
+  "url": "http://localhost:8000/api/visualization/550e8400-e29b-41d4-a716-446655440006",
+  "network_info": {
+    "num_nodes": 15,
+    "num_edges": 42
+  },
+  "statistics": {
+    "mean_tts": 5.23,
+    "min_tts": 2.0,
+    "max_tts": 10.5
+  },
+  "color_scheme": {
+    "critical": "red (TTS < 3)",
+    "high_risk": "orange (3 <= TTS < 5)",
+    "medium_risk": "yellow (5 <= TTS < 7)",
+    "low_risk": "green (TTS >= 7)"
+  }
+}
+```
+
+**可視化の特徴**:
+- ノードの色: TTS値に応じて色分け（赤=危険、緑=安全）
+- ノードのサイズ: 需要量に比例
+- エッジ: サプライチェーンのリンクを表示
+- インタラクティブ: ノードをホバーするとTTS値と詳細情報を表示
+
+**実装**: `mcp_tools.py:5423` (execute_mcp_function内)
+
+---
+
+### SCRM分析の典型的なワークフロー
+
+#### パターン1: ベンチマーク問題からの分析
+```
+1. generate_scrm_data: ベンチマーク問題からデータ生成
+   ↓
+2. save_scrm_data_to_csv: データをCSVに保存
+   ↓
+3. visualize_scrm_graph: ネットワーク構造を確認
+   ↓
+4. analyze_supply_chain_risk: リスク分析実行
+   ↓
+5. visualize_scrm_network: 分析結果を可視化
+```
+
+#### パターン2: 既存データからの再分析
+```
+1. load_scrm_data_from_csv: 保存済みデータを読み込み
+   ↓
+2. analyze_supply_chain_risk: リスク分析実行
+   ↓
+3. visualize_scrm_network: 分析結果を可視化
+```
+
+---
+
+### 使用例
+
+#### 例1: ベンチマーク問題01のリスク分析
+```
+ユーザー: ベンチマーク問題01を使ってサプライチェーンリスク分析を実行してください。工場数は3、各工場で2製品を生産できる設定にしてください。
+
+アシスタント:
+1. generate_scrm_data を実行（benchmark_id="01", n_plants=3, n_flex=2）
+2. save_scrm_data_to_csv を実行（filename_suffix="bench01_3plants"）
+3. analyze_supply_chain_risk を実行（filename_suffix="bench01_3plants"）
+4. visualize_scrm_network を実行（filename_suffix="bench01_3plants"）
+
+結果: TTS値の低いノード（リスクの高いノード）を特定し、可視化により一目で脆弱な箇所を把握できます。
+```
+
+#### 例2: 工場ネットワークの可視化
+```
+ユーザー: bench01_3plantsデータの工場ネットワークグラフを見せてください。
+
+アシスタント:
+visualize_scrm_graph を実行（filename_suffix="bench01_3plants", graph_type="plant"）
+
+結果: 工場間の輸送リンクが可視化され、ネットワークの構造を確認できます。
+```
+
+---
+
+### SCRM Tools実装関数
+
+#### `execute_mcp_function(function_name: str, arguments: dict, user_id: int = None) -> dict`
+**ファイル**: `mcp_tools.py:1401`
+
+**SCRM関連の関数名**:
+- `"generate_scrm_data"`
+- `"save_scrm_data_to_csv"`
+- `"load_scrm_data_from_csv"`
+- `"visualize_scrm_graph"`
+- `"analyze_supply_chain_risk"`
+- `"visualize_scrm_network"`
+
+**処理フロー**:
+1. function_nameに応じて対応するSCRM実装関数を呼び出し
+2. CSVファイルの読み書き（`./data/scrm/` ディレクトリ）
+3. NetworkXを使ったグラフ操作
+4. Plotlyを使った可視化
+5. エラーハンドリング
+6. 結果をdict形式で返す
 
 ---
 
