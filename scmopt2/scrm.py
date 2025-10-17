@@ -13,7 +13,7 @@ from .optinv import *
 from .core import *
 
 #from gurobipy import Model, quicksum, GRB
-from mypulp import Model, quicksum, GRB
+from .mypulp import Model, quicksum, GRB
 
 import numpy as np
 import networkx as nx
