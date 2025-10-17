@@ -21,7 +21,8 @@ from scmopt2.optinv import (
     best_histogram,
     plot_inv_opt,
     plot_inv_opt_lr_find,
-    plot_simulation
+    plot_simulation,
+    read_willems
 )
 from fixed_multistage import (
     multi_stage_simulate_inventory_fixed,
@@ -44,6 +45,14 @@ from lr_finder import (
     optimize_with_one_cycle,
     visualize_lr_search,
     visualize_training_progress
+)
+from scmopt2.scrm import (
+    data_generation_for_scrm,
+    make_df_for_scrm,
+    prepare,
+    draw_graph,
+    solve_scrm,
+    draw_scrm
 )
 import numpy as np
 import plotly.io as pio
@@ -1392,6 +1401,205 @@ MCP_TOOLS_DEFINITION = [
                     }
                 },
                 "required": ["items_data", "bom_data"]
+            }
+        }
+    },
+    # ===== SCRM (Supply Chain Risk Management) Tools =====
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_scrm_data",
+            "description": "ベンチマーク問題例からSCRM（サプライチェーンリスク管理）データを生成します。工場ネットワーク、製品配置、パイプライン在庫などを自動生成します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "benchmark_id": {
+                        "type": "string",
+                        "description": "ベンチマーク問題のID（\"01\"から\"38\"まで利用可能）",
+                        "default": "01"
+                    },
+                    "n_plants": {
+                        "type": "integer",
+                        "description": "各階層の工場数（デフォルト: 3）",
+                        "default": 3
+                    },
+                    "n_flex": {
+                        "type": "integer",
+                        "description": "各工場で生産可能な製品数（デフォルト: 2）",
+                        "default": 2
+                    },
+                    "edge_probability": {
+                        "type": "number",
+                        "description": "工場間の枝発生確率（0-1、デフォルト: 0.5）",
+                        "default": 0.5
+                    },
+                    "capacity_factor": {
+                        "type": "number",
+                        "description": "工場容量係数（デフォルト: 1.0）",
+                        "default": 1.0
+                    },
+                    "production_factor": {
+                        "type": "number",
+                        "description": "生産量上限係数（デフォルト: 1.0）",
+                        "default": 1.0
+                    },
+                    "pipeline_factor": {
+                        "type": "number",
+                        "description": "パイプライン在庫係数（デフォルト: 1.0）",
+                        "default": 1.0
+                    },
+                    "seed": {
+                        "type": "integer",
+                        "description": "乱数シード（デフォルト: 1）",
+                        "default": 1
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "save_scrm_data_to_csv",
+            "description": "生成したSCRMデータをCSVファイルに保存します。BOM、工場、工場-製品関係、輸送ネットワークの4つのCSVファイルを生成します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "benchmark_id": {
+                        "type": "string",
+                        "description": "ベンチマーク問題のID",
+                        "default": "01"
+                    },
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "保存するファイル名のサフィックス（デフォルト: benchmark_id）"
+                    },
+                    "n_plants": {
+                        "type": "integer",
+                        "description": "各階層の工場数",
+                        "default": 3
+                    },
+                    "n_flex": {
+                        "type": "integer",
+                        "description": "各工場で生産可能な製品数",
+                        "default": 2
+                    },
+                    "edge_probability": {
+                        "type": "number",
+                        "description": "工場間の枝発生確率",
+                        "default": 0.5
+                    },
+                    "capacity_factor": {
+                        "type": "number",
+                        "description": "工場容量係数",
+                        "default": 1.0
+                    },
+                    "production_factor": {
+                        "type": "number",
+                        "description": "生産量上限係数",
+                        "default": 1.0
+                    },
+                    "pipeline_factor": {
+                        "type": "number",
+                        "description": "パイプライン在庫係数",
+                        "default": 1.0
+                    },
+                    "seed": {
+                        "type": "integer",
+                        "description": "乱数シード",
+                        "default": 1
+                    }
+                },
+                "required": []
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "load_scrm_data_from_csv",
+            "description": "CSVファイルから保存されたSCRMデータを読み込みます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "読み込むファイル名のサフィックス"
+                    }
+                },
+                "required": ["filename_suffix"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_scrm_graph",
+            "description": "SCRMグラフ（BOM/工場/生産グラフ）をPlotlyで可視化します。サプライチェーンの構造を視覚的に確認できます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "データファイル名のサフィックス"
+                    },
+                    "graph_type": {
+                        "type": "string",
+                        "enum": ["bom", "plant", "production"],
+                        "description": "可視化するグラフの種類: 'bom'（部品展開表）、'plant'（工場グラフ）、'production'（生産グラフ）",
+                        "default": "production"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "グラフのタイトル（オプション）"
+                    },
+                    "node_size": {
+                        "type": "integer",
+                        "description": "ノードのサイズ",
+                        "default": 30
+                    },
+                    "node_color": {
+                        "type": "string",
+                        "description": "ノードの色",
+                        "default": "Yellow"
+                    }
+                },
+                "required": ["filename_suffix"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "analyze_supply_chain_risk",
+            "description": "MERIODAS（MEta RIsk Oriented Disruption Analysis System）を使用してサプライチェーンリスク分析を実行します。各ノード（工場-製品の組）が途絶した場合の余裕生存期間（TTS: Time-to-Survival）を計算し、クリティカルなノードを特定します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "データファイル名のサフィックス"
+                    }
+                },
+                "required": ["filename_suffix"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_scrm_network",
+            "description": "リスク分析結果のネットワークを可視化します。ノードの大きさは途絶時の生存期間（TTS）、色はパイプライン在庫量を表します。リスク分析を視覚的に理解できます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "データファイル名のサフィックス"
+                    }
+                },
+                "required": ["filename_suffix"]
             }
         }
     }
@@ -4987,6 +5195,477 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"分布ベースシミュレーションエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    # ===== SCRM (Supply Chain Risk Management) Tools =====
+
+    elif function_name == "generate_scrm_data":
+        """
+        ベンチマーク問題例からSCRMデータを生成する
+
+        Parameters:
+        -----------
+        benchmark_id : str
+            ベンチマーク問題のID（"01"から"38"）
+        n_plants : int (optional)
+            各階層の工場数（デフォルト: 3）
+        n_flex : int (optional)
+            各工場で生産可能な製品数（デフォルト: 2）
+        edge_probability : float (optional)
+            工場間の枝発生確率（デフォルト: 0.5）
+        capacity_factor : float (optional)
+            工場容量係数（デフォルト: 1.0）
+        production_factor : float (optional)
+            生産量上限係数（デフォルト: 1.0）
+        pipeline_factor : float (optional)
+            パイプライン在庫係数（デフォルト: 1.0）
+        seed : int (optional)
+            乱数シード（デフォルト: 1）
+
+        Returns:
+        --------
+        dict with generated SCRM data
+        """
+        try:
+            benchmark_id = arguments.get("benchmark_id", "01")
+            n_plants = arguments.get("n_plants", 3)
+            n_flex = arguments.get("n_flex", 2)
+            edge_probability = arguments.get("edge_probability", 0.5)
+            capacity_factor = arguments.get("capacity_factor", 1.0)
+            production_factor = arguments.get("production_factor", 1.0)
+            pipeline_factor = arguments.get("pipeline_factor", 1.0)
+            seed = arguments.get("seed", 1)
+
+            # ベンチマークBOMファイルのパスを構築
+            bom_file = f"./nbs/data/bom/{benchmark_id}.xml"
+
+            # BOMを読み込み
+            BOM, pos = read_willems(file_name=bom_file)
+
+            # SCRMデータを生成
+            Demand, total_demand, UB, Capacity, Pipeline, R, Product, G, ProdGraph, pos2, pos3 = \
+                data_generation_for_scrm(
+                    BOM,
+                    n_plnts=n_plants,
+                    n_flex=n_flex,
+                    prob=edge_probability,
+                    capacity_factor=capacity_factor,
+                    production_factor=production_factor,
+                    pipeline_factor=pipeline_factor,
+                    seed=seed
+                )
+
+            # データを辞書形式に変換
+            demand_dict = {str(k): float(v) for k, v in Demand.items()}
+            ub_dict = {str(k): float(v) for k, v in UB.items()}
+            capacity_dict = {str(k): float(v) for k, v in Capacity.items()}
+            pipeline_dict = {str(k): float(v) for k, v in Pipeline.items()}
+            r_dict = {str(k): float(v) for k, v in R.items()}
+            product_dict = {str(k): v for k, v in Product.items()}
+
+            return {
+                "status": "success",
+                "benchmark_id": benchmark_id,
+                "total_demand": float(total_demand),
+                "demand": demand_dict,
+                "upper_bounds": ub_dict,
+                "capacities": capacity_dict,
+                "pipeline_inventory": pipeline_dict,
+                "bom_ratios": r_dict,
+                "products_by_plant": product_dict,
+                "num_plants": len(G.nodes()),
+                "num_products": len(set([p for products in Product.values() for p in products])),
+                "num_production_nodes": len(ProdGraph.nodes()),
+                "message": f"ベンチマーク問題{benchmark_id}からSCRMデータを生成しました（工場数: {len(G.nodes())}, 生産拠点数: {len(ProdGraph.nodes())}）"
+            }
+
+        except FileNotFoundError:
+            return {
+                "status": "error",
+                "message": f"ベンチマークファイル {benchmark_id}.xml が見つかりません。01から38の範囲で指定してください。"
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"SCRMデータ生成エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "save_scrm_data_to_csv":
+        """
+        生成したSCRMデータをCSVファイルに保存する
+
+        Parameters:
+        -----------
+        benchmark_id : str
+            ベンチマーク問題のID
+        filename_suffix : str
+            保存するファイル名のサフィックス（デフォルト: benchmark_id）
+        [その他のgenerate_scrm_dataと同じパラメータ]
+
+        Returns:
+        --------
+        dict with saved file paths
+        """
+        try:
+            benchmark_id = arguments.get("benchmark_id", "01")
+            filename_suffix = arguments.get("filename_suffix", benchmark_id)
+            n_plants = arguments.get("n_plants", 3)
+            n_flex = arguments.get("n_flex", 2)
+            edge_probability = arguments.get("edge_probability", 0.5)
+            capacity_factor = arguments.get("capacity_factor", 1.0)
+            production_factor = arguments.get("production_factor", 1.0)
+            pipeline_factor = arguments.get("pipeline_factor", 1.0)
+            seed = arguments.get("seed", 1)
+
+            # BOMファイルを読み込み
+            bom_file = f"./nbs/data/bom/{benchmark_id}.xml"
+            BOM, pos = read_willems(file_name=bom_file)
+
+            # SCRMデータを生成
+            Demand, total_demand, UB, Capacity, Pipeline, R, Product, G, ProdGraph, pos2, pos3 = \
+                data_generation_for_scrm(
+                    BOM,
+                    n_plnts=n_plants,
+                    n_flex=n_flex,
+                    prob=edge_probability,
+                    capacity_factor=capacity_factor,
+                    production_factor=production_factor,
+                    pipeline_factor=pipeline_factor,
+                    seed=seed
+                )
+
+            # CSVに保存
+            make_df_for_scrm(G, Demand, UB, Capacity, Pipeline, BOM, filename_suffix)
+
+            # 保存されたファイルのパスを確認
+            folder = "./data/scrm/"
+            saved_files = {
+                "bom": f"{folder}bom{filename_suffix}.csv",
+                "plant": f"{folder}plnt{filename_suffix}.csv",
+                "plant_product": f"{folder}plnt_prod{filename_suffix}.csv",
+                "transportation": f"{folder}trans{filename_suffix}.csv"
+            }
+
+            return {
+                "status": "success",
+                "benchmark_id": benchmark_id,
+                "filename_suffix": filename_suffix,
+                "saved_files": saved_files,
+                "message": f"SCRMデータを{filename_suffix}としてCSVファイルに保存しました"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"CSVファイル保存エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "load_scrm_data_from_csv":
+        """
+        CSVファイルからSCRMデータを読み込む
+
+        Parameters:
+        -----------
+        filename_suffix : str
+            読み込むファイル名のサフィックス
+
+        Returns:
+        --------
+        dict with loaded SCRM data
+        """
+        try:
+            filename_suffix = arguments.get("filename_suffix")
+            if not filename_suffix:
+                return {
+                    "status": "error",
+                    "message": "filename_suffixが指定されていません"
+                }
+
+            folder = "./data/scrm/"
+
+            # データを読み込み
+            Demand, UB, Capacity, Pipeline, R, BOM, Product, G, ProdGraph, pos, pos2, pos3, \
+                bom_df, plnt_df, plnt_prod_df, trans_df = prepare(filename_suffix, folder)
+
+            # データを辞書形式に変換
+            demand_dict = {str(k): float(v) for k, v in Demand.items()}
+            ub_dict = {str(k): float(v) for k, v in UB.items()}
+            capacity_dict = {str(k): float(v) for k, v in Capacity.items()}
+            pipeline_dict = {str(k): float(v) for k, v in Pipeline.items()}
+            r_dict = {str(k): float(v) for k, v in R.items()}
+            product_dict = {str(k): v for k, v in Product.items()}
+
+            return {
+                "status": "success",
+                "filename_suffix": filename_suffix,
+                "demand": demand_dict,
+                "upper_bounds": ub_dict,
+                "capacities": capacity_dict,
+                "pipeline_inventory": pipeline_dict,
+                "bom_ratios": r_dict,
+                "products_by_plant": product_dict,
+                "num_plants": len(G.nodes()),
+                "num_bom_nodes": len(BOM.nodes()),
+                "num_production_nodes": len(ProdGraph.nodes()),
+                "summary": {
+                    "bom_df_rows": len(bom_df),
+                    "plant_df_rows": len(plnt_df),
+                    "plant_prod_df_rows": len(plnt_prod_df),
+                    "trans_df_rows": len(trans_df)
+                },
+                "message": f"CSVファイル（{filename_suffix}）からSCRMデータを読み込みました"
+            }
+
+        except FileNotFoundError as e:
+            return {
+                "status": "error",
+                "message": f"CSVファイルが見つかりません: {str(e)}"
+            }
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"CSVファイル読み込みエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "visualize_scrm_graph":
+        """
+        SCRMグラフ（BOM/工場/生産グラフ）を可視化する
+
+        Parameters:
+        -----------
+        filename_suffix : str
+            データファイル名のサフィックス
+        graph_type : str
+            グラフの種類（"bom", "plant", "production"のいずれか）
+        title : str (optional)
+            グラフのタイトル
+        node_size : int (optional)
+            ノードのサイズ（デフォルト: 30）
+        node_color : str (optional)
+            ノードの色（デフォルト: "Yellow"）
+
+        Returns:
+        --------
+        dict with visualization info
+        """
+        try:
+            filename_suffix = arguments.get("filename_suffix")
+            graph_type = arguments.get("graph_type", "production")
+            title = arguments.get("title", "")
+            node_size = arguments.get("node_size", 30)
+            node_color = arguments.get("node_color", "Yellow")
+
+            if not filename_suffix:
+                return {
+                    "status": "error",
+                    "message": "filename_suffixが指定されていません"
+                }
+
+            folder = "./data/scrm/"
+
+            # データを読み込み
+            Demand, UB, Capacity, Pipeline, R, BOM, Product, G, ProdGraph, pos, pos2, pos3, \
+                _, _, _, _ = prepare(filename_suffix, folder)
+
+            # グラフタイプに応じて可視化
+            if graph_type == "bom":
+                fig = draw_graph(BOM, pos, title or "BOM Graph", node_size, "Green")
+                graph_desc = "部品展開表(BOM)グラフ"
+            elif graph_type == "plant":
+                fig = draw_graph(G, pos2, title or "Plant Graph", node_size, "Red")
+                graph_desc = "工場グラフ"
+            elif graph_type == "production":
+                fig = draw_graph(ProdGraph, pos3, title or "Production Graph", node_size, node_color)
+                graph_desc = "生産グラフ"
+            else:
+                return {
+                    "status": "error",
+                    "message": f"不明なグラフタイプ: {graph_type}。'bom', 'plant', 'production'のいずれかを指定してください"
+                }
+
+            # HTMLを生成
+            html_content = pio.to_html(fig, include_plotlyjs='cdn')
+
+            # UUIDでviz_idを生成
+            viz_id = str(uuid.uuid4())
+
+            # キャッシュに保存（user_idがある場合）
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            viz_url = f"/api/visualization/{viz_id}"
+
+            return {
+                "status": "success",
+                "visualization_id": viz_id,
+                "visualization_url": viz_url,
+                "graph_type": graph_type,
+                "message": f"{graph_desc}の可視化が完了しました"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"グラフ可視化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "analyze_supply_chain_risk":
+        """
+        サプライチェーンリスク分析を実行する
+
+        Parameters:
+        -----------
+        filename_suffix : str
+            データファイル名のサフィックス
+
+        Returns:
+        --------
+        dict with risk analysis results including survival times for each node
+        """
+        try:
+            filename_suffix = arguments.get("filename_suffix")
+
+            if not filename_suffix:
+                return {
+                    "status": "error",
+                    "message": "filename_suffixが指定されていません"
+                }
+
+            folder = "./data/scrm/"
+
+            # データを読み込み
+            Demand, UB, Capacity, Pipeline, R, BOM, Product, G, ProdGraph, pos, pos2, pos3, \
+                _, _, _, _ = prepare(filename_suffix, folder)
+
+            # リスク分析を実行
+            survival_time = solve_scrm(Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM)
+
+            # 結果を整理
+            nodes = list(ProdGraph.nodes())
+            survival_dict = {str(node): float(st) for node, st in zip(nodes, survival_time)}
+
+            # 統計情報を計算
+            import numpy as np
+            st_array = np.array(survival_time)
+
+            # 最もクリティカルなノード（TTS が小さい）を特定
+            critical_nodes = []
+            for i, node in enumerate(nodes):
+                if survival_time[i] < np.median(st_array):
+                    critical_nodes.append({
+                        "node": str(node),
+                        "survival_time": float(survival_time[i])
+                    })
+
+            # TTS が小さい順にソート
+            critical_nodes_sorted = sorted(critical_nodes, key=lambda x: x["survival_time"])[:10]
+
+            return {
+                "status": "success",
+                "filename_suffix": filename_suffix,
+                "survival_times": survival_dict,
+                "statistics": {
+                    "mean_survival_time": float(st_array.mean()),
+                    "median_survival_time": float(np.median(st_array)),
+                    "min_survival_time": float(st_array.min()),
+                    "max_survival_time": float(st_array.max()),
+                    "std_survival_time": float(st_array.std())
+                },
+                "critical_nodes_top10": critical_nodes_sorted,
+                "num_analyzed_nodes": len(survival_time),
+                "message": f"リスク分析が完了しました（{len(survival_time)}ノードを分析）"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"リスク分析エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "visualize_scrm_network":
+        """
+        リスク分析結果のネットワークを可視化する
+
+        Parameters:
+        -----------
+        filename_suffix : str
+            データファイル名のサフィックス
+
+        Returns:
+        --------
+        dict with visualization info
+        """
+        try:
+            filename_suffix = arguments.get("filename_suffix")
+
+            if not filename_suffix:
+                return {
+                    "status": "error",
+                    "message": "filename_suffixが指定されていません"
+                }
+
+            folder = "./data/scrm/"
+
+            # データを読み込み
+            Demand, UB, Capacity, Pipeline, R, BOM, Product, G, ProdGraph, pos, pos2, pos3, \
+                _, _, _, _ = prepare(filename_suffix, folder)
+
+            # リスク分析を実行
+            survival_time = solve_scrm(Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM)
+
+            # リスク分析ネットワークを可視化
+            fig = draw_scrm(ProdGraph, survival_time, Pipeline, UB, pos3)
+
+            # HTMLを生成
+            html_content = pio.to_html(fig, include_plotlyjs='cdn')
+
+            # UUIDでviz_idを生成
+            viz_id = str(uuid.uuid4())
+
+            # キャッシュに保存（user_idがある場合）
+            if user_id is not None:
+                if user_id not in _optimization_cache:
+                    _optimization_cache[user_id] = {}
+                _optimization_cache[user_id][viz_id] = html_content
+
+            viz_url = f"/api/visualization/{viz_id}"
+
+            # 統計情報を計算
+            import numpy as np
+            st_array = np.array(survival_time)
+
+            return {
+                "status": "success",
+                "visualization_id": viz_id,
+                "visualization_url": viz_url,
+                "filename_suffix": filename_suffix,
+                "statistics": {
+                    "mean_survival_time": float(st_array.mean()),
+                    "median_survival_time": float(np.median(st_array)),
+                    "min_survival_time": float(st_array.min()),
+                    "max_survival_time": float(st_array.max())
+                },
+                "message": "リスク分析ネットワークの可視化が完了しました（点の大きさ: 途絶時の生存期間, 色: パイプライン在庫）"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"ネットワーク可視化エラー: {str(e)}",
                 "traceback": traceback.format_exc()
             }
 
