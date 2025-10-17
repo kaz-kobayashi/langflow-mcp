@@ -5337,6 +5337,11 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
                     seed=seed
                 )
 
+            # CSVディレクトリを作成（存在しない場合）
+            import os
+            scrm_dir = './data/scrm/'
+            os.makedirs(scrm_dir, exist_ok=True)
+
             # CSVに保存
             make_df_for_scrm(G, Demand, UB, Capacity, Pipeline, BOM, filename_suffix)
 
