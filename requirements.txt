@@ -25,3 +25,6 @@ requests>=2.28.0
 pulp>=2.7.0
 Pillow>=9.0.0
 graphviz>=0.20.0
+intervaltree>=3.1.0
+ortools>=9.5.0
+scikit-learn>=1.2.0
