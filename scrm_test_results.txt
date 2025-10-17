@@ -1,0 +1,200 @@
+    "(1, 'Retail_0002')": 0.0,
+    "(2, 'Retail_0002')": 0.0,
+    "(2, 'Retail_0003')": 0.0,
+    "(3, 'Manuf_0001')": 7460.0,
+    "(3, 'Manuf_0002')": 7460.0,
+    "(4, 'Manuf_0001')": 7460.0,
+    "(4, 'Manuf_0002')": 7460.0,
+    "(5, 'Manuf_0001')": 7460.0,
+    "(5, 'Manuf_0002')": 7460.0,
+    "(6, 'Part_0002')": 11190.0,
+    "(6, 'Part_0003')": 7460.0,
+    "(7, 'Part_0001')": 20888.0,
+    "(7, 'Part_0003')": 7460.0,
+    "(8, 'Part_0002')": 11190.0,
+    "(8, 'Part_0003')": 7460.0
+  },
+  "bom_ratios": {
+    "((3, 'Manuf_0001'), (0, 'Retail_0001'))": 1.0,
+    "((3, 'Manuf_0001'), (1, 'Retail_0001'))": 1.0,
+    "((3, 'Manuf_0001'), (1, 'Retail_0002'))": 1.0,
+    "((3, 'Manuf_0002'), (0, 'Retail_0003'))": 1.0,
+    "((3, 'Manuf_0002'), (1, 'Retail_0002'))": 1.0,
+    "((4, 'Manuf_0001'), (1, 'Retail_0001'))": 1.0,
+    "((4, 'Manuf_0001'), (1, 'Retail_0002'))": 1.0,
+    "((4, 'Manuf_0001'), (2, 'Retail_0002'))": 1.0,
+    "((4, 'Manuf_0002'), (1, 'Retail_0002'))": 1.0,
+    "((4, 'Manuf_0002'), (2, 'Retail_0002'))": 1.0,
+    "((4, 'Manuf_0002'), (2, 'Retail_0003'))": 1.0,
+    "((5, 'Manuf_0001'), (0, 'Retail_0001'))": 1.0,
+    "((5, 'Manuf_0001'), (1, 'Retail_0001'))": 1.0,
+    "((5, 'Manuf_0001'), (1, 'Retail_0002'))": 1.0,
+    "((5, 'Manuf_0001'), (2, 'Retail_0002'))": 1.0,
+    "((5, 'Manuf_0002'), (0, 'Retail_0003'))": 1.0,
+    "((5, 'Manuf_0002'), (1, 'Retail_0002'))": 1.0,
+    "((5, 'Manuf_0002'), (2, 'Retail_0002'))": 1.0,
+    "((5, 'Manuf_0002'), (2, 'Retail_0003'))": 1.0,
+    "((6, 'Part_0002'), (3, 'Manuf_0001'))": 1.0,
+    "((6, 'Part_0002'), (3, 'Manuf_0002'))": 1.0,
+    "((6, 'Part_0002'), (5, 'Manuf_0001'))": 1.0,
+    "((6, 'Part_0002'), (5, 'Manuf_0002'))": 1.0,
+    "((6, 'Part_0003'), (3, 'Manuf_0001'))": 1.0,
+    "((6, 'Part_0003'), (3, 'Manuf_0002'))": 1.0,
+    "((6, 'Part_0003'), (5, 'Manuf_0001'))": 1.0,
+    "((6, 'Part_0003'), (5, 'Manuf_0002'))": 1.0,
+    "((7, 'Part_0001'), (4, 'Manuf_0001'))": 1.0,
+    "((7, 'Part_0001'), (4, 'Manuf_0002'))": 1.0,
+    "((7, 'Part_0003'), (4, 'Manuf_0001'))": 1.0,
+    "((7, 'Part_0003'), (4, 'Manuf_0002'))": 1.0,
+    "((8, 'Part_0002'), (5, 'Manuf_0001'))": 1.0,
+    "((8, 'Part_0002'), (5, 'Manuf_0002'))": 1.0,
+    "((8, 'Part_0003'), (5, 'Manuf_0001'))": 1.0,
+    "((8, 'Part_0003'), (5, 'Manuf_0002'))": 1.0
+  },
+  "products_by_plant": {
+    "0": [
+      "Retail_0001",
+      "Retail_0003"
+    ],
+    "1": [
+      "Retail_0001",
+      "Retail_0002"
+    ],
+    "2": [
+      "Retail_0002",
+      "Retail_0003"
+    ],
+    "3": [
+      "Manuf_0001",
+      "Manuf_0002"
+    ],
+    "4": [
+      "Manuf_0001",
+      "Manuf_0002"
+    ],
+    "5": [
+      "Manuf_0001",
+      "Manuf_0002"
+    ],
+    "6": [
+      "Part_0002",
+      "Part_0003"
+    ],
+    "7": [
+      "Part_0001",
+      "Part_0003"
+    ],
+    "8": [
+      "Part_0002",
+      "Part_0003"
+    ]
+  },
+  "num_plants": 9,
+  "num_bom_nodes": 8,
+  "num_production_nodes": 18,
+  "summary": {
+    "bom_df_rows": 10,
+    "plant_df_rows": 9,
+    "plant_prod_df_rows": 18,
+    "trans_df_rows": 11
+  },
+  "message": "CSVファイル（test_01）からSCRMデータを読み込みました"
+}
+
+【Test 4】 visualize_scrm_graph - BOMグラフ可視化
+--------------------------------------------------------------------------------
+{
+  "status": "error",
+  "message": "グラフ可視化エラー: cannot access local variable 'pio' where it is not associated with a value",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/kazuhiro/Documents/2510/langflow-mcp/mcp_tools.py\", line 5494, in execute_mcp_function\n    html_content = pio.to_html(fig, include_plotlyjs='cdn')\n                   ^^^\nUnboundLocalError: cannot access local variable 'pio' where it is not associated with a value\n"
+}
+
+【Test 5】 visualize_scrm_graph - 工場ネットワークグラフ可視化
+--------------------------------------------------------------------------------
+{
+  "status": "error",
+  "message": "グラフ可視化エラー: cannot access local variable 'pio' where it is not associated with a value",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/kazuhiro/Documents/2510/langflow-mcp/mcp_tools.py\", line 5494, in execute_mcp_function\n    html_content = pio.to_html(fig, include_plotlyjs='cdn')\n                   ^^^\nUnboundLocalError: cannot access local variable 'pio' where it is not associated with a value\n"
+}
+
+【Test 6】 visualize_scrm_graph - 生産グラフ可視化
+--------------------------------------------------------------------------------
+{
+  "status": "error",
+  "message": "グラフ可視化エラー: cannot access local variable 'pio' where it is not associated with a value",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/kazuhiro/Documents/2510/langflow-mcp/mcp_tools.py\", line 5494, in execute_mcp_function\n    html_content = pio.to_html(fig, include_plotlyjs='cdn')\n                   ^^^\nUnboundLocalError: cannot access local variable 'pio' where it is not associated with a value\n"
+}
+
+【Test 7】 analyze_supply_chain_risk - サプライチェーンリスク分析
+--------------------------------------------------------------------------------
+{
+  "status": "success",
+  "filename_suffix": "test_01",
+  "survival_times": {
+    "(3, 'Manuf_0001')": 2.9486166,
+    "(3, 'Manuf_0002')": 2.9486166,
+    "(0, 'Retail_0001')": 0.0,
+    "(0, 'Retail_0003')": 0.0,
+    "(1, 'Retail_0001')": 0.0,
+    "(1, 'Retail_0002')": 0.0,
+    "(4, 'Manuf_0001')": 2.9486166,
+    "(4, 'Manuf_0002')": 2.9486166,
+    "(2, 'Retail_0002')": 0.0,
+    "(2, 'Retail_0003')": 0.0,
+    "(5, 'Manuf_0001')": 2.9486166,
+    "(5, 'Manuf_0002')": 2.9486166,
+    "(6, 'Part_0002')": 2.9486166,
+    "(6, 'Part_0003')": 2.9486166,
+    "(7, 'Part_0001')": 2.9486166,
+    "(7, 'Part_0003')": 2.9486166,
+    "(8, 'Part_0002')": 2.9486166,
+    "(8, 'Part_0003')": 2.9486166
+  },
+  "statistics": {
+    "mean_survival_time": 1.9657444,
+    "median_survival_time": 2.9486166,
+    "min_survival_time": 0.0,
+    "max_survival_time": 2.9486166,
+    "std_survival_time": 1.389991195319481
+  },
+  "critical_nodes_top10": [
+    {
+      "node": "(0, 'Retail_0001')",
+      "survival_time": 0.0
+    },
+    {
+      "node": "(0, 'Retail_0003')",
+      "survival_time": 0.0
+    },
+    {
+      "node": "(1, 'Retail_0001')",
+      "survival_time": 0.0
+    },
+    {
+      "node": "(1, 'Retail_0002')",
+      "survival_time": 0.0
+    },
+    {
+      "node": "(2, 'Retail_0002')",
+      "survival_time": 0.0
+    },
+    {
+      "node": "(2, 'Retail_0003')",
+      "survival_time": 0.0
+    }
+  ],
+  "num_analyzed_nodes": 18,
+  "message": "リスク分析が完了しました（18ノードを分析）"
+}
+
+【Test 8】 visualize_scrm_network - リスクネットワーク可視化
+--------------------------------------------------------------------------------
+{
+  "status": "error",
+  "message": "ネットワーク可視化エラー: cannot access local variable 'pio' where it is not associated with a value",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/kazuhiro/Documents/2510/langflow-mcp/mcp_tools.py\", line 5633, in execute_mcp_function\n    html_content = pio.to_html(fig, include_plotlyjs='cdn')\n                   ^^^\nUnboundLocalError: cannot access local variable 'pio' where it is not associated with a value\n"
+}
+
+================================================================================
+全てのSCRMツールのテストが完了しました！
+================================================================================

@@ -1,0 +1,12 @@
+,from_node,to_node,kind
+0,3,0,plnt-plnt
+1,3,1,plnt-plnt
+2,4,1,plnt-plnt
+3,4,2,plnt-plnt
+4,5,0,plnt-plnt
+5,5,1,plnt-plnt
+6,5,2,plnt-plnt
+7,6,3,plnt-plnt
+8,6,5,plnt-plnt
+9,7,4,plnt-plnt
+10,8,5,plnt-plnt

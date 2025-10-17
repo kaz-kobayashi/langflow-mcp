@@ -4,7 +4,7 @@
 
 # %% auto 0
 __all__ = ['folder', 'folder_bom', 'data_generation_for_scrm', 'make_df_for_scrm', 'prepare', 'draw_graph', 'solve_scrm',
-           'draw_scrm']
+           'draw_scrm', 'optimize_scrm_expected', 'optimize_scrm_cvar', 'compare_scrm_policies']
 
 # %% ../nbs/09scrm.ipynb 3
 import sys
@@ -395,3 +395,351 @@ def draw_scrm(ProdGraph, survival_time, Pipeline, UB, pos3):
     data = [node_trace, edge_trace]
     fig = go.Figure(data,layout)
     return fig
+
+# %% SCRM Optimization Models
+def optimize_scrm_expected(Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+                           h_cost, b_cost, disruption_prob, TTR, K_max=2):
+    """
+    期待値最小化による在庫最適化モデル
+
+    Parameters:
+    - h_cost: dict, 在庫保管費用 {(plant, product): cost}
+    - b_cost: dict, 品切れ費用 {(plant, product): cost}
+    - disruption_prob: dict, 工場の途絶確率 {plant: probability}
+    - TTR: dict, 工場の回復時間 {plant: time}
+    - K_max: int, 同時途絶する工場数の上限 (default: 2)
+
+    Returns:
+    - optimal_inventory: dict, 最適在庫量
+    - total_cost: float, 総費用
+    - expected_backorder: float, 期待バックオーダー費用
+    - expected_inventory: float, 期待在庫費用
+    """
+    from itertools import combinations
+
+    # シナリオ生成
+    V = list(Capacity.keys())
+    prob = disruption_prob.copy()
+
+    # 同時途絶シナリオの確率計算
+    for k in range(2, K_max + 1):
+        for comb in combinations(V, k):
+            prob_ = 1.0
+            for i in comb:
+                prob_ *= disruption_prob[i]
+            prob[comb] = prob_
+
+    # シナリオごとのTMAX計算
+    TMAX = {}
+    TTR_scenario = defaultdict(int)
+    for s in prob:
+        max_ttr = 0
+        if hasattr(s, "__iter__") and not isinstance(s, str):
+            for i in s:
+                TTR_scenario[i, s] = TTR[i]
+                max_ttr = max(TTR[i], max_ttr)
+            TMAX[s] = max_ttr
+        else:
+            TTR_scenario[s, s] = TTR[s]
+            TMAX[s] = TTR[s]
+
+    # 最適化モデル
+    model = Model()
+    u, y, I, B = {}, {}, {}, {}
+
+    # 変数定義
+    for i, j in ProdGraph.edges():
+        for s in prob:
+            y[i, j, s] = model.addVar(name=f'y({i},{j},{s})')
+
+    for j in ProdGraph:
+        I[j] = model.addVar(name=f'I({j})')  # 在庫量（即時決定変数）
+        for s in prob:
+            B[j, s] = model.addVar(name=f"B({j},{s})")  # バックオーダー量
+            u[j, s] = model.addVar(name=f'u({j},{s})', ub=UB[j])
+
+    model.update()
+
+    # 目的関数: 期待総費用最小化
+    model.setObjective(
+        quicksum(h_cost[i] * I[i] for i in ProdGraph) +
+        quicksum(prob[s] * b_cost[i] * B[i, s] for i in ProdGraph for s in prob),
+        GRB.MINIMIZE
+    )
+
+    # 制約条件
+    # 1. 生産量と入庫輸送量の関係
+    for s in prob:
+        for j in ProdGraph:
+            if ProdGraph.in_degree(j) > 0:
+                (plant, prod) = j
+                for child in BOM.predecessors(prod):
+                    model.addConstr(
+                        u[j, s] <= quicksum(
+                            (1 / float(R[i, j])) * y[i, j, s]
+                            for i in ProdGraph.predecessors(j)
+                            if i[1] == child
+                        ),
+                        name=f"BOM{j}_{child}_{s}"
+                    )
+
+    # 2. 生産量と出庫輸送量の関係
+    for s in prob:
+        for i in ProdGraph:
+            if ProdGraph.out_degree(i) > 0:
+                model.addConstr(
+                    quicksum(y[i, j, s] for j in ProdGraph.successors(i)) <= u[i, s] + I[i],
+                    name=f"BOM2_{i}_{s}"
+                )
+
+    # 3. 需要満足条件（在庫+生産+バックオーダー）
+    for s in prob:
+        for j in Demand:
+            model.addConstr(
+                u[j, s] + I[j] + B[j, s] >= Demand[j] * TMAX[s],
+                name=f"Demand{j}_{s}"
+            )
+
+    # 4. 工場の生産容量制約（TTR考慮）
+    for s in prob:
+        for f in Capacity:
+            model.addConstr(
+                quicksum(u[(f, p), s] for p in Product[f]) <=
+                Capacity[f] * max((TMAX[s] - TTR_scenario[f, s]), 0),
+                name=f"Capacity{f}_{s}"
+            )
+
+    # 最適化実行
+    model.Params.OutputFlag = False
+    model.optimize()
+
+    # 結果の取得
+    optimal_inventory = {i: I[i].X for i in ProdGraph}
+    expected_inventory_cost = sum(h_cost[i] * I[i].X for i in ProdGraph)
+    expected_backorder_cost = sum(prob[s] * b_cost[i] * B[i, s].X for i in ProdGraph for s in prob)
+    total_cost = expected_inventory_cost + expected_backorder_cost
+
+    return {
+        'optimal_inventory': optimal_inventory,
+        'total_cost': total_cost,
+        'expected_inventory_cost': expected_inventory_cost,
+        'expected_backorder_cost': expected_backorder_cost,
+        'scenarios': list(prob.keys()),
+        'num_scenarios': len(prob)
+    }
+
+def optimize_scrm_cvar(Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+                       h_cost, b_cost, disruption_prob, TTR, beta=0.95, K_max=2):
+    """
+    CVaR最小化による在庫最適化モデル（リスク回避型）
+
+    Parameters:
+    - beta: float, 信頼水準 (例: 0.95 = 95%信頼水準)
+    - その他のパラメータは optimize_scrm_expected と同じ
+
+    Returns:
+    - optimal_inventory: dict, 最適在庫量
+    - cvar: float, CVaR値
+    - var: float, VaR値
+    - その他の統計情報
+    """
+    from itertools import combinations
+
+    # シナリオ生成
+    V = list(Capacity.keys())
+    prob = disruption_prob.copy()
+
+    for k in range(2, K_max + 1):
+        for comb in combinations(V, k):
+            prob_ = 1.0
+            for i in comb:
+                prob_ *= disruption_prob[i]
+            prob[comb] = prob_
+
+    # TMAX計算
+    TMAX = {}
+    TTR_scenario = defaultdict(int)
+    for s in prob:
+        max_ttr = 0
+        if hasattr(s, "__iter__") and not isinstance(s, str):
+            for i in s:
+                TTR_scenario[i, s] = TTR[i]
+                max_ttr = max(TTR[i], max_ttr)
+            TMAX[s] = max_ttr
+        else:
+            TTR_scenario[s, s] = TTR[s]
+            TMAX[s] = TTR[s]
+
+    # CVaR最適化モデル
+    model = Model()
+    u, y, I, B, z = {}, {}, {}, {}, {}
+    theta = model.addVar(name='theta', lb=-1e10)  # VaR (large negative bound)
+
+    # 変数定義
+    for i, j in ProdGraph.edges():
+        for s in prob:
+            y[i, j, s] = model.addVar(name=f'y({i},{j},{s})')
+
+    for j in ProdGraph:
+        I[j] = model.addVar(name=f'I({j})')
+        for s in prob:
+            B[j, s] = model.addVar(name=f"B({j},{s})")
+            u[j, s] = model.addVar(name=f'u({j},{s})', ub=UB[j])
+
+    # CVaR用の補助変数
+    for s in prob:
+        z[s] = model.addVar(name=f'z({s})')
+
+    model.update()
+
+    # 目的関数: CVaR最小化
+    model.setObjective(
+        theta + (1 / (1 - beta)) * quicksum(prob[s] * z[s] for s in prob),
+        GRB.MINIMIZE
+    )
+
+    # CVaR制約
+    for s in prob:
+        cost_s = quicksum(h_cost[i] * I[i] for i in ProdGraph) + \
+                 quicksum(b_cost[i] * B[i, s] for i in ProdGraph)
+        model.addConstr(z[s] >= cost_s - theta, name=f"CVaR_{s}")
+
+    # BOM制約（期待値モデルと同じ）
+    for s in prob:
+        for j in ProdGraph:
+            if ProdGraph.in_degree(j) > 0:
+                (plant, prod) = j
+                for child in BOM.predecessors(prod):
+                    model.addConstr(
+                        u[j, s] <= quicksum(
+                            (1 / float(R[i, j])) * y[i, j, s]
+                            for i in ProdGraph.predecessors(j)
+                            if i[1] == child
+                        ),
+                        name=f"BOM{j}_{child}_{s}"
+                    )
+
+    for s in prob:
+        for i in ProdGraph:
+            if ProdGraph.out_degree(i) > 0:
+                model.addConstr(
+                    quicksum(y[i, j, s] for j in ProdGraph.successors(i)) <= u[i, s] + I[i],
+                    name=f"BOM2_{i}_{s}"
+                )
+
+    for s in prob:
+        for j in Demand:
+            model.addConstr(
+                u[j, s] + I[j] + B[j, s] >= Demand[j] * TMAX[s],
+                name=f"Demand{j}_{s}"
+            )
+
+    for s in prob:
+        for f in Capacity:
+            model.addConstr(
+                quicksum(u[(f, p), s] for p in Product[f]) <=
+                Capacity[f] * max((TMAX[s] - TTR_scenario[f, s]), 0),
+                name=f"Capacity{f}_{s}"
+            )
+
+    # 最適化実行
+    model.Params.OutputFlag = False
+    model.optimize()
+
+    # 結果の取得
+    optimal_inventory = {i: I[i].X for i in ProdGraph}
+    var_value = theta.X
+    cvar_value = model.ObjVal
+
+    # シナリオごとの費用計算
+    scenario_costs = {}
+    for s in prob:
+        cost = sum(h_cost[i] * I[i].X for i in ProdGraph) + \
+               sum(b_cost[i] * B[i, s].X for i in ProdGraph)
+        scenario_costs[str(s)] = cost
+
+    # 期待費用とバックオーダー費用を計算
+    expected_cost = sum(h_cost[i] * I[i].X for i in ProdGraph) + \
+                   sum(prob[s] * b_cost[i] * B[i, s].X for i in ProdGraph for s in prob)
+    expected_inventory_cost = sum(h_cost[i] * I[i].X for i in ProdGraph)
+    expected_backorder_cost = sum(prob[s] * b_cost[i] * B[i, s].X for i in ProdGraph for s in prob)
+
+    return {
+        'optimal_inventory': optimal_inventory,
+        'cvar': cvar_value,
+        'var': var_value,
+        'expected_cost': expected_cost,
+        'expected_inventory_cost': expected_inventory_cost,
+        'expected_backorder_cost': expected_backorder_cost,
+        'beta': beta,
+        'scenario_costs': scenario_costs,
+        'scenarios': list(prob.keys()),
+        'num_scenarios': len(prob),
+        'n_scenarios': len(prob)
+    }
+
+def compare_scrm_policies(Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+                          h_cost, b_cost, disruption_prob, TTR, beta=0.95, K_max=2):
+    """
+    期待値最小化とCVaR最小化の在庫方針を比較
+
+    Parameters:
+    - 全パラメータは optimize_scrm_expected / optimize_scrm_cvar と同じ
+
+    Returns:
+    - dict with comparison results
+    """
+    # 期待値最小化を実行
+    expected_result = optimize_scrm_expected(
+        Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+        h_cost, b_cost, disruption_prob, TTR, K_max
+    )
+
+    # CVaR最小化を実行
+    cvar_result = optimize_scrm_cvar(
+        Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+        h_cost, b_cost, disruption_prob, TTR, beta, K_max
+    )
+
+    # 在庫量の差分を計算
+    total_expected_inventory = sum(expected_result['optimal_inventory'].values())
+    total_cvar_inventory = sum(cvar_result['optimal_inventory'].values())
+    inventory_increase = total_cvar_inventory - total_expected_inventory
+    inventory_increase_pct = (inventory_increase / total_expected_inventory) * 100 if total_expected_inventory > 0 else 0
+
+    # 費用の比較
+    expected_total_cost = expected_result['total_cost']
+    cvar_total_cost = cvar_result['expected_cost']
+    cost_increase = cvar_total_cost - expected_total_cost
+    cost_increase_pct = (cost_increase / expected_total_cost) * 100 if expected_total_cost > 0 else 0
+
+    # CVaRのリスク指標
+    var_value = cvar_result['var']
+    cvar_value = cvar_result['cvar']
+
+    # 推奨方針を決定
+    recommendation = ""
+    if cost_increase_pct < 5:
+        recommendation = "CVaR方針を推奨します。費用増加が小さく、リスク回避効果が高いです。"
+    elif cost_increase_pct < 15:
+        recommendation = "状況に応じて選択してください。期待値方針は費用効率的、CVaR方針はリスク回避的です。"
+    else:
+        recommendation = "期待値方針を推奨します。CVaR方針の費用増加が大きすぎます。"
+
+    return {
+        'expected_policy': expected_result,
+        'cvar_policy': cvar_result,
+        'comparison': {
+            'total_expected_inventory': total_expected_inventory,
+            'total_cvar_inventory': total_cvar_inventory,
+            'inventory_increase': inventory_increase,
+            'inventory_increase_pct': inventory_increase_pct,
+            'expected_total_cost': expected_total_cost,
+            'cvar_total_cost': cvar_total_cost,
+            'cost_increase': cost_increase,
+            'cost_increase_pct': cost_increase_pct,
+            'var': var_value,
+            'cvar': cvar_value
+        },
+        'recommendation': recommendation
+    }

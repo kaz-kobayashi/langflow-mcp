@@ -1541,6 +1541,299 @@ visualize_scrm_graph を実行（filename_suffix="bench01_3plants", graph_type="
 
 ---
 
+### SCRM Tools cURL実行例
+
+以下は、SCRM Toolsをcurlコマンドで直接実行する例です。
+
+#### 前提条件
+
+JWT認証トークンを取得する必要があります：
+
+```bash
+# 1. ログインしてトークンを取得
+curl -X POST https://web-production-1ed39.up.railway.app/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your-email@example.com","password":"your-password"}'
+
+# レスポンス例:
+# {"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...","token_type":"bearer"}
+
+# 2. トークンを環境変数に設定
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+#### 例1: ベンチマーク問題01からSCRMデータ生成
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_scrm_data \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "benchmark_id": "01",
+    "n_plants": 3,
+    "n_flex": 2,
+    "seed": 1
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "benchmark_id": "01",
+  "total_demand": 7460.0,
+  "demand": {
+    "(1, 'Retail_0002')": 0.0,
+    "(2, 'Retail_0002')": 0.0
+  },
+  "network_info": {
+    "num_plants": 9,
+    "num_products": 8,
+    "num_production_nodes": 18
+  }
+}
+```
+
+#### 例2: SCRMデータをCSVに保存
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/save_scrm_data_to_csv \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "benchmark_id": "01",
+    "filename_suffix": "test_01",
+    "n_plants": 3,
+    "n_flex": 2,
+    "seed": 1
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "message": "SCRMデータをCSVファイルに保存しました",
+  "files_created": [
+    "./data/scrm/bom_test_01.csv",
+    "./data/scrm/trans_test_01.csv",
+    "./data/scrm/plnt_prod_test_01.csv",
+    "./data/scrm/plnt_test_01.csv"
+  ],
+  "benchmark_id": "01",
+  "filename_suffix": "test_01"
+}
+```
+
+#### 例3: CSVからSCRMデータを読み込み
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/load_scrm_data_from_csv \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "message": "CSVファイル（test_01）からSCRMデータを読み込みました",
+  "demand": {
+    "(1, 'Retail_0002')": 0.0,
+    "(2, 'Retail_0002')": 0.0
+  },
+  "num_plants": 9,
+  "num_bom_nodes": 8,
+  "num_production_nodes": 18
+}
+```
+
+#### 例4: BOMグラフの可視化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_scrm_graph \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01",
+    "graph_type": "bom",
+    "title": "部品展開表（BOM）グラフ"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "visualization_id": "550e8400-e29b-41d4-a716-446655440005",
+  "visualization_url": "/api/visualization/550e8400-e29b-41d4-a716-446655440005",
+  "graph_type": "bom",
+  "message": "部品展開表(BOM)グラフの可視化が完了しました"
+}
+```
+
+可視化を表示するには：
+```bash
+# ブラウザで以下のURLを開く
+open "https://web-production-1ed39.up.railway.app/api/visualization/550e8400-e29b-41d4-a716-446655440005"
+```
+
+#### 例5: 工場ネットワークグラフの可視化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_scrm_graph \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01",
+    "graph_type": "plant",
+    "title": "工場ネットワークグラフ",
+    "node_size": 40,
+    "node_color": "lightgreen"
+  }'
+```
+
+#### 例6: 生産グラフの可視化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_scrm_graph \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01",
+    "graph_type": "production",
+    "title": "生産グラフ（工場×製品）"
+  }'
+```
+
+#### 例7: サプライチェーンリスク分析（TTS計算）
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/analyze_supply_chain_risk \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "filename_suffix": "test_01",
+  "survival_times": {
+    "(3, 'Manuf_0001')": 2.9486166,
+    "(3, 'Manuf_0002')": 2.9486166,
+    "(0, 'Retail_0001')": 0.0,
+    "(0, 'Retail_0003')": 0.0
+  },
+  "statistics": {
+    "mean_survival_time": 1.9657444,
+    "median_survival_time": 2.9486166,
+    "min_survival_time": 0.0,
+    "max_survival_time": 2.9486166
+  },
+  "critical_nodes_top10": [
+    {
+      "node": "(0, 'Retail_0001')",
+      "survival_time": 0.0
+    },
+    {
+      "node": "(0, 'Retail_0003')",
+      "survival_time": 0.0
+    }
+  ],
+  "num_analyzed_nodes": 18,
+  "message": "リスク分析が完了しました（18ノードを分析）"
+}
+```
+
+#### 例8: リスク分析結果のネットワーク可視化
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_scrm_network \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filename_suffix": "test_01"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "visualization_id": "f0cc89f4-fd25-4e1b-9e2b-f9233c70a655",
+  "visualization_url": "/api/visualization/f0cc89f4-fd25-4e1b-9e2b-f9233c70a655",
+  "filename_suffix": "test_01",
+  "statistics": {
+    "mean_survival_time": 1.9657444,
+    "median_survival_time": 2.9486166,
+    "min_survival_time": 0.0,
+    "max_survival_time": 2.9486166
+  },
+  "message": "リスク分析ネットワークの可視化が完了しました（点の大きさ: 途絶時の生存期間, 色: パイプライン在庫）"
+}
+```
+
+#### 典型的なワークフロー例
+
+**フルワークフロー（データ生成→保存→分析→可視化）**:
+
+```bash
+# Step 1: データ生成
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_scrm_data \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"benchmark_id":"01","n_plants":3,"n_flex":2,"seed":1}'
+
+# Step 2: CSV保存
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/save_scrm_data_to_csv \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"benchmark_id":"01","filename_suffix":"my_analysis","n_plants":3,"n_flex":2,"seed":1}'
+
+# Step 3: ネットワーク構造の可視化
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_scrm_graph \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"filename_suffix":"my_analysis","graph_type":"production","title":"生産ネットワーク"}'
+
+# Step 4: リスク分析
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/analyze_supply_chain_risk \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"filename_suffix":"my_analysis"}'
+
+# Step 5: リスク分析結果の可視化
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_scrm_network \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"filename_suffix":"my_analysis"}'
+```
+
+#### ローカル環境での実行例
+
+ローカル開発環境（`ENVIRONMENT=local`）では、認証なしで実行できます：
+
+```bash
+# ローカル環境（認証不要）
+curl -X POST http://localhost:8000/api/tools/generate_scrm_data \
+  -H "Content-Type: application/json" \
+  -d '{
+    "benchmark_id": "01",
+    "n_plants": 3,
+    "n_flex": 2,
+    "seed": 1
+  }'
+```
+
+---
+
 ## 環境変数
 
 | 変数名 | デフォルト値 | 説明 |

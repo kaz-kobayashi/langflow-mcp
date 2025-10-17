@@ -1602,6 +1602,130 @@ MCP_TOOLS_DEFINITION = [
                 "required": ["filename_suffix"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_scrm_inventory_expected",
+            "description": "期待値最小化による在庫最適化を実行します。サプライチェーンの途絶シナリオを考慮し、在庫保管費用と品切れ費用の期待値を最小化する最適在庫量を計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "データファイル名のサフィックス"
+                    },
+                    "h_cost": {
+                        "type": "object",
+                        "description": "在庫保管費用の辞書。キー: '工場番号,製品名'、値: 費用。例: {'0,Retail_0001': 1.0, '1,Retail_0001': 1.0}"
+                    },
+                    "b_cost": {
+                        "type": "object",
+                        "description": "品切れ費用の辞書。キー: '工場番号,製品名'、値: 費用。例: {'0,Retail_0001': 10.0, '1,Retail_0001': 10.0}"
+                    },
+                    "disruption_prob": {
+                        "type": "object",
+                        "description": "工場の途絶確率の辞書。キー: 工場番号(文字列)、値: 確率(0-1)。例: {'0': 0.1, '1': 0.1, '2': 0.05}"
+                    },
+                    "TTR": {
+                        "type": "object",
+                        "description": "工場の回復時間(Time To Recover)の辞書。キー: 工場番号(文字列)、値: 期間数。例: {'0': 2, '1': 3, '2': 2}"
+                    },
+                    "K_max": {
+                        "type": "integer",
+                        "description": "同時途絶する工場数の上限（デフォルト: 2）",
+                        "default": 2
+                    }
+                },
+                "required": ["filename_suffix", "h_cost", "b_cost", "disruption_prob", "TTR"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "optimize_scrm_inventory_cvar",
+            "description": "CVaR（Conditional Value at Risk）最小化による在庫最適化を実行します。期待値最小化よりもリスク回避的な最適化で、最悪シナリオに対して頑健な在庫量を計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "データファイル名のサフィックス"
+                    },
+                    "h_cost": {
+                        "type": "object",
+                        "description": "在庫保管費用の辞書。キー: '工場番号,製品名'、値: 費用。例: {'0,Retail_0001': 1.0, '1,Retail_0001': 1.0}"
+                    },
+                    "b_cost": {
+                        "type": "object",
+                        "description": "品切れ費用の辞書。キー: '工場番号,製品名'、値: 費用。例: {'0,Retail_0001': 10.0, '1,Retail_0001': 10.0}"
+                    },
+                    "disruption_prob": {
+                        "type": "object",
+                        "description": "工場の途絶確率の辞書。キー: 工場番号(文字列)、値: 確率(0-1)。例: {'0': 0.1, '1': 0.1, '2': 0.05}"
+                    },
+                    "TTR": {
+                        "type": "object",
+                        "description": "工場の回復時間(Time To Recover)の辞書。キー: 工場番号(文字列)、値: 期間数。例: {'0': 2, '1': 3, '2': 2}"
+                    },
+                    "beta": {
+                        "type": "number",
+                        "description": "信頼水準（デフォルト: 0.95）。例: 0.95は95%信頼水準",
+                        "default": 0.95
+                    },
+                    "K_max": {
+                        "type": "integer",
+                        "description": "同時途絶する工場数の上限（デフォルト: 2）",
+                        "default": 2
+                    }
+                },
+                "required": ["filename_suffix", "h_cost", "b_cost", "disruption_prob", "TTR"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "compare_scrm_policies",
+            "description": "期待値最小化とCVaR最小化の2つの在庫方針を比較します。両方の最適化を実行し、在庫量、総費用、リスク指標を比較して推奨方針を提示します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename_suffix": {
+                        "type": "string",
+                        "description": "データファイル名のサフィックス"
+                    },
+                    "h_cost": {
+                        "type": "object",
+                        "description": "在庫保管費用の辞書。キー: '工場番号,製品名'、値: 費用"
+                    },
+                    "b_cost": {
+                        "type": "object",
+                        "description": "品切れ費用の辞書。キー: '工場番号,製品名'、値: 費用"
+                    },
+                    "disruption_prob": {
+                        "type": "object",
+                        "description": "工場の途絶確率の辞書"
+                    },
+                    "TTR": {
+                        "type": "object",
+                        "description": "工場の回復時間の辞書"
+                    },
+                    "beta": {
+                        "type": "number",
+                        "description": "CVaR信頼水準（デフォルト: 0.95）",
+                        "default": 0.95
+                    },
+                    "K_max": {
+                        "type": "integer",
+                        "description": "同時途絶する工場数の上限（デフォルト: 2）",
+                        "default": 2
+                    }
+                },
+                "required": ["filename_suffix", "h_cost", "b_cost", "disruption_prob", "TTR"]
+            }
+        }
     }
 ]
 
@@ -5675,6 +5799,309 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"ネットワーク可視化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "optimize_scrm_inventory_expected":
+        """
+        期待値最小化による在庫最適化
+
+        Parameters:
+        -----------
+        filename_suffix : str
+            データファイル名のサフィックス
+        h_cost : dict
+            在庫保管費用の辞書
+        b_cost : dict
+            品切れ費用の辞書
+        disruption_prob : dict
+            工場の途絶確率の辞書
+        TTR : dict
+            工場の回復時間の辞書
+        K_max : int, optional
+            同時途絶する工場数の上限
+
+        Returns:
+        --------
+        dict with optimization results
+        """
+        try:
+            filename_suffix = arguments.get("filename_suffix")
+            h_cost_raw = arguments.get("h_cost")
+            b_cost_raw = arguments.get("b_cost")
+            disruption_prob_raw = arguments.get("disruption_prob")
+            TTR_raw = arguments.get("TTR")
+            K_max = arguments.get("K_max", 2)
+
+            if not all([filename_suffix, h_cost_raw, b_cost_raw, disruption_prob_raw, TTR_raw]):
+                return {
+                    "status": "error",
+                    "message": "必要なパラメータが指定されていません"
+                }
+
+            folder = "./data/scrm/"
+
+            # データを読み込み
+            Demand, UB, Capacity, Pipeline, R, BOM, Product, G, ProdGraph, pos, pos2, pos3, \
+                _, _, _, _ = prepare(filename_suffix, folder)
+
+            # コストパラメータを変換（キーをタプルに）
+            h_cost = {}
+            for key, value in h_cost_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    h_cost[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    h_cost[key] = float(value)
+
+            b_cost = {}
+            for key, value in b_cost_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    b_cost[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    b_cost[key] = float(value)
+
+            # 途絶確率とTTRを変換
+            disruption_prob = {int(k): float(v) for k, v in disruption_prob_raw.items()}
+            TTR = {int(k): int(v) for k, v in TTR_raw.items()}
+
+            # 最適化を実行
+            from scmopt2.scrm import optimize_scrm_expected
+            result = optimize_scrm_expected(
+                Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+                h_cost, b_cost, disruption_prob, TTR, K_max
+            )
+
+            # 結果を整形
+            optimal_inventory_formatted = {
+                f"{plant},{prod}": qty for (plant, prod), qty in result["optimal_inventory"].items()
+            }
+
+            return {
+                "status": "success",
+                "optimal_inventory": optimal_inventory_formatted,
+                "total_cost": result["total_cost"],
+                "expected_inventory_cost": result["expected_inventory_cost"],
+                "expected_backorder_cost": result["expected_backorder_cost"],
+                "n_scenarios": result["n_scenarios"],
+                "message": f"期待値最小化による在庫最適化が完了しました（シナリオ数: {result['n_scenarios']}）"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"期待値最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "optimize_scrm_inventory_cvar":
+        """
+        CVaR最小化による在庫最適化
+
+        Parameters:
+        -----------
+        filename_suffix : str
+            データファイル名のサフィックス
+        h_cost : dict
+            在庫保管費用の辞書
+        b_cost : dict
+            品切れ費用の辞書
+        disruption_prob : dict
+            工場の途絶確率の辞書
+        TTR : dict
+            工場の回復時間の辞書
+        beta : float, optional
+            信頼水準
+        K_max : int, optional
+            同時途絶する工場数の上限
+
+        Returns:
+        --------
+        dict with optimization results
+        """
+        try:
+            filename_suffix = arguments.get("filename_suffix")
+            h_cost_raw = arguments.get("h_cost")
+            b_cost_raw = arguments.get("b_cost")
+            disruption_prob_raw = arguments.get("disruption_prob")
+            TTR_raw = arguments.get("TTR")
+            beta = arguments.get("beta", 0.95)
+            K_max = arguments.get("K_max", 2)
+
+            if not all([filename_suffix, h_cost_raw, b_cost_raw, disruption_prob_raw, TTR_raw]):
+                return {
+                    "status": "error",
+                    "message": "必要なパラメータが指定されていません"
+                }
+
+            folder = "./data/scrm/"
+
+            # データを読み込み
+            Demand, UB, Capacity, Pipeline, R, BOM, Product, G, ProdGraph, pos, pos2, pos3, \
+                _, _, _, _ = prepare(filename_suffix, folder)
+
+            # コストパラメータを変換（キーをタプルに）
+            h_cost = {}
+            for key, value in h_cost_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    h_cost[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    h_cost[key] = float(value)
+
+            b_cost = {}
+            for key, value in b_cost_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    b_cost[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    b_cost[key] = float(value)
+
+            # 途絶確率とTTRを変換
+            disruption_prob = {int(k): float(v) for k, v in disruption_prob_raw.items()}
+            TTR = {int(k): int(v) for k, v in TTR_raw.items()}
+
+            # 最適化を実行
+            from scmopt2.scrm import optimize_scrm_cvar
+            result = optimize_scrm_cvar(
+                Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+                h_cost, b_cost, disruption_prob, TTR, beta, K_max
+            )
+
+            # 結果を整形
+            optimal_inventory_formatted = {
+                f"{plant},{prod}": qty for (plant, prod), qty in result["optimal_inventory"].items()
+            }
+
+            return {
+                "status": "success",
+                "optimal_inventory": optimal_inventory_formatted,
+                "cvar": result["cvar"],
+                "var": result["var"],
+                "expected_cost": result["expected_cost"],
+                "expected_inventory_cost": result["expected_inventory_cost"],
+                "expected_backorder_cost": result["expected_backorder_cost"],
+                "beta": result["beta"],
+                "n_scenarios": result["n_scenarios"],
+                "message": f"CVaR最小化による在庫最適化が完了しました（β={beta:.2f}, シナリオ数: {result['n_scenarios']}）"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"CVaR最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "compare_scrm_policies":
+        """
+        期待値最小化とCVaR最小化の在庫方針を比較
+
+        Parameters:
+        -----------
+        filename_suffix : str
+            データファイル名のサフィックス
+        h_cost : dict
+            在庫保管費用の辞書
+        b_cost : dict
+            品切れ費用の辞書
+        disruption_prob : dict
+            工場の途絶確率の辞書
+        TTR : dict
+            工場の回復時間の辞書
+        beta : float, optional
+            CVaR信頼水準
+        K_max : int, optional
+            同時途絶する工場数の上限
+
+        Returns:
+        --------
+        dict with comparison results
+        """
+        try:
+            filename_suffix = arguments.get("filename_suffix")
+            h_cost_raw = arguments.get("h_cost")
+            b_cost_raw = arguments.get("b_cost")
+            disruption_prob_raw = arguments.get("disruption_prob")
+            TTR_raw = arguments.get("TTR")
+            beta = arguments.get("beta", 0.95)
+            K_max = arguments.get("K_max", 2)
+
+            if not all([filename_suffix, h_cost_raw, b_cost_raw, disruption_prob_raw, TTR_raw]):
+                return {
+                    "status": "error",
+                    "message": "必要なパラメータが指定されていません"
+                }
+
+            folder = "./data/scrm/"
+
+            # データを読み込み
+            Demand, UB, Capacity, Pipeline, R, BOM, Product, G, ProdGraph, pos, pos2, pos3, \
+                _, _, _, _ = prepare(filename_suffix, folder)
+
+            # コストパラメータを変換（キーをタプルに）
+            h_cost = {}
+            for key, value in h_cost_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    h_cost[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    h_cost[key] = float(value)
+
+            b_cost = {}
+            for key, value in b_cost_raw.items():
+                if ',' in str(key):
+                    parts = str(key).split(',')
+                    b_cost[(int(parts[0]), parts[1])] = float(value)
+                else:
+                    b_cost[key] = float(value)
+
+            # 途絶確率とTTRを変換
+            disruption_prob = {int(k): float(v) for k, v in disruption_prob_raw.items()}
+            TTR = {int(k): int(v) for k, v in TTR_raw.items()}
+
+            # 両方の最適化を実行
+            from scmopt2.scrm import compare_scrm_policies
+            result = compare_scrm_policies(
+                Demand, UB, Capacity, Pipeline, R, Product, ProdGraph, BOM, G,
+                h_cost, b_cost, disruption_prob, TTR, beta, K_max
+            )
+
+            # 在庫を整形
+            expected_inventory_formatted = {
+                f"{plant},{prod}": qty for (plant, prod), qty in result["expected_policy"]["optimal_inventory"].items()
+            }
+            cvar_inventory_formatted = {
+                f"{plant},{prod}": qty for (plant, prod), qty in result["cvar_policy"]["optimal_inventory"].items()
+            }
+
+            return {
+                "status": "success",
+                "expected_policy": {
+                    "optimal_inventory": expected_inventory_formatted,
+                    "total_cost": result["expected_policy"]["total_cost"],
+                    "expected_inventory_cost": result["expected_policy"]["expected_inventory_cost"],
+                    "expected_backorder_cost": result["expected_policy"]["expected_backorder_cost"]
+                },
+                "cvar_policy": {
+                    "optimal_inventory": cvar_inventory_formatted,
+                    "cvar": result["cvar_policy"]["cvar"],
+                    "var": result["cvar_policy"]["var"],
+                    "expected_cost": result["cvar_policy"]["expected_cost"]
+                },
+                "comparison": result["comparison"],
+                "recommendation": result["recommendation"],
+                "message": "在庫方針の比較が完了しました"
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"方針比較エラー: {str(e)}",
                 "traceback": traceback.format_exc()
             }
 
