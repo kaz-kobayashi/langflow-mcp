@@ -360,8 +360,7 @@ def draw_scrm(ProdGraph, survival_time, Pipeline, UB, pos3):
                 colorbar=dict(
                         thickness=15,
                         title='Pipeline Inventory',
-                        xanchor='left',
-                        titleside='right'
+                        xanchor='left'
                         ),
                 ),
          name = "nodes",
