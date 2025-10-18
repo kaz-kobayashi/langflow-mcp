@@ -2449,8 +2449,7 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
     ],
     "cust_data": [
       {"name": "札幌市", "lat": 43.06417, "lon": 141.34694},
-      {"name": "青森市", "lat": 40.82444, "lon": 140.74},
-      {"name": "盛岡市", "lat": 39.70361, "lon": 141.1525}
+      {"name": "青森市", "lat": 40.82444, "lon": 140.74}
     ],
     "dc_data": [
       {"name": "札幌市", "lat": 43.06417, "lon": 141.34694, "fc": 10037, "vc": 0.4325, "lb": 0.0, "ub": 501136.2},
@@ -2467,19 +2466,13 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
       {"cust": "札幌市", "prod": "A", "demand": 1976},
       {"cust": "札幌市", "prod": "B", "demand": 18554},
       {"cust": "青森市", "prod": "A", "demand": 1428},
-      {"cust": "青森市", "prod": "B", "demand": 13403},
-      {"cust": "盛岡市", "prod": "A", "demand": 1344},
-      {"cust": "盛岡市", "prod": "B", "demand": 12612}
+      {"cust": "青森市", "prod": "B", "demand": 13403}
     ],
     "trans_data": [
       {"from_node": "Odawara", "to_node": "札幌市", "cost": 885.0, "kind": "plnt-dc"},
       {"from_node": "Odawara", "to_node": "青森市", "cost": 631.0, "kind": "plnt-dc"},
       {"from_node": "札幌市", "to_node": "札幌市", "cost": 0.0, "kind": "dc-cust"},
-      {"from_node": "札幌市", "to_node": "青森市", "cost": 282.0, "kind": "dc-cust"},
-      {"from_node": "札幌市", "to_node": "盛岡市", "cost": 465.0, "kind": "dc-cust"},
-      {"from_node": "青森市", "to_node": "札幌市", "cost": 282.0, "kind": "dc-cust"},
-      {"from_node": "青森市", "to_node": "青森市", "cost": 0.0, "kind": "dc-cust"},
-      {"from_node": "青森市", "to_node": "盛岡市", "cost": 1295.0, "kind": "dc-cust"}
+      {"from_node": "青森市", "to_node": "青森市", "cost": 0.0, "kind": "dc-cust"}
     ],
     "dc_num": [1, 2],
     "single_sourcing": true,
@@ -2494,30 +2487,30 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
   "solver_status": 2,
   "message": "最適化が完了しました",
   "flow": [
-    {"org": "Odawara", "dst": "青森市", "prod": "A", "volume": 4748.0},
-    {"org": "Odawara", "dst": "青森市", "prod": "B", "volume": 44569.0},
-    {"org": "青森市", "dst": "札幌市", "prod": "A", "volume": 1976.0},
-    {"org": "青森市", "dst": "札幌市", "prod": "B", "volume": 18554.0},
+    {"org": "Odawara", "dst": "札幌市", "prod": "A", "volume": 1976.0},
+    {"org": "Odawara", "dst": "札幌市", "prod": "B", "volume": 18554.0},
+    {"org": "Odawara", "dst": "青森市", "prod": "A", "volume": 1428.0},
+    {"org": "Odawara", "dst": "青森市", "prod": "B", "volume": 13403.0},
+    {"org": "札幌市", "dst": "札幌市", "prod": "A", "volume": 1976.0},
+    {"org": "札幌市", "dst": "札幌市", "prod": "B", "volume": 18554.0},
     {"org": "青森市", "dst": "青森市", "prod": "A", "volume": 1428.0},
-    {"org": "青森市", "dst": "青森市", "prod": "B", "volume": 13403.0},
-    {"org": "青森市", "dst": "盛岡市", "prod": "A", "volume": 1344.0},
-    {"org": "青森市", "dst": "盛岡市", "prod": "B", "volume": 12612.0}
+    {"org": "青森市", "dst": "青森市", "prod": "B", "volume": 13403.0}
   ],
   "dc_results": [
-    {"name": "札幌市", "lat": 43.06417, "lon": 141.34694, "fc": 10037, "vc": 0.4325, "lb": 0.0, "ub": 501136.2, "lower_bound_violation": 0.0, "open_close": 0},
+    {"name": "札幌市", "lat": 43.06417, "lon": 141.34694, "fc": 10037, "vc": 0.4325, "lb": 0.0, "ub": 501136.2, "lower_bound_violation": 0.0, "open_close": 1},
     {"name": "青森市", "lat": 40.82444, "lon": 140.74, "fc": 10235, "vc": 0.4146, "lb": 0.0, "ub": 501136.2, "lower_bound_violation": 0.0, "open_close": 1}
   ],
   "costs": [
-    {"cost": "total cost", "value": 72183.4},
-    {"cost": "transportation (plant to dc)", "value": 31009.7},
-    {"cost": "delivery (dc to customer)", "value": 20553.7},
-    {"cost": "dc fixed", "value": 10235.0},
-    {"cost": "dc variable", "value": 10385.0},
+    {"cost": "total cost", "value": 51500.0},
+    {"cost": "transportation (plant to dc)", "value": 20400.0},
+    {"cost": "delivery (dc to customer)", "value": 0.0},
+    {"cost": "dc fixed", "value": 20272.0},
+    {"cost": "dc variable", "value": 10828.0},
     {"cost": "infeasible penalty", "value": 0.0}
   ],
   "violations": [],
-  "total_cost": 72183.4,
-  "num_customers": 3,
+  "total_cost": 51500.0,
+  "num_customers": 2,
   "num_dcs": 2,
   "num_plants": 1,
   "num_products": 2
