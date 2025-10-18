@@ -1561,8 +1561,11 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 **trans_data構造**:
 - `from_node`: 出発地点名
 - `to_node`: 到着地点名
-- `kind`: 輸送種別（"plnt-dc" または "dc-cust"）
+- `dist`: 距離（km）
 - `cost`: 輸送費用
+- `lead_time`: リードタイム（日）
+- `stage_time`: ステージング時間（日）
+- `kind`: 輸送種別（"plnt-dc" または "dc-cust"）
 
 **出力**:
 ```json
@@ -2469,10 +2472,10 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
       {"cust": "青森市", "prod": "B", "demand": 13403}
     ],
     "trans_data": [
-      {"from_node": "Odawara", "to_node": "札幌市", "cost": 885.0, "kind": "plnt-dc"},
-      {"from_node": "Odawara", "to_node": "青森市", "cost": 631.0, "kind": "plnt-dc"},
-      {"from_node": "札幌市", "to_node": "札幌市", "cost": 0.0, "kind": "dc-cust"},
-      {"from_node": "青森市", "to_node": "青森市", "cost": 0.0, "kind": "dc-cust"}
+      {"from_node": "Odawara", "to_node": "札幌市", "dist": 884.56, "cost": 885.0, "lead_time": 5, "stage_time": 1, "kind": "plnt-dc"},
+      {"from_node": "Odawara", "to_node": "青森市", "dist": 630.59, "cost": 631.0, "lead_time": 4, "stage_time": 1, "kind": "plnt-dc"},
+      {"from_node": "札幌市", "to_node": "札幌市", "dist": 0.0, "cost": 0.0, "lead_time": 3, "stage_time": 2, "kind": "dc-cust"},
+      {"from_node": "青森市", "to_node": "青森市", "dist": 0.0, "cost": 0.0, "lead_time": 3, "stage_time": 2, "kind": "dc-cust"}
     ],
     "dc_num": [1, 2],
     "single_sourcing": true,
