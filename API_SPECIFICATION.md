@@ -1483,25 +1483,26 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 ```json
 {
   "prod_data": [
-    {"name": "P1", "volume": 1.0}
+    {"name": "P1", "weight": 1.0, "volume": 1.0}
   ],
   "cust_data": [
-    {"name": "C1", "lat": 35.6762, "lng": 139.6503, "demand": 100}
+    {"name": "C1", "lat": 35.6762, "lon": 139.6503}
   ],
   "dc_data": [
-    {"name": "DC1", "lat": 35.6895, "lng": 139.6917, "fixed_cost": 10000, "capacity": 5000}
+    {"name": "DC1", "lat": 35.6895, "lon": 139.6917, "fc": 10000, "vc": 0.5, "lb": 0.0, "ub": 5000}
   ],
   "plnt_data": [
-    {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+    {"name": "Plant1", "lat": 35.4437, "lon": 139.6380}
   ],
   "plnt_prod_data": [
-    {"plnt": "Plant1", "prod": "P1", "capacity": 10000}
+    {"plnt": "Plant1", "prod": "P1", "ub": 10000}
   ],
   "total_demand_data": [
     {"cust": "C1", "prod": "P1", "demand": 100}
   ],
   "trans_data": [
-    {"org": "Plant1", "dst": "DC1", "prod": "P1", "cost": 10.5, "distance": 30.2}
+    {"from_node": "Plant1", "to_node": "DC1", "cost": 10.5, "kind": "plnt-dc"},
+    {"from_node": "DC1", "to_node": "C1", "cost": 5.0, "kind": "dc-cust"}
   ],
   "dc_num": [1, 3],
   "single_sourcing": true,
@@ -1524,30 +1525,33 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 
 **prod_data構造**:
 - `name`: 製品名
+- `weight`: 重量
 - `volume`: 体積
 
 **cust_data構造**:
 - `name`: 顧客名
 - `lat`: 緯度
-- `lng`: 経度
+- `lon`: 経度
 - `demand`: 需要量（オプション）
 
 **dc_data構造**:
 - `name`: 倉庫候補地点名
 - `lat`: 緯度
-- `lng`: 経度
-- `fixed_cost`: 固定費用
-- `capacity`: 容量
+- `lon`: 経度
+- `fc`: 固定費用（fixed cost）
+- `vc`: 変動費用（variable cost）
+- `lb`: 最小容量（lower bound）
+- `ub`: 最大容量（upper bound）
 
 **plnt_data構造**:
 - `name`: 工場名
 - `lat`: 緯度
-- `lng`: 経度
+- `lon`: 経度
 
 **plnt_prod_data構造**:
 - `plnt`: 工場名
 - `prod`: 製品名
-- `capacity`: 生産容量
+- `ub`: 生産容量（upper bound）
 
 **total_demand_data構造**:
 - `cust`: 顧客名
@@ -1555,11 +1559,10 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 - `demand`: 需要量
 
 **trans_data構造**:
-- `org`: 出発地点名
-- `dst`: 到着地点名
-- `prod`: 製品名
+- `from_node`: 出発地点名
+- `to_node`: 到着地点名
+- `kind`: 輸送種別（"plnt-dc" または "dc-cust"）
 - `cost`: 輸送費用
-- `distance`: 距離（km）
 
 **出力**:
 ```json
@@ -1596,8 +1599,8 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 ```json
 {
   "cust_data": [
-    {"name": "C1", "lat": 35.6762, "lng": 139.6503},
-    {"name": "C2", "lat": 35.6895, "lng": 139.6917}
+    {"name": "C1", "lat": 35.6762, "lon": 139.6503},
+    {"name": "C2", "lat": 35.6895, "lon": 139.6917}
   ],
   "demand_data": [
     {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100},
@@ -1634,7 +1637,7 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
   "num_original_customers": 50,
   "num_clusters": 3,
   "cluster_centers": [
-    {"name": "AggCust_0", "lat": 35.6762, "lng": 139.6503}
+    {"name": "AggCust_0", "lat": 35.6762, "lon": 139.6503}
   ],
   "total_demand": [
     {"cust": "AggCust_0", "prod": "P1", "demand": 5000}
@@ -1654,7 +1657,7 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 ```json
 {
   "cust_data": [
-    {"name": "C1", "lat": 35.6762, "lng": 139.6503}
+    {"name": "C1", "lat": 35.6762, "lon": 139.6503}
   ],
   "trans_data": [
     {"org": "C1", "dst": "C2", "cost": 15.5, "distance": 10.2}
@@ -1688,7 +1691,7 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
   "num_original_customers": 50,
   "num_clusters": 3,
   "cluster_medians": [
-    {"name": "AggCust_0", "lat": 35.6762, "lng": 139.6503}
+    {"name": "AggCust_0", "lat": 35.6762, "lon": 139.6503}
   ],
   "total_demand": [
     {"cust": "AggCust_0", "prod": "P1", "demand": 5000}
@@ -1709,7 +1712,7 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 ```json
 {
   "cust_data": [
-    {"name": "C1", "lat": 35.6762, "lng": 139.6503}
+    {"name": "C1", "lat": 35.6762, "lon": 139.6503}
   ],
   "demand_data": [
     {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100}
@@ -1760,13 +1763,13 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 ```json
 {
   "cust_data": [
-    {"name": "C1", "lat": 35.6762, "lng": 139.6503}
+    {"name": "C1", "lat": 35.6762, "lon": 139.6503}
   ],
   "dc_data": [
-    {"name": "DC1", "lat": 35.6895, "lng": 139.6917}
+    {"name": "DC1", "lat": 35.6895, "lon": 139.6917}
   ],
   "plnt_data": [
-    {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+    {"name": "Plant1", "lat": 35.4437, "lon": 139.6380}
   ],
   "plnt_dc_threshold": 1000.0,
   "dc_cust_threshold": 500.0,
@@ -2445,20 +2448,20 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
       {"name": "P2", "volume": 1.5}
     ],
     "cust_data": [
-      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
-      {"name": "C2", "lat": 35.6895, "lng": 139.6917},
-      {"name": "C3", "lat": 35.4437, "lng": 139.6380}
+      {"name": "C1", "lat": 35.6762, "lon": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lon": 139.6917},
+      {"name": "C3", "lat": 35.4437, "lon": 139.6380}
     ],
     "dc_data": [
-      {"name": "DC1", "lat": 35.6895, "lng": 139.6917, "fixed_cost": 10000, "capacity": 5000},
-      {"name": "DC2", "lat": 35.4437, "lng": 139.6380, "fixed_cost": 12000, "capacity": 6000}
+      {"name": "DC1", "lat": 35.6895, "lon": 139.6917, "fc": 10000, "vc": 0.5, "lb": 0.0, "ub": 5000},
+      {"name": "DC2", "lat": 35.4437, "lon": 139.6380, "fc": 12000, "vc": 0.5, "lb": 0.0, "ub": 6000}
     ],
     "plnt_data": [
-      {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+      {"name": "Plant1", "lat": 35.4437, "lon": 139.6380}
     ],
     "plnt_prod_data": [
-      {"plnt": "Plant1", "prod": "P1", "capacity": 10000},
-      {"plnt": "Plant1", "prod": "P2", "capacity": 8000}
+      {"plnt": "Plant1", "prod": "P1", "ub": 10000},
+      {"plnt": "Plant1", "prod": "P2", "ub": 8000}
     ],
     "total_demand_data": [
       {"cust": "C1", "prod": "P1", "demand": 100},
@@ -2466,10 +2469,12 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
       {"cust": "C3", "prod": "P2", "demand": 120}
     ],
     "trans_data": [
-      {"org": "Plant1", "dst": "DC1", "prod": "P1", "cost": 10.5, "distance": 30.2},
-      {"org": "Plant1", "dst": "DC2", "prod": "P1", "cost": 8.5, "distance": 25.0},
-      {"org": "DC1", "dst": "C1", "prod": "P1", "cost": 5.0, "distance": 10.0},
-      {"org": "DC1", "dst": "C2", "prod": "P1", "cost": 3.5, "distance": 8.0}
+      {"from_node": "Plant1", "to_node": "DC1", "cost": 10.5, "kind": "plnt-dc"},
+      {"from_node": "Plant1", "to_node": "DC2", "cost": 8.5, "kind": "plnt-dc"},
+      {"from_node": "DC1", "to_node": "C1", "cost": 5.0, "kind": "dc-cust"},
+      {"from_node": "DC1", "to_node": "C2", "cost": 3.5, "kind": "dc-cust"},
+      {"from_node": "DC2", "to_node": "C1", "cost": 4.0, "kind": "dc-cust"},
+      {"from_node": "DC2", "to_node": "C2", "cost": 3.0, "kind": "dc-cust"}
     ],
     "dc_num": [1, 2],
     "single_sourcing": true,
@@ -2510,11 +2515,11 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/customer_aggr
   -H "Content-Type: application/json" \
   -d '{
     "cust_data": [
-      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
-      {"name": "C2", "lat": 35.6895, "lng": 139.6917},
-      {"name": "C3", "lat": 35.4437, "lng": 139.6380},
-      {"name": "C4", "lat": 35.7090, "lng": 139.7320},
-      {"name": "C5", "lat": 35.6580, "lng": 139.7454}
+      {"name": "C1", "lat": 35.6762, "lon": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lon": 139.6917},
+      {"name": "C3", "lat": 35.4437, "lon": 139.6380},
+      {"name": "C4", "lat": 35.7090, "lon": 139.7320},
+      {"name": "C5", "lat": 35.6580, "lon": 139.7454}
     ],
     "demand_data": [
       {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100},
@@ -2539,8 +2544,8 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/customer_aggr
   "num_original_customers": 5,
   "num_clusters": 2,
   "cluster_centers": [
-    {"name": "AggCust_0", "lat": 35.6812, "lng": 139.6873},
-    {"name": "AggCust_1", "lat": 35.6835, "lng": 139.7387}
+    {"name": "AggCust_0", "lat": 35.6812, "lon": 139.6873},
+    {"name": "AggCust_1", "lat": 35.6835, "lon": 139.7387}
   ],
   "total_demand": [
     {"cust": "AggCust_0", "prod": "P1", "demand": 370},
@@ -2560,11 +2565,11 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/elbow_method_
   -H "Content-Type: application/json" \
   -d '{
     "cust_data": [
-      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
-      {"name": "C2", "lat": 35.6895, "lng": 139.6917},
-      {"name": "C3", "lat": 35.4437, "lng": 139.6380},
-      {"name": "C4", "lat": 35.7090, "lng": 139.7320},
-      {"name": "C5", "lat": 35.6580, "lng": 139.7454}
+      {"name": "C1", "lat": 35.6762, "lon": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lon": 139.6917},
+      {"name": "C3", "lat": 35.4437, "lon": 139.6380},
+      {"name": "C4", "lat": 35.7090, "lon": 139.7320},
+      {"name": "C5", "lat": 35.6580, "lon": 139.7454}
     ],
     "demand_data": [
       {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100},
@@ -2601,15 +2606,15 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/make_network_
   -H "Content-Type: application/json" \
   -d '{
     "cust_data": [
-      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
-      {"name": "C2", "lat": 35.6895, "lng": 139.6917}
+      {"name": "C1", "lat": 35.6762, "lon": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lon": 139.6917}
     ],
     "dc_data": [
-      {"name": "DC1", "lat": 35.6895, "lng": 139.6917},
-      {"name": "DC2", "lat": 35.4437, "lng": 139.6380}
+      {"name": "DC1", "lat": 35.6895, "lon": 139.6917},
+      {"name": "DC2", "lat": 35.4437, "lon": 139.6380}
     ],
     "plnt_data": [
-      {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+      {"name": "Plant1", "lat": 35.4437, "lon": 139.6380}
     ],
     "plnt_dc_threshold": 1000.0,
     "dc_cust_threshold": 500.0,
@@ -2847,13 +2852,16 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/export_lnd_re
 curl -X POST http://localhost:8000/api/tools/solve_lnd \
   -H "Content-Type: application/json" \
   -d '{
-    "prod_data": [{"name": "P1", "volume": 1.0}],
-    "cust_data": [{"name": "C1", "lat": 35.6762, "lng": 139.6503}],
-    "dc_data": [{"name": "DC1", "lat": 35.6895, "lng": 139.6917, "fixed_cost": 10000, "capacity": 5000}],
-    "plnt_data": [{"name": "Plant1", "lat": 35.4437, "lng": 139.6380}],
-    "plnt_prod_data": [{"plnt": "Plant1", "prod": "P1", "capacity": 10000}],
+    "prod_data": [{"name": "P1", "weight": 1.0, "volume": 1.0}],
+    "cust_data": [{"name": "C1", "lat": 35.6762, "lon": 139.6503}],
+    "dc_data": [{"name": "DC1", "lat": 35.6895, "lon": 139.6917, "fc": 10000, "vc": 0.5, "lb": 0.0, "ub": 5000}],
+    "plnt_data": [{"name": "Plant1", "lat": 35.4437, "lon": 139.6380}],
+    "plnt_prod_data": [{"plnt": "Plant1", "prod": "P1", "ub": 10000}],
     "total_demand_data": [{"cust": "C1", "prod": "P1", "demand": 100}],
-    "trans_data": [{"org": "Plant1", "dst": "DC1", "prod": "P1", "cost": 10.5, "distance": 30.2}],
+    "trans_data": [
+      {"from_node": "Plant1", "to_node": "DC1", "cost": 10.5, "kind": "plnt-dc"},
+      {"from_node": "DC1", "to_node": "C1", "cost": 5.0, "kind": "dc-cust"}
+    ],
     "dc_num": [1, 2],
     "single_sourcing": true,
     "max_cpu": 60
