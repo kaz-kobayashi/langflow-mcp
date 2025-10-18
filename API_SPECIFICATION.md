@@ -2466,10 +2466,10 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
       {"plnt": "Odawara", "prod": "B", "ub": 99999999.0}
     ],
     "total_demand_data": [
-      {"cust": "札幌市", "prod": "A", "demand": 1976},
-      {"cust": "札幌市", "prod": "B", "demand": 18554},
-      {"cust": "青森市", "prod": "A", "demand": 1428},
-      {"cust": "青森市", "prod": "B", "demand": 13403}
+      {"cust": "札幌市", "prod": "A", "demand": 71.20},
+      {"cust": "札幌市", "prod": "B", "demand": 78.21},
+      {"cust": "青森市", "prod": "A", "demand": 107.29},
+      {"cust": "青森市", "prod": "B", "demand": 80.22}
     ],
     "trans_data": [
       {"from_node": "Odawara", "to_node": "札幌市", "dist": 884.56, "cost": 885.0, "lead_time": 5, "stage_time": 1, "kind": "plnt-dc"},
