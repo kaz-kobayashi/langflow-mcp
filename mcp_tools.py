@@ -2018,6 +2018,331 @@ MCP_TOOLS_DEFINITION = [
                 "required": []
             }
         }
+    },
+    # ===== Logistics Network Design (LND) Tools =====
+    # Phase 1: 基本最適化ツール
+    {
+        "type": "function",
+        "function": {
+            "name": "solve_lnd",
+            "description": "ロジスティクス・ネットワーク設計最適化を実行します。製品、顧客、倉庫候補地、工場、需要、輸送費用データから、倉庫の開設/閉鎖と輸送フローを最適化します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prod_data": {
+                        "type": "array",
+                        "description": "製品データ（[{name, weight, volume}, ...]）"
+                    },
+                    "cust_data": {
+                        "type": "array",
+                        "description": "顧客データ（[{name, lat, lon}, ...]）"
+                    },
+                    "dc_data": {
+                        "type": "array",
+                        "description": "倉庫候補地データ（[{name, lat, lon, lb, ub, fc, vc}, ...]）"
+                    },
+                    "plnt_data": {
+                        "type": "array",
+                        "description": "工場データ（[{name, lat, lon}, ...]）"
+                    },
+                    "plnt_prod_data": {
+                        "type": "array",
+                        "description": "工場-製品データ（[{plnt, prod, ub}, ...]）"
+                    },
+                    "total_demand_data": {
+                        "type": "array",
+                        "description": "総需要データ（[{cust, prod, demand}, ...]）"
+                    },
+                    "trans_data": {
+                        "type": "array",
+                        "description": "輸送データ（[{kind, from_node, to_node, cost}, ...]）"
+                    },
+                    "dc_num": {
+                        "type": "array",
+                        "description": "倉庫数の範囲（[min, max]）",
+                        "default": None
+                    },
+                    "single_sourcing": {
+                        "type": "boolean",
+                        "description": "単一ソーシング制約を適用するか",
+                        "default": True
+                    },
+                    "max_cpu": {
+                        "type": "integer",
+                        "description": "最大CPU時間（秒）",
+                        "default": 100
+                    }
+                },
+                "required": ["prod_data", "cust_data", "dc_data", "plnt_data", "plnt_prod_data", "total_demand_data", "trans_data"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "customer_aggregation_kmeans",
+            "description": "k-means法を使用して顧客を集約します。多数の顧客を少数のクラスターに集約することで計算を高速化します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cust_data": {
+                        "type": "array",
+                        "description": "顧客データ（[{name, lat, lon}, ...]）"
+                    },
+                    "demand_data": {
+                        "type": "array",
+                        "description": "需要データ（[{cust, prod, demand, date}, ...]）"
+                    },
+                    "prod_data": {
+                        "type": "array",
+                        "description": "製品データ（[{name, weight, volume}, ...]）"
+                    },
+                    "num_of_facilities": {
+                        "type": "integer",
+                        "description": "集約する顧客数（クラスター数）"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "description": "集計開始日（YYYY-MM-DD形式）",
+                        "default": "1900-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "集計終了日（YYYY-MM-DD形式）",
+                        "default": "2050-12-31"
+                    }
+                },
+                "required": ["cust_data", "demand_data", "prod_data", "num_of_facilities"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "customer_aggregation_kmedian",
+            "description": "k-median法を使用して顧客を集約します。輸送費用を考慮した集約により、より最適な顧客クラスタリングが可能です。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cust_data": {
+                        "type": "array",
+                        "description": "顧客データ（[{name, lat, lon}, ...]）"
+                    },
+                    "demand_data": {
+                        "type": "array",
+                        "description": "需要データ（[{cust, prod, demand, date}, ...]）"
+                    },
+                    "prod_data": {
+                        "type": "array",
+                        "description": "製品データ（[{name, weight, volume}, ...]）"
+                    },
+                    "trans_cost_data": {
+                        "type": "array",
+                        "description": "輸送費用データ（[{from_node, to_node, cost}, ...]）"
+                    },
+                    "num_of_facilities": {
+                        "type": "integer",
+                        "description": "集約する顧客数（クラスター数）"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "description": "集計開始日（YYYY-MM-DD形式）",
+                        "default": "1900-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "集計終了日（YYYY-MM-DD形式）",
+                        "default": "2050-12-31"
+                    },
+                    "max_iter": {
+                        "type": "integer",
+                        "description": "最大反復回数",
+                        "default": 100
+                    }
+                },
+                "required": ["cust_data", "demand_data", "prod_data", "trans_cost_data", "num_of_facilities"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "elbow_method_lnd",
+            "description": "エルボー法を使用して最適な顧客集約数を決定します。複数のクラスター数で集約を実行し、目的関数値の変化から最適な数を推奨します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cust_data": {
+                        "type": "array",
+                        "description": "顧客データ（[{name, lat, lon}, ...]）"
+                    },
+                    "demand_data": {
+                        "type": "array",
+                        "description": "需要データ（[{cust, prod, demand, date}, ...]）"
+                    },
+                    "prod_data": {
+                        "type": "array",
+                        "description": "製品データ（[{name, weight, volume}, ...]）"
+                    },
+                    "n_lb": {
+                        "type": "integer",
+                        "description": "クラスター数の下限",
+                        "default": 1
+                    },
+                    "n_ub": {
+                        "type": "integer",
+                        "description": "クラスター数の上限",
+                        "default": 10
+                    },
+                    "method": {
+                        "type": "string",
+                        "description": "集約方法（kmeans または kmedian）",
+                        "default": "kmeans"
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "description": "集計開始日（YYYY-MM-DD形式）",
+                        "default": "1900-01-01"
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "集計終了日（YYYY-MM-DD形式）",
+                        "default": "2050-12-31"
+                    },
+                    "repetitions": {
+                        "type": "integer",
+                        "description": "各クラスター数での試行回数",
+                        "default": 3
+                    }
+                },
+                "required": ["cust_data", "demand_data", "prod_data"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "make_network_lnd",
+            "description": "顧客、倉庫、工場間の輸送・配送ネットワークを生成します。距離に基づいて輸送費用を計算します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "cust_data": {
+                        "type": "array",
+                        "description": "顧客データ（[{name, lat, lon}, ...]）"
+                    },
+                    "dc_data": {
+                        "type": "array",
+                        "description": "倉庫候補地データ（[{name, lat, lon, lb, ub, fc, vc}, ...]）"
+                    },
+                    "plnt_data": {
+                        "type": "array",
+                        "description": "工場データ（[{name, lat, lon}, ...]）"
+                    },
+                    "plnt_dc_threshold": {
+                        "type": "number",
+                        "description": "工場-倉庫間の最大距離閾値（km）",
+                        "default": 999999.0
+                    },
+                    "dc_cust_threshold": {
+                        "type": "number",
+                        "description": "倉庫-顧客間の最大距離閾値（km）",
+                        "default": 999999.0
+                    },
+                    "plnt_dc_cost": {
+                        "type": "number",
+                        "description": "工場-倉庫間の輸送費用係数（円/km）",
+                        "default": 1.0
+                    },
+                    "dc_cust_cost": {
+                        "type": "number",
+                        "description": "倉庫-顧客間の配送費用係数（円/km）",
+                        "default": 1.0
+                    }
+                },
+                "required": ["cust_data", "dc_data", "plnt_data"]
+            }
+        }
+    },
+    # Phase 2: Excelツール
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_melos_template",
+            "description": "MELOSシステムのExcelテンプレートを生成します。顧客、倉庫候補地、工場、製品のシートが含まれます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "output_filepath": {
+                        "type": "string",
+                        "description": "出力するExcelファイルのパス"
+                    }
+                },
+                "required": ["output_filepath"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "solve_lnd_from_excel",
+            "description": "ExcelファイルからデータRを読み込んでロジスティクス・ネットワーク設計最適化を実行します。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filepath": {
+                        "type": "string",
+                        "description": "MELOSテンプレートExcelファイルのパス"
+                    },
+                    "dc_num": {
+                        "type": "array",
+                        "description": "倉庫数の範囲（[min, max]）",
+                        "default": None
+                    },
+                    "single_sourcing": {
+                        "type": "boolean",
+                        "description": "単一ソーシング制約を適用するか",
+                        "default": True
+                    },
+                    "max_cpu": {
+                        "type": "integer",
+                        "description": "最大CPU時間（秒）",
+                        "default": 100
+                    }
+                },
+                "required": ["filepath"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "export_lnd_result",
+            "description": "直前に実行したLND最適化結果をExcelファイルにエクスポートします。フロー、コスト、倉庫情報を含みます。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "output_filepath": {
+                        "type": "string",
+                        "description": "出力するExcelファイルのパス"
+                    }
+                },
+                "required": ["output_filepath"]
+            }
+        }
+    },
+    # Phase 3: 可視化ツール
+    {
+        "type": "function",
+        "function": {
+            "name": "visualize_lnd_result",
+            "description": "直前に実行したLND最適化結果を地図上に可視化します。顧客、倉庫、工場の位置と輸送フローを表示します。",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]
 
@@ -7183,6 +7508,517 @@ def execute_mcp_function(function_name: str, arguments: dict, user_id: int = Non
             return {
                 "status": "error",
                 "message": f"結果エクスポートエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    # ===== Logistics Network Design (LND) Tools =====
+    # Phase 1: 基本最適化ツール
+    elif function_name == "solve_lnd":
+        try:
+            from scmopt2.lnd import solve_lnd
+            import pandas as pd
+
+            # JSONデータをDataFrameに変換
+            prod_df = pd.DataFrame(arguments["prod_data"])
+            cust_df = pd.DataFrame(arguments["cust_data"])
+            dc_df = pd.DataFrame(arguments["dc_data"])
+            plnt_df = pd.DataFrame(arguments["plnt_data"])
+            plnt_prod_df = pd.DataFrame(arguments["plnt_prod_data"])
+            total_demand_df = pd.DataFrame(arguments["total_demand_data"])
+            trans_df = pd.DataFrame(arguments["trans_data"])
+
+            dc_num = arguments.get("dc_num")
+            if dc_num is not None:
+                dc_num = tuple(dc_num)  # リストをタプルに変換
+
+            single_sourcing = arguments.get("single_sourcing", True)
+            max_cpu = arguments.get("max_cpu", 100)
+
+            # 最適化実行
+            flow_df, dc_df_result, cost_df, violation_df, status = solve_lnd(
+                prod_df, cust_df, dc_df, plnt_df, plnt_prod_df, total_demand_df, trans_df,
+                dc_num=dc_num, single_sourcing=single_sourcing, max_cpu=max_cpu
+            )
+
+            # キャッシュに保存（可視化用）
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "type": "lnd",
+                    "flow_df": flow_df,
+                    "dc_df": dc_df_result,
+                    "cost_df": cost_df,
+                    "violation_df": violation_df,
+                    "cust_df": cust_df,
+                    "plnt_df": plnt_df,
+                    "prod_df": prod_df,
+                    "status": status
+                }
+
+            return {
+                "status": "success" if status == 2 else "error",
+                "solver_status": status,
+                "message": "最適化が完了しました" if status == 2 else f"最適化に失敗しました（Status: {status}）",
+                "flow": flow_df.to_dict(orient="records"),
+                "dc_results": dc_df_result.to_dict(orient="records"),
+                "costs": cost_df.to_dict(orient="records"),
+                "violations": violation_df.to_dict(orient="records"),
+                "total_cost": float(cost_df.iloc[0]["value"]) if not cost_df.empty else 0.0
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"LND最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "customer_aggregation_kmeans":
+        try:
+            from scmopt2.lnd import kmeans, make_total_demand, make_aggregated_df
+            import pandas as pd
+
+            # JSONデータをDataFrameに変換
+            cust_df = pd.DataFrame(arguments["cust_data"])
+            demand_df = pd.DataFrame(arguments["demand_data"])
+            prod_df = pd.DataFrame(arguments["prod_data"])
+
+            num_of_facilities = arguments["num_of_facilities"]
+            start_date = arguments.get("start_date", "1900-01-01")
+            end_date = arguments.get("end_date", "2050-12-31")
+
+            # 総需要計算
+            total_demand_df = make_total_demand(demand_df, start=start_date, finish=end_date)
+
+            # 重み付け（製品の重量を使用）
+            weight = {str(p): float(w) for p, w in zip(prod_df["name"], prod_df["weight"])}
+
+            # k-means実行
+            X, Y, partition = kmeans(cust_df, weight, num_of_facilities=num_of_facilities, batch=True)
+
+            # 集約データフレーム生成
+            aggregated_cust_df, aggregated_demand_df, aggregated_total_demand_df = make_aggregated_df(
+                cust_df, demand_df, total_demand_df, X, Y, partition, weight
+            )
+
+            # キャッシュに保存
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "type": "customer_aggregation",
+                    "method": "kmeans",
+                    "aggregated_cust_df": aggregated_cust_df,
+                    "aggregated_demand_df": aggregated_demand_df,
+                    "aggregated_total_demand_df": aggregated_total_demand_df,
+                    "X": X,
+                    "Y": Y,
+                    "partition": partition
+                }
+
+            return {
+                "status": "success",
+                "message": f"{len(cust_df)}顧客を{num_of_facilities}クラスターに集約しました",
+                "num_original_customers": len(cust_df),
+                "num_clusters": num_of_facilities,
+                "aggregated_customers": aggregated_cust_df.to_dict(orient="records"),
+                "aggregated_demand": aggregated_demand_df.to_dict(orient="records"),
+                "aggregated_total_demand": aggregated_total_demand_df.to_dict(orient="records"),
+                "cluster_centers": [{"X": float(x), "Y": float(y)} for x, y in zip(X, Y)]
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"k-means集約エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "customer_aggregation_kmedian":
+        try:
+            from scmopt2.lnd import solve_k_median, make_total_demand, make_aggregated_df
+            import pandas as pd
+            import numpy as np
+
+            # JSONデータをDataFrameに変換
+            cust_df = pd.DataFrame(arguments["cust_data"])
+            demand_df = pd.DataFrame(arguments["demand_data"])
+            prod_df = pd.DataFrame(arguments["prod_data"])
+            trans_cost_data = arguments["trans_cost_data"]
+
+            num_of_facilities = arguments["num_of_facilities"]
+            start_date = arguments.get("start_date", "1900-01-01")
+            end_date = arguments.get("end_date", "2050-12-31")
+            max_iter = arguments.get("max_iter", 100)
+
+            # 総需要計算
+            total_demand_df = make_total_demand(demand_df, start=start_date, finish=end_date)
+
+            # 重み付け
+            weight = {str(p): float(w) for p, w in zip(prod_df["name"], prod_df["weight"])}
+
+            # 輸送費用辞書作成
+            cost = {}
+            for item in trans_cost_data:
+                cost[(item["from_node"], item["to_node"])] = float(item["cost"])
+
+            # k-median実行
+            X, Y, partition, phi_history, lb_history, ub_history = solve_k_median(
+                cust_df, weight, cost, num_of_facilities, max_iter=max_iter
+            )
+
+            # 集約データフレーム生成
+            aggregated_cust_df, aggregated_demand_df, aggregated_total_demand_df = make_aggregated_df(
+                cust_df, demand_df, total_demand_df, X, Y, partition, weight
+            )
+
+            # キャッシュに保存
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "type": "customer_aggregation",
+                    "method": "kmedian",
+                    "aggregated_cust_df": aggregated_cust_df,
+                    "aggregated_demand_df": aggregated_demand_df,
+                    "aggregated_total_demand_df": aggregated_total_demand_df,
+                    "X": X,
+                    "Y": Y,
+                    "partition": partition,
+                    "phi_history": phi_history,
+                    "lb_history": lb_history,
+                    "ub_history": ub_history
+                }
+
+            return {
+                "status": "success",
+                "message": f"{len(cust_df)}顧客を{num_of_facilities}クラスターに集約しました（k-median法）",
+                "num_original_customers": len(cust_df),
+                "num_clusters": num_of_facilities,
+                "aggregated_customers": aggregated_cust_df.to_dict(orient="records"),
+                "aggregated_demand": aggregated_demand_df.to_dict(orient="records"),
+                "aggregated_total_demand": aggregated_total_demand_df.to_dict(orient="records"),
+                "cluster_centers": [{"X": float(x), "Y": float(y)} for x, y in zip(X, Y)],
+                "final_lower_bound": float(lb_history[-1]) if lb_history else 0.0,
+                "final_upper_bound": float(ub_history[-1]) if ub_history else 0.0,
+                "iterations": len(phi_history)
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"k-median集約エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "elbow_method_lnd":
+        try:
+            from scmopt2.lnd import elbow_method, make_total_demand
+            import pandas as pd
+
+            # JSONデータをDataFrameに変換
+            cust_df = pd.DataFrame(arguments["cust_data"])
+            demand_df = pd.DataFrame(arguments["demand_data"])
+            prod_df = pd.DataFrame(arguments["prod_data"])
+
+            n_lb = arguments.get("n_lb", 1)
+            n_ub = arguments.get("n_ub", 10)
+            method = arguments.get("method", "kmeans")
+            start_date = arguments.get("start_date", "1900-01-01")
+            end_date = arguments.get("end_date", "2050-12-31")
+            repetitions = arguments.get("repetitions", 3)
+
+            # 総需要計算
+            total_demand_df = make_total_demand(demand_df, start=start_date, finish=end_date)
+
+            # 重み付け
+            weight = {str(p): float(w) for p, w in zip(prod_df["name"], prod_df["weight"])}
+
+            # エルボー法実行
+            n_range, obj_values = elbow_method(
+                cust_df, weight, n_lb=n_lb, n_ub=n_ub,
+                repetitions=repetitions, method=method
+            )
+
+            # 最適なクラスター数を推定（エルボーポイント）
+            # 簡易的な実装: 2次微分が最大の点
+            if len(obj_values) >= 3:
+                second_diff = []
+                for i in range(1, len(obj_values) - 1):
+                    second_diff.append(obj_values[i-1] - 2*obj_values[i] + obj_values[i+1])
+                recommended_n = n_range[second_diff.index(max(second_diff)) + 1]
+            else:
+                recommended_n = n_range[len(n_range) // 2]
+
+            return {
+                "status": "success",
+                "message": f"エルボー法完了。推奨クラスター数: {recommended_n}",
+                "method": method,
+                "n_range": [int(n) for n in n_range],
+                "objective_values": [float(v) for v in obj_values],
+                "recommended_clusters": int(recommended_n),
+                "elbow_data": [{"n": int(n), "objective": float(v)} for n, v in zip(n_range, obj_values)]
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"エルボー法エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "make_network_lnd":
+        try:
+            from scmopt2.lnd import make_network
+            import pandas as pd
+
+            # JSONデータをDataFrameに変換
+            cust_df = pd.DataFrame(arguments["cust_data"])
+            dc_df = pd.DataFrame(arguments["dc_data"])
+            plnt_df = pd.DataFrame(arguments["plnt_data"])
+
+            plnt_dc_threshold = arguments.get("plnt_dc_threshold", 999999.0)
+            dc_cust_threshold = arguments.get("dc_cust_threshold", 999999.0)
+            plnt_dc_cost = arguments.get("plnt_dc_cost", 1.0)
+            dc_cust_cost = arguments.get("dc_cust_cost", 1.0)
+
+            # ネットワーク生成
+            trans_df, graph, position = make_network(
+                cust_df, dc_df, plnt_df,
+                plnt_dc_threshold=plnt_dc_threshold,
+                dc_cust_threshold=dc_cust_threshold,
+                plnt_dc_cost=plnt_dc_cost,
+                dc_cust_cost=dc_cust_cost
+            )
+
+            # キャッシュに保存
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "type": "network",
+                    "trans_df": trans_df,
+                    "graph": graph,
+                    "position": position
+                }
+
+            return {
+                "status": "success",
+                "message": f"ネットワーク生成完了（{len(trans_df)}本のルート）",
+                "num_routes": len(trans_df),
+                "transport_data": trans_df.to_dict(orient="records"),
+                "num_plnt_dc_routes": len(trans_df[trans_df["kind"] == "plnt-dc"]),
+                "num_dc_cust_routes": len(trans_df[trans_df["kind"] == "dc-cust"])
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"ネットワーク生成エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    # Phase 2: Excelツール
+    elif function_name == "generate_melos_template":
+        try:
+            from scmopt2.lnd import make_excel_melos
+
+            output_filepath = arguments["output_filepath"]
+
+            # テンプレート生成
+            wb = make_excel_melos()
+            wb.save(output_filepath)
+
+            # シート名を取得
+            sheet_names = wb.sheetnames
+
+            return {
+                "status": "success",
+                "message": f"MELOSテンプレートを生成しました: {output_filepath}",
+                "filepath": output_filepath,
+                "sheets_created": sheet_names
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"テンプレート生成エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "solve_lnd_from_excel":
+        try:
+            from scmopt2.lnd import prepare_df_for_melos, solve_lnd_for_excel
+            from openpyxl import load_workbook
+
+            filepath = arguments["filepath"]
+            dc_num = arguments.get("dc_num")
+            if dc_num is not None:
+                dc_num = tuple(dc_num)
+            single_sourcing = arguments.get("single_sourcing", True)
+            max_cpu = arguments.get("max_cpu", 100)
+
+            # Excelファイルを読み込み
+            wb = load_workbook(filepath)
+
+            # データフレームを準備
+            prod_df, cust_df, dc_df, plnt_df, demand_df, production_df, trans_df = prepare_df_for_melos(wb)
+
+            # 最適化実行
+            flow_df, dc_df_result, cost_df, violation_df, status = solve_lnd_for_excel(
+                wb, prod_df, cust_df, dc_df, plnt_df, demand_df, production_df, trans_df,
+                dc_num=dc_num, single_sourcing=single_sourcing, max_cpu=max_cpu
+            )
+
+            # キャッシュに保存
+            if user_id is not None:
+                _optimization_cache[user_id] = {
+                    "type": "lnd",
+                    "flow_df": flow_df,
+                    "dc_df": dc_df_result,
+                    "cost_df": cost_df,
+                    "violation_df": violation_df,
+                    "cust_df": cust_df,
+                    "plnt_df": plnt_df,
+                    "prod_df": prod_df,
+                    "status": status,
+                    "wb": wb
+                }
+
+            return {
+                "status": "success" if status == 2 else "error",
+                "solver_status": status,
+                "message": "Excelからの最適化が完了しました" if status == 2 else f"最適化に失敗しました（Status: {status}）",
+                "flow": flow_df.to_dict(orient="records") if not flow_df.empty else [],
+                "dc_results": dc_df_result.to_dict(orient="records") if not dc_df_result.empty else [],
+                "costs": cost_df.to_dict(orient="records") if not cost_df.empty else [],
+                "violations": violation_df.to_dict(orient="records") if not violation_df.empty else [],
+                "total_cost": float(cost_df.iloc[0]["value"]) if not cost_df.empty else 0.0
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"ExcelからのLND最適化エラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    elif function_name == "export_lnd_result":
+        try:
+            output_filepath = arguments["output_filepath"]
+
+            # キャッシュから最適化結果を取得
+            if user_id is None or user_id not in _optimization_cache:
+                return {
+                    "status": "error",
+                    "message": "最適化結果が見つかりません。先にsolve_lndまたはsolve_lnd_from_excelを実行してください。"
+                }
+
+            cache = _optimization_cache[user_id]
+            if cache.get("type") != "lnd":
+                return {
+                    "status": "error",
+                    "message": f"LND最適化結果ではありません（type: {cache.get('type')}）"
+                }
+
+            from scmopt2.lnd import add_result_for_melos
+            from openpyxl import Workbook
+
+            flow_df = cache["flow_df"]
+            cost_df = cache["cost_df"]
+            violation_df = cache["violation_df"]
+            dc_df = cache["dc_df"]
+
+            # 新しいワークブックを作成してデータを保存
+            wb = cache.get("wb")
+            if wb is None:
+                # Workbookがない場合は新規作成
+                wb = Workbook()
+
+            # 結果をExcelに追加
+            add_result_for_melos(wb, flow_df, cost_df, violation_df, dc_df)
+            wb.save(output_filepath)
+
+            return {
+                "status": "success",
+                "message": f"最適化結果をエクスポートしました: {output_filepath}",
+                "filepath": output_filepath,
+                "num_flows": len(flow_df),
+                "num_costs": len(cost_df),
+                "num_violations": len(violation_df)
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"結果エクスポートエラー: {str(e)}",
+                "traceback": traceback.format_exc()
+            }
+
+    # Phase 3: 可視化ツール
+    elif function_name == "visualize_lnd_result":
+        try:
+            # キャッシュから最適化結果を取得
+            if user_id is None or user_id not in _optimization_cache:
+                return {
+                    "status": "error",
+                    "message": "最適化結果が見つかりません。先にsolve_lndまたはsolve_lnd_from_excelを実行してください。"
+                }
+
+            cache = _optimization_cache[user_id]
+            if cache.get("type") != "lnd":
+                return {
+                    "status": "error",
+                    "message": f"LND最適化結果ではありません（type: {cache.get('type')}）"
+                }
+
+            from scmopt2.lnd import show_optimized_network
+            import uuid
+
+            cust_df = cache["cust_df"]
+            dc_df = cache["dc_df"]
+            plnt_df = cache["plnt_df"]
+            prod_df = cache["prod_df"]
+            flow_df = cache["flow_df"]
+
+            # positionを作成（簡易版）
+            import networkx as nx
+            position = {}
+            # 顧客
+            for i, row in cust_df.iterrows():
+                position[f"Cust_{row.iloc[0]}"] = (row.iloc[2], row.iloc[1])  # (lon, lat)
+            # 倉庫
+            for i, row in dc_df.iterrows():
+                position[f"DC_{row.iloc[0]}"] = (row.iloc[2], row.iloc[1])
+            # 工場
+            for i, row in plnt_df.iterrows():
+                position[f"Plnt_{row.iloc[0]}"] = (row.iloc[2], row.iloc[1])
+
+            # 可視化実行
+            fig = show_optimized_network(cust_df, dc_df, plnt_df, prod_df, flow_df, position)
+
+            # HTMLとして保存
+            visualization_id = str(uuid.uuid4())
+            html_content = fig.to_html(include_plotlyjs='cdn')
+            _visualization_cache[visualization_id] = html_content
+
+            return {
+                "status": "success",
+                "message": "LND最適化結果の地図可視化が完成しました。",
+                "visualization_id": visualization_id,
+                "visualization_url": f"/api/visualization/{visualization_id}",
+                "num_customers": len(cust_df),
+                "num_dcs": len(dc_df),
+                "num_plants": len(plnt_df),
+                "num_flows": len(flow_df)
+            }
+
+        except Exception as e:
+            import traceback
+            return {
+                "status": "error",
+                "message": f"可視化エラー: {str(e)}",
                 "traceback": traceback.format_exc()
             }
 

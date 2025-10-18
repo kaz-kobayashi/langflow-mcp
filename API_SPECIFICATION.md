@@ -20,9 +20,10 @@
 - ユーザー認証（JWT）
 - チャット履歴の保存
 - OpenAI Function Callingによる自動ツール呼び出し
-- **49種類**の在庫最適化・リスク管理機能
+- **58種類**のサプライチェーン最適化・リスク管理機能
   - 在庫最適化ツール（43種類）: EOQ、安全在庫、定期発注、需要予測、ロットサイズ最適化、Excel連携、最適化結果の可視化など
   - サプライチェーンリスク管理ツール（6種類）: MERIODAS によるリスク分析
+  - ロジスティクス・ネットワーク設計ツール（9種類）: MELOS による倉庫配置最適化、顧客集約、ネットワーク生成、可視化など
 - インタラクティブな可視化（Plotly）
 
 ---
@@ -615,6 +616,21 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 | `add_lotsize_detailed_sheets` | 期別資源容量の詳細シート追加 | mcp_tools.py:1871 |
 | `optimize_lotsizing_from_excel` | ExcelからデータRを読み込んで最適化実行 | mcp_tools.py:1911 |
 | `export_lotsizing_result` | 最適化結果のExcelエクスポート | mcp_tools.py:1947 |
+
+---
+
+##### 12. ロジスティクス・ネットワーク設計（LND）
+| ツール名 | 機能 | ファイル参照 |
+|---------|------|-------------|
+| `solve_lnd` | ロジスティクス・ネットワーク設計最適化 | mcp_tools.py:7516 |
+| `customer_aggregation_kmeans` | k-means法による顧客集約 | mcp_tools.py:7576 |
+| `customer_aggregation_kmedian` | k-median法による顧客集約 | mcp_tools.py:7636 |
+| `elbow_method_lnd` | エルボー法で最適集約数を決定 | mcp_tools.py:7712 |
+| `make_network_lnd` | 輸送・配送ネットワーク生成 | mcp_tools.py:7769 |
+| `generate_melos_template` | MELOSテンプレートExcel生成 | mcp_tools.py:7820 |
+| `solve_lnd_from_excel` | ExcelファイルからLND最適化 | mcp_tools.py:7848 |
+| `export_lnd_result` | LND最適化結果のExcelエクスポート | mcp_tools.py:7906 |
+| `visualize_lnd_result` | LND最適化結果の地図可視化 | mcp_tools.py:7960 |
 
 ---
 
@@ -1460,6 +1476,489 @@ MCP Toolsは、OpenAI Function Callingを通じて自動的に呼び出される
 
 ---
 
+#### `solve_lnd`
+**機能**: ロジスティクス・ネットワーク設計（LND）最適化を実行します。MELOS（MEta Logistics Optimization System）を用いて、倉庫配置と物流フローの最適化を行います。
+
+**入力パラメータ**:
+```json
+{
+  "prod_data": [
+    {"name": "P1", "volume": 1.0}
+  ],
+  "cust_data": [
+    {"name": "C1", "lat": 35.6762, "lng": 139.6503, "demand": 100}
+  ],
+  "dc_data": [
+    {"name": "DC1", "lat": 35.6895, "lng": 139.6917, "fixed_cost": 10000, "capacity": 5000}
+  ],
+  "plnt_data": [
+    {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+  ],
+  "plnt_prod_data": [
+    {"plnt": "Plant1", "prod": "P1", "capacity": 10000}
+  ],
+  "total_demand_data": [
+    {"cust": "C1", "prod": "P1", "demand": 100}
+  ],
+  "trans_data": [
+    {"org": "Plant1", "dst": "DC1", "prod": "P1", "cost": 10.5, "distance": 30.2}
+  ],
+  "dc_num": [1, 3],
+  "single_sourcing": true,
+  "max_cpu": 60
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| prod_data | array | ✓ | 製品データ配列 |
+| cust_data | array | ✓ | 顧客データ配列 |
+| dc_data | array | ✓ | 倉庫候補地点データ配列 |
+| plnt_data | array | ✓ | 工場データ配列 |
+| plnt_prod_data | array | ✓ | 工場-製品データ配列 |
+| total_demand_data | array | ✓ | 総需要データ配列 |
+| trans_data | array | ✓ | 輸送データ配列 |
+| dc_num | array | - | 倉庫数範囲 [min, max]（デフォルト: None） |
+| single_sourcing | boolean | - | 単一供給制約（デフォルト: true） |
+| max_cpu | integer | - | 最大計算時間（秒）（デフォルト: 60） |
+
+**prod_data構造**:
+- `name`: 製品名
+- `volume`: 体積
+
+**cust_data構造**:
+- `name`: 顧客名
+- `lat`: 緯度
+- `lng`: 経度
+- `demand`: 需要量（オプション）
+
+**dc_data構造**:
+- `name`: 倉庫候補地点名
+- `lat`: 緯度
+- `lng`: 経度
+- `fixed_cost`: 固定費用
+- `capacity`: 容量
+
+**plnt_data構造**:
+- `name`: 工場名
+- `lat`: 緯度
+- `lng`: 経度
+
+**plnt_prod_data構造**:
+- `plnt`: 工場名
+- `prod`: 製品名
+- `capacity`: 生産容量
+
+**total_demand_data構造**:
+- `cust`: 顧客名
+- `prod`: 製品名
+- `demand`: 需要量
+
+**trans_data構造**:
+- `org`: 出発地点名
+- `dst`: 到着地点名
+- `prod`: 製品名
+- `cost`: 輸送費用
+- `distance`: 距離（km）
+
+**出力**:
+```json
+{
+  "status": "success",
+  "solver_status": "Optimal",
+  "total_cost": 125430.5,
+  "message": "LND最適化が完了しました",
+  "flow": [
+    {"org": "Plant1", "dst": "DC1", "prod": "P1", "volume": 1500.0}
+  ],
+  "dc_results": [
+    {"name": "DC1", "opened": true, "fixed_cost": 10000, "total_flow": 1500}
+  ],
+  "num_customers": 10,
+  "num_dcs": 3,
+  "num_plants": 2,
+  "num_products": 2
+}
+```
+
+**注意**:
+- 最適化結果はユーザーごとにキャッシュされ、`visualize_lnd_result`や`export_lnd_result`で利用できます
+- `single_sourcing=true`の場合、各顧客は1つの倉庫からのみ供給を受けます
+
+**実装**: `mcp_tools.py:7516-7574`
+
+---
+
+#### `customer_aggregation_kmeans`
+**機能**: k-means法を用いて顧客を地理的にクラスタリングし、集約顧客を生成します。大規模問題を解きやすくするための前処理として使用します。
+
+**入力パラメータ**:
+```json
+{
+  "cust_data": [
+    {"name": "C1", "lat": 35.6762, "lng": 139.6503},
+    {"name": "C2", "lat": 35.6895, "lng": 139.6917}
+  ],
+  "demand_data": [
+    {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100},
+    {"cust": "C2", "prod": "P1", "date": "2020-01-01", "demand": 150}
+  ],
+  "prod_data": [
+    {"name": "P1", "volume": 1.0}
+  ],
+  "num_of_facilities": 3,
+  "start_date": "2020-01-01",
+  "end_date": "2020-12-31"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| cust_data | array | ✓ | 顧客データ配列 |
+| demand_data | array | ✓ | 需要データ配列（時系列） |
+| prod_data | array | ✓ | 製品データ配列 |
+| num_of_facilities | integer | ✓ | クラスター数（集約後の顧客数） |
+| start_date | string | - | 開始日（YYYY-MM-DD）（デフォルト: None） |
+| end_date | string | - | 終了日（YYYY-MM-DD）（デフォルト: None） |
+
+**demand_data構造**:
+- `cust`: 顧客名
+- `prod`: 製品名
+- `date`: 日付（YYYY-MM-DD）
+- `demand`: 需要量
+
+**出力**:
+```json
+{
+  "status": "success",
+  "num_original_customers": 50,
+  "num_clusters": 3,
+  "cluster_centers": [
+    {"name": "AggCust_0", "lat": 35.6762, "lng": 139.6503}
+  ],
+  "total_demand": [
+    {"cust": "AggCust_0", "prod": "P1", "demand": 5000}
+  ],
+  "message": "k-means法による顧客集約が完了しました"
+}
+```
+
+**実装**: `mcp_tools.py:7576-7634`
+
+---
+
+#### `customer_aggregation_kmedian`
+**機能**: k-median法を用いて、輸送費用を考慮した顧客集約を行います。Lagrange緩和法により最適なクラスタリングを求めます。
+
+**入力パラメータ**:
+```json
+{
+  "cust_data": [
+    {"name": "C1", "lat": 35.6762, "lng": 139.6503}
+  ],
+  "trans_data": [
+    {"org": "C1", "dst": "C2", "cost": 15.5, "distance": 10.2}
+  ],
+  "demand_data": [
+    {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100}
+  ],
+  "prod_data": [
+    {"name": "P1", "volume": 1.0}
+  ],
+  "num_of_facilities": 3,
+  "start_date": "2020-01-01",
+  "end_date": "2020-12-31"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| cust_data | array | ✓ | 顧客データ配列 |
+| trans_data | array | ✓ | 輸送費用データ配列（顧客間） |
+| demand_data | array | ✓ | 需要データ配列（時系列） |
+| prod_data | array | ✓ | 製品データ配列 |
+| num_of_facilities | integer | ✓ | クラスター数（集約後の顧客数） |
+| start_date | string | - | 開始日（YYYY-MM-DD） |
+| end_date | string | - | 終了日（YYYY-MM-DD） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "num_original_customers": 50,
+  "num_clusters": 3,
+  "cluster_medians": [
+    {"name": "AggCust_0", "lat": 35.6762, "lng": 139.6503}
+  ],
+  "total_demand": [
+    {"cust": "AggCust_0", "prod": "P1", "demand": 5000}
+  ],
+  "total_transport_cost": 12500.5,
+  "message": "k-median法による顧客集約が完了しました"
+}
+```
+
+**実装**: `mcp_tools.py:7636-7710`
+
+---
+
+#### `elbow_method_lnd`
+**機能**: エルボー法を用いて、顧客集約における最適なクラスター数を決定します。複数のクラスター数で集約を試行し、目的関数値の変化から推奨値を算出します。
+
+**入力パラメータ**:
+```json
+{
+  "cust_data": [
+    {"name": "C1", "lat": 35.6762, "lng": 139.6503}
+  ],
+  "demand_data": [
+    {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100}
+  ],
+  "prod_data": [
+    {"name": "P1", "volume": 1.0}
+  ],
+  "n_lb": 2,
+  "n_ub": 10,
+  "method": "kmeans",
+  "repetitions": 5
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| cust_data | array | ✓ | 顧客データ配列 |
+| demand_data | array | ✓ | 需要データ配列（時系列） |
+| prod_data | array | ✓ | 製品データ配列 |
+| n_lb | integer | ✓ | クラスター数下限 |
+| n_ub | integer | ✓ | クラスター数上限 |
+| method | string | - | 集約手法（"kmeans" / "kmedian"）（デフォルト: "kmeans"） |
+| repetitions | integer | - | 試行回数（デフォルト: 10） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "recommended_clusters": 5,
+  "n_range": [2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "objective_values": [15000.5, 12500.3, 10200.1, 8500.0, 8400.5, 8380.2, 8375.0, 8372.5, 8371.0],
+  "message": "エルボー法により推奨クラスター数を決定しました"
+}
+```
+
+**注意**:
+- 目的関数値の減少率が大きく変化するポイント（エルボー）を推奨クラスター数とします
+- `method="kmedian"`の場合は輸送費用データも必要です
+
+**実装**: `mcp_tools.py:7712-7767`
+
+---
+
+#### `make_network_lnd`
+**機能**: 工場-倉庫-顧客間の輸送ネットワークを生成します。距離閾値に基づいてルートを作成し、輸送費用を計算します。
+
+**入力パラメータ**:
+```json
+{
+  "cust_data": [
+    {"name": "C1", "lat": 35.6762, "lng": 139.6503}
+  ],
+  "dc_data": [
+    {"name": "DC1", "lat": 35.6895, "lng": 139.6917}
+  ],
+  "plnt_data": [
+    {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+  ],
+  "plnt_dc_threshold": 1000.0,
+  "dc_cust_threshold": 500.0,
+  "plnt_dc_cost": 1.0,
+  "dc_cust_cost": 1.5
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| cust_data | array | ✓ | 顧客データ配列 |
+| dc_data | array | ✓ | 倉庫候補地点データ配列 |
+| plnt_data | array | ✓ | 工場データ配列 |
+| plnt_dc_threshold | number | ✓ | 工場-倉庫間の最大距離（km） |
+| dc_cust_threshold | number | ✓ | 倉庫-顧客間の最大距離（km） |
+| plnt_dc_cost | number | ✓ | 工場-倉庫間の輸送費用係数（円/km） |
+| dc_cust_cost | number | ✓ | 倉庫-顧客間の輸送費用係数（円/km） |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "num_routes": 150,
+  "num_plnt_dc_routes": 50,
+  "num_dc_cust_routes": 100,
+  "routes": [
+    {"org": "Plant1", "dst": "DC1", "cost": 30.2, "distance": 30.2}
+  ],
+  "message": "輸送ネットワークを生成しました"
+}
+```
+
+**実装**: `mcp_tools.py:7769-7817`
+
+---
+
+#### `generate_melos_template`
+**機能**: MELOS用のExcelテンプレートファイルを生成します。顧客、倉庫候補地点、工場、製品の各シートを作成します。
+
+**入力パラメータ**:
+```json
+{
+  "output_filepath": "melos_template.xlsx"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| output_filepath | string | ✓ | 出力ファイルパス |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "filepath": "melos_template.xlsx",
+  "sheets_created": ["顧客", "倉庫候補地点", "工場", "製品"],
+  "message": "MELOSテンプレートを生成しました"
+}
+```
+
+**生成されるシート**:
+1. **顧客**: name, lat, lng, demand列
+2. **倉庫候補地点**: name, lat, lng, fixed_cost, capacity列
+3. **工場**: name, lat, lng列
+4. **製品**: name, volume列
+
+**実装**: `mcp_tools.py:7820-7846`
+
+---
+
+#### `solve_lnd_from_excel`
+**機能**: Excelファイルからデータを読み込み、LND最適化を実行します。MELOSテンプレート形式のExcelファイルに対応しています。
+
+**入力パラメータ**:
+```json
+{
+  "filepath": "melos_data.xlsx",
+  "dc_num": [1, 3],
+  "single_sourcing": true,
+  "max_cpu": 60
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| filepath | string | ✓ | 入力Excelファイルパス |
+| dc_num | array | - | 倉庫数範囲 [min, max]（デフォルト: None） |
+| single_sourcing | boolean | - | 単一供給制約（デフォルト: true） |
+| max_cpu | integer | - | 最大計算時間（秒）（デフォルト: 60） |
+
+**必要なExcelシート**:
+- **顧客**: name, lat, lng列（必須）
+- **倉庫候補地点**: name, lat, lng, fixed_cost, capacity列（必須）
+- **工場**: name, lat, lng列（必須）
+- **製品**: name, volume列（必須）
+- **需要**: cust, prod, demand列（必須）
+- **工場-製品**: plnt, prod, capacity列（必須）
+
+**出力**:
+```json
+{
+  "status": "success",
+  "solver_status": "Optimal",
+  "total_cost": 125430.5,
+  "message": "ExcelファイルからのLND最適化が完了しました",
+  "flow": [...],
+  "dc_results": [...],
+  "num_customers": 10,
+  "num_dcs": 3,
+  "num_plants": 2
+}
+```
+
+**実装**: `mcp_tools.py:7848-7904`
+
+---
+
+#### `export_lnd_result`
+**機能**: 直前に実行したLND最適化結果をExcelファイルにエクスポートします。フロー、倉庫開設状況、費用内訳などを出力します。
+
+**入力パラメータ**:
+```json
+{
+  "output_filepath": "lnd_result.xlsx"
+}
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|-----|------|------|
+| output_filepath | string | ✓ | 出力ファイルパス |
+
+**出力**:
+```json
+{
+  "status": "success",
+  "filepath": "lnd_result.xlsx",
+  "sheets_created": ["フロー", "倉庫開設状況", "費用内訳"],
+  "message": "LND最適化結果をExcelファイルにエクスポートしました"
+}
+```
+
+**エクスポートされるシート**:
+1. **フロー**: org, dst, prod, volume列（物流フロー詳細）
+2. **倉庫開設状況**: name, opened, fixed_cost, total_flow列
+3. **費用内訳**: 輸送費用、固定費用、総費用
+
+**注意**:
+- `solve_lnd`または`solve_lnd_from_excel`を事前に実行している必要があります
+- ユーザーごとにキャッシュが管理されます
+
+**実装**: `mcp_tools.py:7906-7957`
+
+---
+
+#### `visualize_lnd_result`
+**機能**: LND最適化結果を地図上に可視化します。顧客、倉庫、工場の位置と物流フローをインタラクティブなPlotlyマップで表示します。
+
+**入力パラメータ**:
+```json
+{}
+```
+
+パラメータなし（直前の最適化結果を使用）
+
+**出力**:
+```json
+{
+  "status": "success",
+  "visualization_url": "/api/visualization/550e8400-e29b-41d4-a716-446655440000",
+  "visualization_id": "550e8400-e29b-41d4-a716-446655440000",
+  "num_customers": 10,
+  "num_dcs": 3,
+  "num_plants": 2,
+  "num_flows": 25,
+  "message": "LND最適化結果の可視化が完了しました"
+}
+```
+
+**可視化内容**:
+- 顧客位置（青色マーカー）
+- 倉庫位置（緑色マーカー、サイズは物流量に比例）
+- 工場位置（赤色マーカー）
+- 物流フロー（矢印、太さは物流量に比例）
+
+**注意**:
+- `solve_lnd`または`solve_lnd_from_excel`を事前に実行している必要があります
+- 可視化結果は`/api/visualization/{viz_id}`でアクセス可能
+
+**実装**: `mcp_tools.py:7960-8023`
+
+---
+
 ### ロットサイズ最適化ツールの実行例
 
 以下は、Phase 1, 2, 3のロットサイズ最適化ツールをcurlコマンドで実行する例です。
@@ -1907,6 +2406,457 @@ curl -X POST http://localhost:8000/api/tools/optimize_lotsizing \
     ],
     "max_cpu": 60,
     "solver": "CBC"
+  }'
+```
+
+---
+
+### LNDツールの実行例
+
+以下は、Phase 1, 2, 3のLND（ロジスティクス・ネットワーク設計）ツールをcurlコマンドで実行する例です。
+
+#### 前提条件
+
+JWT認証トークンを取得する必要があります：
+
+```bash
+# 1. ログインしてトークンを取得
+curl -X POST https://web-production-1ed39.up.railway.app/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"your-email@example.com","password":"your-password"}'
+
+# 2. トークンを環境変数に設定
+export TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+#### Phase 1: 基本最適化ツールの実行例
+
+##### 例1: LND最適化実行
+
+小規模データでLND最適化を実行する例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prod_data": [
+      {"name": "P1", "volume": 1.0},
+      {"name": "P2", "volume": 1.5}
+    ],
+    "cust_data": [
+      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lng": 139.6917},
+      {"name": "C3", "lat": 35.4437, "lng": 139.6380}
+    ],
+    "dc_data": [
+      {"name": "DC1", "lat": 35.6895, "lng": 139.6917, "fixed_cost": 10000, "capacity": 5000},
+      {"name": "DC2", "lat": 35.4437, "lng": 139.6380, "fixed_cost": 12000, "capacity": 6000}
+    ],
+    "plnt_data": [
+      {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+    ],
+    "plnt_prod_data": [
+      {"plnt": "Plant1", "prod": "P1", "capacity": 10000},
+      {"plnt": "Plant1", "prod": "P2", "capacity": 8000}
+    ],
+    "total_demand_data": [
+      {"cust": "C1", "prod": "P1", "demand": 100},
+      {"cust": "C2", "prod": "P1", "demand": 150},
+      {"cust": "C3", "prod": "P2", "demand": 120}
+    ],
+    "trans_data": [
+      {"org": "Plant1", "dst": "DC1", "prod": "P1", "cost": 10.5, "distance": 30.2},
+      {"org": "Plant1", "dst": "DC2", "prod": "P1", "cost": 8.5, "distance": 25.0},
+      {"org": "DC1", "dst": "C1", "prod": "P1", "cost": 5.0, "distance": 10.0},
+      {"org": "DC1", "dst": "C2", "prod": "P1", "cost": 3.5, "distance": 8.0}
+    ],
+    "dc_num": [1, 2],
+    "single_sourcing": true,
+    "max_cpu": 60
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "solver_status": "Optimal",
+  "total_cost": 125430.5,
+  "message": "LND最適化が完了しました",
+  "flow": [
+    {"org": "Plant1", "dst": "DC1", "prod": "P1", "volume": 250.0},
+    {"org": "DC1", "dst": "C1", "prod": "P1", "volume": 100.0},
+    {"org": "DC1", "dst": "C2", "prod": "P1", "volume": 150.0}
+  ],
+  "dc_results": [
+    {"name": "DC1", "opened": true, "fixed_cost": 10000, "total_flow": 250},
+    {"name": "DC2", "opened": false, "fixed_cost": 0, "total_flow": 0}
+  ],
+  "num_customers": 3,
+  "num_dcs": 2,
+  "num_plants": 1,
+  "num_products": 2
+}
+```
+
+##### 例2: k-means顧客集約
+
+k-means法で顧客を集約する例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/customer_aggregation_kmeans \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cust_data": [
+      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lng": 139.6917},
+      {"name": "C3", "lat": 35.4437, "lng": 139.6380},
+      {"name": "C4", "lat": 35.7090, "lng": 139.7320},
+      {"name": "C5", "lat": 35.6580, "lng": 139.7454}
+    ],
+    "demand_data": [
+      {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100},
+      {"cust": "C2", "prod": "P1", "date": "2020-01-01", "demand": 150},
+      {"cust": "C3", "prod": "P1", "date": "2020-01-01", "demand": 120},
+      {"cust": "C4", "prod": "P1", "date": "2020-01-01", "demand": 80},
+      {"cust": "C5", "prod": "P1", "date": "2020-01-01", "demand": 90}
+    ],
+    "prod_data": [
+      {"name": "P1", "volume": 1.0}
+    ],
+    "num_of_facilities": 2,
+    "start_date": "2020-01-01",
+    "end_date": "2020-12-31"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "num_original_customers": 5,
+  "num_clusters": 2,
+  "cluster_centers": [
+    {"name": "AggCust_0", "lat": 35.6812, "lng": 139.6873},
+    {"name": "AggCust_1", "lat": 35.6835, "lng": 139.7387}
+  ],
+  "total_demand": [
+    {"cust": "AggCust_0", "prod": "P1", "demand": 370},
+    {"cust": "AggCust_1", "prod": "P1", "demand": 170}
+  ],
+  "message": "k-means法による顧客集約が完了しました"
+}
+```
+
+##### 例3: エルボー法で最適クラスター数決定
+
+エルボー法で推奨クラスター数を求める例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/elbow_method_lnd \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cust_data": [
+      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lng": 139.6917},
+      {"name": "C3", "lat": 35.4437, "lng": 139.6380},
+      {"name": "C4", "lat": 35.7090, "lng": 139.7320},
+      {"name": "C5", "lat": 35.6580, "lng": 139.7454}
+    ],
+    "demand_data": [
+      {"cust": "C1", "prod": "P1", "date": "2020-01-01", "demand": 100},
+      {"cust": "C2", "prod": "P1", "date": "2020-01-01", "demand": 150}
+    ],
+    "prod_data": [
+      {"name": "P1", "volume": 1.0}
+    ],
+    "n_lb": 2,
+    "n_ub": 5,
+    "method": "kmeans",
+    "repetitions": 3
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "recommended_clusters": 3,
+  "n_range": [2, 3, 4, 5],
+  "objective_values": [15000.5, 10200.1, 10150.0, 10140.5],
+  "message": "エルボー法により推奨クラスター数を決定しました"
+}
+```
+
+##### 例4: 輸送ネットワーク生成
+
+距離閾値に基づいて輸送ネットワークを生成する例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/make_network_lnd \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cust_data": [
+      {"name": "C1", "lat": 35.6762, "lng": 139.6503},
+      {"name": "C2", "lat": 35.6895, "lng": 139.6917}
+    ],
+    "dc_data": [
+      {"name": "DC1", "lat": 35.6895, "lng": 139.6917},
+      {"name": "DC2", "lat": 35.4437, "lng": 139.6380}
+    ],
+    "plnt_data": [
+      {"name": "Plant1", "lat": 35.4437, "lng": 139.6380}
+    ],
+    "plnt_dc_threshold": 1000.0,
+    "dc_cust_threshold": 500.0,
+    "plnt_dc_cost": 1.0,
+    "dc_cust_cost": 1.5
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "num_routes": 6,
+  "num_plnt_dc_routes": 2,
+  "num_dc_cust_routes": 4,
+  "routes": [
+    {"org": "Plant1", "dst": "DC1", "cost": 30.2, "distance": 30.2},
+    {"org": "Plant1", "dst": "DC2", "cost": 0.0, "distance": 0.0},
+    {"org": "DC1", "dst": "C1", "cost": 2.2, "distance": 1.5},
+    {"org": "DC1", "dst": "C2", "cost": 0.5, "distance": 0.3}
+  ],
+  "message": "輸送ネットワークを生成しました"
+}
+```
+
+#### Phase 2: Excelツールの実行例
+
+##### 例5: MELOSテンプレート生成
+
+空のMELOSテンプレートExcelファイルを生成する例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_melos_template \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "output_filepath": "melos_template.xlsx"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "filepath": "melos_template.xlsx",
+  "sheets_created": ["顧客", "倉庫候補地点", "工場", "製品"],
+  "message": "MELOSテンプレートを生成しました"
+}
+```
+
+##### 例6: ExcelからLND最適化
+
+MELOSテンプレートに入力したデータからLND最適化を実行する例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd_from_excel \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filepath": "filled_melos_data.xlsx",
+    "dc_num": [1, 3],
+    "single_sourcing": true,
+    "max_cpu": 60
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "solver_status": "Optimal",
+  "total_cost": 225430.5,
+  "message": "ExcelファイルからのLND最適化が完了しました",
+  "flow": [...],
+  "dc_results": [...],
+  "num_customers": 15,
+  "num_dcs": 5,
+  "num_plants": 3
+}
+```
+
+##### 例7: LND結果のExcelエクスポート
+
+最適化結果をExcelファイルにエクスポートする例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/export_lnd_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "output_filepath": "lnd_optimization_result.xlsx"
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "filepath": "lnd_optimization_result.xlsx",
+  "sheets_created": ["フロー", "倉庫開設状況", "費用内訳"],
+  "message": "LND最適化結果をExcelファイルにエクスポートしました"
+}
+```
+
+#### Phase 3: 可視化ツールの実行例
+
+##### 例8: LND最適化結果の地図可視化
+
+最適化結果を地図上に可視化する例：
+
+```bash
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_lnd_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "visualization_url": "/api/visualization/550e8400-e29b-41d4-a716-446655440000",
+  "visualization_id": "550e8400-e29b-41d4-a716-446655440000",
+  "num_customers": 15,
+  "num_dcs": 3,
+  "num_plants": 2,
+  "num_flows": 45,
+  "message": "LND最適化結果の可視化が完了しました"
+}
+```
+
+可視化結果はブラウザで表示できます：
+
+```bash
+# 可視化結果にアクセス
+open https://web-production-1ed39.up.railway.app/api/visualization/550e8400-e29b-41d4-a716-446655440000
+```
+
+#### LNDワークフロー例
+
+以下は、典型的なLND分析ワークフローの例です：
+
+**ワークフロー1: 小規模問題の直接最適化**
+
+```bash
+# 1. LND最適化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @small_lnd_data.json
+
+# 2. 結果を可視化
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_lnd_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# 3. 結果をExcelにエクスポート
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/export_lnd_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"output_filepath": "lnd_result.xlsx"}'
+```
+
+**ワークフロー2: 大規模問題の顧客集約後最適化**
+
+```bash
+# 1. エルボー法で最適クラスター数を決定
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/elbow_method_lnd \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @elbow_data.json
+# 推奨クラスター数: 5
+
+# 2. k-means法で顧客を集約
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/customer_aggregation_kmeans \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cust_data": [...],
+    "demand_data": [...],
+    "prod_data": [...],
+    "num_of_facilities": 5
+  }'
+
+# 3. 集約後のデータでLND最適化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @aggregated_lnd_data.json
+
+# 4. 結果を可視化
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_lnd_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**ワークフロー3: Excel経由での最適化**
+
+```bash
+# 1. MELOSテンプレートを生成
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/generate_melos_template \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"output_filepath": "melos_template.xlsx"}'
+
+# 2. テンプレートに手動でデータを入力（Excel上で編集）
+# ダウンロード → 編集 → アップロード
+
+# 3. ExcelファイルからLND最適化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/solve_lnd_from_excel \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filepath": "filled_melos_data.xlsx",
+    "dc_num": [2, 5],
+    "single_sourcing": true,
+    "max_cpu": 120
+  }'
+
+# 4. 結果をExcelにエクスポート
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/export_lnd_result \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"output_filepath": "lnd_result.xlsx"}'
+```
+
+#### ローカル環境での実行例
+
+ローカル開発環境（`ENVIRONMENT=local`）では、認証なしで実行できます：
+
+```bash
+# ローカル環境（認証不要）
+curl -X POST http://localhost:8000/api/tools/solve_lnd \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prod_data": [{"name": "P1", "volume": 1.0}],
+    "cust_data": [{"name": "C1", "lat": 35.6762, "lng": 139.6503}],
+    "dc_data": [{"name": "DC1", "lat": 35.6895, "lng": 139.6917, "fixed_cost": 10000, "capacity": 5000}],
+    "plnt_data": [{"name": "Plant1", "lat": 35.4437, "lng": 139.6380}],
+    "plnt_prod_data": [{"plnt": "Plant1", "prod": "P1", "capacity": 10000}],
+    "total_demand_data": [{"cust": "C1", "prod": "P1", "demand": 100}],
+    "trans_data": [{"org": "Plant1", "dst": "DC1", "prod": "P1", "cost": 10.5, "distance": 30.2}],
+    "dc_num": [1, 2],
+    "single_sourcing": true,
+    "max_cpu": 60
   }'
 ```
 
