@@ -28,3 +28,5 @@ graphviz>=0.20.0
 intervaltree>=3.1.0
 ortools>=9.5.0
 scikit-learn>=1.2.0
+faker>=18.0.0
+geopy>=2.3.0
