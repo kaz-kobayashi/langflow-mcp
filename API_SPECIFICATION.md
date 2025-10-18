@@ -1709,64 +1709,91 @@ curl -X POST https://web-production-1ed39.up.railway.app/api/tools/add_lotsize_d
 }
 ```
 
-##### 例8: ExcelからデータR読み込んで最適化
+##### 例8: マルチモードロットサイズ最適化（複数生産モード対応）
 
 ```bash
-curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_lotsizing_from_excel \
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_multimode_lotsizing \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "master_filepath": "my_lotsize_master_detailed.xlsx",
-    "order_filepath": "my_order_data.xlsx",
-    "start_date": "2025-01-01",
-    "end_date": "2025-01-31",
-    "period": 1,
-    "period_unit": "日",
+    "item_data": [
+      {"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100, "final_inventory": 50}
+    ],
+    "resource_data": [
+      {"name": "Machine1", "capacity": 8000}
+    ],
+    "process_data": [
+      {"item": "Product1", "mode": "Fast", "setup_cost": 500, "prod_cost": 15, "n_resources": 1},
+      {"item": "Product1", "mode": "Slow", "setup_cost": 300, "prod_cost": 12, "n_resources": 1}
+    ],
+    "bom_data": [],
+    "usage_data": [
+      {"item": "Product1", "mode": "Fast", "resource": "Machine1", "setup_time": 60, "prod_time": 5},
+      {"item": "Product1", "mode": "Slow", "resource": "Machine1", "setup_time": 30, "prod_time": 8}
+    ],
+    "demand": {"0,Product1": 100, "1,Product1": 120, "2,Product1": 110, "3,Product1": 130, "4,Product1": 140},
+    "capacity": {"0,Machine1": 8000, "1,Machine1": 8000, "2,Machine1": 8000, "3,Machine1": 8000, "4,Machine1": 8000},
+    "T": 5,
+    "visualize": true
+  }'
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "objective_value": 7850.0,
+  "message": "マルチモード最適化が完了しました",
+  "solver_status": "Optimal",
+  "periods": 5,
+  "items_count": 1,
+  "inventory_visualization_id": "a3b4c5d6-e7f8-9012-3456-789abcdef012",
+  "inventory_visualization_url": "/api/visualization/a3b4c5d6-e7f8-9012-3456-789abcdef012",
+  "production_visualization_id": "b4c5d6e7-f890-1234-5678-9abcdef01234",
+  "production_visualization_url": "/api/visualization/b4c5d6e7-f890-1234-5678-9abcdef01234"
+}
+```
+
+##### 例9: 最適化結果の可視化
+
+```bash
+# Step 1: まず基本ロットサイズ最適化を実行
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/optimize_lotsizing \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "item_data": [{"name": "Product1", "inv_cost": 1.0, "safety_inventory": 50, "target_inventory": 1000, "initial_inventory": 100}],
+    "production_data": [{"name": "Product1", "SetupTime": 30, "SetupCost": 500, "ProdTime": 2, "ProdCost": 10}],
+    "demand": [[100, 120, 110, 130, 140]],
+    "resource_data": [
+      {"name": "Res1", "period": 0, "capacity": 2000},
+      {"name": "Res1", "period": 1, "capacity": 2000},
+      {"name": "Res1", "period": 2, "capacity": 2000},
+      {"name": "Res1", "period": 3, "capacity": 2000},
+      {"name": "Res1", "period": 4, "capacity": 2000}
+    ],
     "max_cpu": 60,
     "solver": "CBC",
     "visualize": false
   }'
-```
 
-**レスポンス例**:
-```json
-{
-  "status": "success",
-  "objective_value": 25430.0,
-  "message": "Excelファイルからの最適化が完了しました",
-  "solver_status": "Optimal",
-  "num_items": 5,
-  "num_periods": 31,
-  "cost_breakdown": {
-    "setup_cost": 12000.0,
-    "production_cost": 8500.0,
-    "inventory_cost": 4930.0
-  }
-}
-```
-
-##### 例9: 最適化結果のExcelエクスポート
-
-```bash
-curl -X POST https://web-production-1ed39.up.railway.app/api/tools/export_lotsizing_result \
+# Step 2: 最適化結果を可視化
+curl -X POST https://web-production-1ed39.up.railway.app/api/tools/visualize_lotsizing_result \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{
-    "output_filepath": "optimization_result.xlsx",
-    "start_date": "2025-01-01",
-    "end_date": "2025-01-31",
-    "period": 1,
-    "period_unit": "日"
-  }'
+  -d '{}'
 ```
 
 **レスポンス例**:
 ```json
 {
   "status": "success",
-  "filepath": "optimization_result.xlsx",
-  "message": "最適化結果をExcelファイルにエクスポートしました",
-  "sheets_created": ["費用内訳", "品目Product1", "品目Product2", "品目Product3"]
+  "inventory_visualization_id": "abc123-def456",
+  "inventory_visualization_url": "/api/visualization/abc123-def456",
+  "production_visualization_id": "ghi789-jkl012",
+  "production_visualization_url": "/api/visualization/ghi789-jkl012",
+  "message": "基本ロットサイズ最適化の可視化が完成しました。",
+  "violated_constraints": []
 }
 ```
 
