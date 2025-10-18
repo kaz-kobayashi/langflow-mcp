@@ -17,7 +17,7 @@ import numpy as np
 import plotly.graph_objs as go
 import plotly.express as px
 import plotly
-from mypulp import GRB, quicksum, Model
+from .mypulp import GRB, quicksum, Model
 #from gurobipy import GRB, quicksum, Model
 import pandas as pd
 import random

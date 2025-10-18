@@ -9,7 +9,7 @@ __all__ = ['folder', 'make_sample_data_for_rm', 'rm_deterministic', 'rm_sampling
 # %% ../nbs/13rm.ipynb 3
 import matplotlib.pyplot as plt
 #from gurobipy import Model, quicksum, GRB
-from mypulp import Model, quicksum, GRB
+from .mypulp import Model, quicksum, GRB
 from scipy.stats import poisson, expon
 
 import copy
